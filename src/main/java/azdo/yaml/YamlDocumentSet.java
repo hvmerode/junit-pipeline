@@ -1,6 +1,5 @@
 package azdo.yaml;
 
-import azdo.command.CommandEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -125,7 +124,7 @@ public class YamlDocumentSet {
         }
     }
 
-    public void executeCommand (CommandEnum commandEnum,
+    public void executeCommand (ActionEnum actionEnum,
                                 String sectionName,
                                 String sectionValue,
                                 String identifierName,
@@ -137,7 +136,7 @@ public class YamlDocumentSet {
         YamlDocument yamlDocument;
         for (Map.Entry<String, YamlDocument> entry : yamlDocuments.entrySet()) {
             yamlDocument = entry.getValue();
-            yamlDocument.executeCommand(commandEnum,
+            yamlDocument.executeCommand(actionEnum,
                     sectionName,
                     sectionValue,
                     identifierName,

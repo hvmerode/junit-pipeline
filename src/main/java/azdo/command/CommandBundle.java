@@ -1,5 +1,6 @@
 package azdo.command;
-import azdo.junit.AzDoPipeline;
+
+import azdo.junit.Pipeline;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
@@ -84,11 +85,11 @@ public class CommandBundle {
     }
 
     // Execute all commands
-    public void execute (AzDoPipeline azDoPipeline){
+    public void execute (Pipeline pipeline){
         int index = 0;
         int size = commands.size();
         for (index = 0; index < size; index++) {
-            commands.get(index).execute(azDoPipeline);
+            commands.get(index).execute(pipeline);
         }
     }
 }

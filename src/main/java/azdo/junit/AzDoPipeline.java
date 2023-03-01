@@ -1,7 +1,7 @@
 package azdo.junit;
 
 import azdo.command.CommandBundle;
-import azdo.command.CommandEnum;
+import azdo.yaml.ActionEnum;
 import azdo.yaml.YamlDocumentSet;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
@@ -16,7 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-public class AzDoPipeline {
+public class AzDoPipeline extends Pipeline {
     private static Logger logger = LoggerFactory.getLogger(AzDoPipeline.class);
     private Map<String, Object> yamlMap;
     private TestProperties properties = new TestProperties();
@@ -300,7 +300,7 @@ public class AzDoPipeline {
         logger.info("==> Method overrideVariable: " + variableName + " with " + value);
 
         // Replace according to construction 1
-        yamlDocumentSet.executeCommand(CommandEnum.replaceValue,
+        yamlDocumentSet.executeCommand(ActionEnum.replaceValue,
                 "variables",
                 "",
                 "",
@@ -310,7 +310,7 @@ public class AzDoPipeline {
                 false);
 
         // Replace according to construction 2
-        yamlDocumentSet.executeCommand(CommandEnum.replaceValue,
+        yamlDocumentSet.executeCommand(ActionEnum.replaceValue,
                 "variables",
                 "",
                 "name",
@@ -344,7 +344,7 @@ public class AzDoPipeline {
      */
     public void overrideParameterDefault(String parameterName, String value) {
         logger.info("==> Method overrideParameterDefault: " + parameterName + " with " + value);
-        yamlDocumentSet.executeCommand(CommandEnum.replaceValue,
+        yamlDocumentSet.executeCommand(ActionEnum.replaceValue,
                 "parameters",
                 "",
                 "name",
@@ -367,7 +367,7 @@ public class AzDoPipeline {
      */
     public void overrideTemplateParameter(String parameterName, String value) {
         logger.info("==> Method overrideTemplateParameter: " + parameterName + " with " + value);
-        yamlDocumentSet.executeCommand(CommandEnum.replaceValue,
+        yamlDocumentSet.executeCommand(ActionEnum.replaceValue,
                 parameterName,
                 "",
                 "",
@@ -396,7 +396,7 @@ public class AzDoPipeline {
      */
     public void overrideLiteral(String findLiteral, String replaceLiteral, boolean replaceAll) {
         logger.info("==> Method overrideLiteral: Replaces " + findLiteral + " with " + replaceLiteral);
-        yamlDocumentSet.executeCommand(CommandEnum.replaceLiteral,
+        yamlDocumentSet.executeCommand(ActionEnum.replaceLiteral,
                 "",
                 "",
                 "",
@@ -446,7 +446,7 @@ public class AzDoPipeline {
      */
     public void skipStage(String stageName) {
         logger.info("==> Method skipStage: " + stageName);
-        yamlDocumentSet.executeCommand(CommandEnum.delete,
+        yamlDocumentSet.executeCommand(ActionEnum.delete,
                 "stages",
                 "",
                 "",
@@ -470,7 +470,7 @@ public class AzDoPipeline {
      */
     public void skipJob(String jobName) {
         logger.info("==> Method skipJob: " + jobName);
-        yamlDocumentSet.executeCommand(CommandEnum.delete,
+        yamlDocumentSet.executeCommand(ActionEnum.delete,
                 "jobs",
                 "",
                 "",
@@ -506,7 +506,7 @@ public class AzDoPipeline {
     // TODO: Look into this; does not seem right
     public void skipStep(String stepName) {
         logger.info("==> Method skipStep: " + stepName);
-        yamlDocumentSet.executeCommand(CommandEnum.delete,
+        yamlDocumentSet.executeCommand(ActionEnum.delete,
                 "steps",
                 "",
                 "",
@@ -514,7 +514,7 @@ public class AzDoPipeline {
                 "step",
                 stepName,
                 false);
-        yamlDocumentSet.executeCommand(CommandEnum.delete,
+        yamlDocumentSet.executeCommand(ActionEnum.delete,
                 "steps",
                 "",
                 "",
@@ -528,7 +528,7 @@ public class AzDoPipeline {
        added to the mock. Depending on the job pool this can be a Powershell script (Windows) or a bash script (Linux)
      */
     public void mockStep(String stepValue, String inlineScript){
-        yamlDocumentSet.executeCommand(CommandEnum.mock,
+        yamlDocumentSet.executeCommand(ActionEnum.mock,
                 "steps",
                 "",
                 "",

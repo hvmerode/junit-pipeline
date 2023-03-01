@@ -1,6 +1,5 @@
 package azdo.yaml;
 
-import azdo.command.CommandEnum;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.DumperOptions;
@@ -76,9 +75,9 @@ public class YamlDocument {
     }
 
     /*
-       If a specific section is found, the framework executes a commandEnum within that section.
+       If a specific section is found, the framework executes a actionEnum within that section.
      */
-    public void executeCommand (CommandEnum commandEnum,
+    public void executeCommand (ActionEnum actionEnum,
                                 String sectionName,
                                 String sectionValue,
                                 String identifierName,
@@ -89,13 +88,13 @@ public class YamlDocument {
 
         logger.info("==> Method: YamlDocument.executeCommand");
 
-        if (commandEnum == CommandEnum.replaceLiteral) {
+        if (actionEnum == ActionEnum.replaceLiteral) {
             logger.info("Replace literal <" + keyName + "> with <" + keyValue + ">");
             replaceLiteral(keyName, keyValue, continueSearching);
             return;
         }
 
-        findSectionAndExecuteCommand (commandEnum,
+        findSectionAndExecuteCommand (actionEnum,
                 yamlMap,
                 sectionName,
                 sectionValue,
@@ -111,11 +110,11 @@ public class YamlDocument {
        Parses the yaml document until a specific section is found. A section is either a type,
        such as variables, parameters, stages, or a type in combination with a section name, for
        example, stage: myStage
-       If the section is found, it tries to execute a commandEnum, given the specific arguments.
+       If the section is found, it tries to execute a actionEnum, given the specific arguments.
        This method is performing recursion by calling itself to search for sections deeper in the
        yaml structure.
      */
-    public void findSectionAndExecuteCommand(CommandEnum commandEnum,
+    public void findSectionAndExecuteCommand(ActionEnum actionEnum,
                                              Map<String, Object> section,
                                              String sectionName,
                                              String sectionValue,
@@ -147,17 +146,17 @@ public class YamlDocument {
                 }
             }
 
-            // If section is found, try to execute the commandEnum
+            // If section is found, try to execute the actionEnum
             if (sectionFound) {
                 String s = "";
                 if (! (sectionName == null || sectionName.isEmpty()))
                     s = sectionName;
                 else if (! (sectionValue == null || sectionValue.isEmpty()))
                     s = sectionValue;
-                logger.info("Execute commandEnum in section <" + s + ">");
+                logger.info("Execute actionEnum in section <" + s + ">");
 
                 // Variable 'entry' contains the section segment
-                switch (commandEnum) {
+                switch (actionEnum) {
                     case replaceValue:
                         logger.info("Replace <" + keyName + "> with value <" + keyValue + ">");
                         if (identifierName.isEmpty() && identifierValue.isEmpty())
@@ -178,7 +177,7 @@ public class YamlDocument {
 
             // Go a level deeper
             if (entry.getValue() instanceof Map) {
-                findSectionAndExecuteCommand(commandEnum, (Map<String, Object>) entry.getValue(),
+                findSectionAndExecuteCommand(actionEnum, (Map<String, Object>) entry.getValue(),
                         sectionName,
                         sectionValue,
                         identifierName,
@@ -189,7 +188,7 @@ public class YamlDocument {
                         continueSearching);
             }
             if (entry.getValue() instanceof ArrayList) {
-                findInnerSectionAndExecuteCommand(commandEnum, (ArrayList<Object>) entry.getValue(),
+                findInnerSectionAndExecuteCommand(actionEnum, (ArrayList<Object>) entry.getValue(),
                         sectionName,
                         sectionValue,
                         identifierName,
@@ -206,7 +205,7 @@ public class YamlDocument {
        Parses the yaml document until a certain section is found. Similar to findSection, but it has an
        ArrayList instead of a Map as section argument.
      */
-    public void findInnerSectionAndExecuteCommand(CommandEnum commandEnum,
+    public void findInnerSectionAndExecuteCommand(ActionEnum actionEnum,
                                                   ArrayList<Object> section,
                                                   String sectionName,
                                                   String sectionValue,
@@ -223,7 +222,7 @@ public class YamlDocument {
 
             // If inner sections are found, go a level deeper
             if (entry instanceof Map) {
-                findSectionAndExecuteCommand(commandEnum, (Map<String, Object>)entry,
+                findSectionAndExecuteCommand(actionEnum, (Map<String, Object>)entry,
                         sectionName,
                         sectionValue,
                         identifierName,
@@ -234,7 +233,7 @@ public class YamlDocument {
                         continueSearching);
             }
             if (entry instanceof ArrayList) {
-                findInnerSectionAndExecuteCommand(commandEnum, (ArrayList<Object>)entry,
+                findInnerSectionAndExecuteCommand(actionEnum, (ArrayList<Object>)entry,
                         sectionName,
                         sectionValue,
                         identifierName,

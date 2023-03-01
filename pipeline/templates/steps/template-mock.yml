@@ -1,0 +1,9 @@
+parameters:
+  - name: param_1
+    type: string
+  - name: param_2
+    type: string
+
+steps:
+  - script: |
+      echo 'This is mock template file'

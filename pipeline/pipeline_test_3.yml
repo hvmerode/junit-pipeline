@@ -1,0 +1,96 @@
+# Build numbering format
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+trigger: none
+
+parameters:
+  - name: param_1
+    type: string
+    default: 'contains a default value'
+  - name: environment
+    type: string
+    default: dev
+  - name: sleep
+    type: string
+    default: 1
+
+variables:
+  - name: myVar
+    value: myValue
+  - name: aws_connection
+    value: 1234567890
+  - name: aws_region
+    value: us-east-1
+
+stages:
+  - template: templates/stages/template-stages_1.yml
+    parameters:
+      aNiceParam: param_1_value
+
+  - stage: ExecuteScriptStage
+    displayName: 'Execute script'
+    condition: eq(variables['Build.SourceBranchName'], 'myFeature')
+    jobs:
+      - job: Job_1
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - script: |
+              echo 'This is a multiline script'
+              echo 'Row 2 of that script'
+      - job: Job_2
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - script: |
+              echo 'Job_2.Task_1'
+          - script: |
+              echo 'Job_2.Task_2'
+          - template: templates/steps/template-steps_1.yml
+            parameters:
+              param_1: param_1_value
+              param_2: param_2_value
+      - job: Job_3
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - script: |
+              echo 'Job_2.Task_3: Sleep some seconds'
+              sleep ${{ parameters.sleep }};
+      - template: templates/jobs/template-jobs_1.yml
+        parameters:
+          param_1: param_1_value
+  - stage: DeployStage
+    condition: always()
+    displayName: 'DeployStage'
+    jobs:
+      - job: 'ScriptJob'
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - script: |
+              echo 'AWS Connection is: $(aws_connection)'
+              echo 'AWS Region is: $(aws_region)'
+      - job: 'DeployJob'
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - script: |
+              echo 'Deploy to AWS'
+          - task: AWSShellScript@1
+            inputs:
+              awsCredentials: $(aws_connection)
+              regionName: $(aws_region)
+              scriptType: 'inline'
+              inlineScript: |
+                #!/bin/bash
+                set -ex
+                export artifact=`find $(Pipeline.Workspace)/. -name 'cdk*.jar'`
+
+                echo "Deploying stack"
+                cdk deploy --app '${JAVA_HOME_11_X64}/bin/java -cp $artifact com.myorg.myapp.Stack' \
+                    -c env=${{ parameters.environment }} \
+                    --all \
+                    --ci \
+                    --require-approval never
+            displayName: 'Deploy to AWS'

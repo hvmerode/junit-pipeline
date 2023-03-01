@@ -167,7 +167,7 @@ public class AzDoPipeline {
             logger.info("==> Executing on Windows: " + "xcopy " + source + " " + target + " /E /H /C /I /Y /exclude:" + target + "\\excludedfileslist.txt");
             Runtime.getRuntime().exec("cmd.exe /c mkdir " + target);
             wait(3000);
-            Runtime.getRuntime().exec("cmd.exe /c (echo idea& echo target& echo class) > " + target + "\\excludedfileslist.txt");
+            Runtime.getRuntime().exec("cmd.exe /c (echo idea& echo target& echo .git& echo class) > " + target + "\\excludedfileslist.txt");
             wait(3000);
             Runtime.getRuntime().exec("cmd.exe /c xcopy " + source + " " + target + " /E /H /C /I /Y /exclude:" + target + "\\excludedfileslist.txt");
             wait(3000);

@@ -6,4 +6,4 @@ This library is used to perform unit- and integration tests on (YAML) pipelines.
 Development is still in an experimental phase and it may cause some issues when used but in genera, it works.
 
 ### How it works ###
-![alt text][junit_pipeline.png]
+![no picture](https://github.com/hvmerode/junit-pipeline/blob/main/junit_pipeline.png "how it work")

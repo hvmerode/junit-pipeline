@@ -49,7 +49,7 @@ public class TestProperties {
     public TestProperties() {
         try {
             Properties properties = new Properties();
-            InputStream is = getClass().getClassLoader().getResourceAsStream("unittest.properties");
+            InputStream is = getClass().getClassLoader().getResourceAsStream("junit_pipeline.properties");
             properties.load(is);
 
             logger.info("");

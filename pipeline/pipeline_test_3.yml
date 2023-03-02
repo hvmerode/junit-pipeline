@@ -85,11 +85,13 @@ stages:
               inlineScript: |
                 #!/bin/bash
                 set -ex
-                export artifact=`find $(Pipeline.Workspace)/. -name 'cdk*.jar'`
+                export cdk=`find $(Pipeline.Workspace)/. -name 'cdk*.jar'`
+                export app=`find $(Pipeline.Workspace)/. -name 'app*.jar'`
 
                 echo "Deploying stack"
-                cdk deploy --app '${JAVA_HOME_11_X64}/bin/java -cp $artifact com.myorg.myapp.Stack' \
+                cdk deploy --app '${JAVA_HOME_11_X64}/bin/java -cp $cdk com.org.app.Stack' \
                     -c env=${{ parameters.environment }} \
+                    -c app=$app
                     --all \
                     --ci \
                     --require-approval never

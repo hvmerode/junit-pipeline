@@ -25,15 +25,15 @@ The ___junit_pipeline___ library connects with the Azure DevOps test project (fo
 (with the changed pipeline code) and executes the pipeline. If the repository and/or the pipeline in project "UnitTest" does not exists, it
 is automatically created for you. The illustration below shows how it works in concept.
 
-![no picture](https://github.com/hvmerode/junit-pipeline/blob/main/junit_pipeline.png "how it work")
+![no picture](https://github.com/hvmerode/junit-pipeline/blob/main/junit_pipeline.png "how it works")
 
 ### How to start ##
 TODO
 
-### Known lLimitations ##
+### Known limitations ##
 * The updated pipeline code is pushed to the _default branch_ in the test project (master); pushing to other branches is not possible.
-* Only templates in the repository are taken into account. Templates in other repositories (identified with a @ after the template name) are ignored.
+* Only YAML templates in the same repository are taken into account. Templates in other repositories (identified with a @ behind the template name) are ignored.
 * If the pipeline makes use of a resource in the test project for the first time, it needs manual approval first; for example, a variable group or an Environment.
 * If unknown service connections are used or the updated pipeline code is not valid YAML anymore, the AzDo API returns an HTTP status code 400.
-* No methods yet to add, update or remove conditions in stages or jobs. Use the _overrideLiteral_ method, is possible.
+* No methods yet to add, update or remove conditions in stages or jobs. Use the _overrideLiteral_ method, if possible.
 * At the start, the local target repository and the remote target repository (of the test project) can become out-of-sync. Delete both the local and the remote repo and start again.

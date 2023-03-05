@@ -1,6 +1,5 @@
 import azdo.junit.AzDoPipeline;
 import azdo.junit.RunResult;
-import azdo.junit.TestProperties;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -15,14 +14,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class PipelineUnit {
     private static Logger logger = LoggerFactory.getLogger(PipelineUnit.class);
     private static AzDoPipeline pipeline;
-    private static TestProperties properties = new TestProperties();
 
     @BeforeAll
     public static void setUpClass() {
         System.out.println("setUpClass");
 
         // Initialize the pipeline (resource path is default)
-        pipeline = new AzDoPipeline("./pipeline/pipeline_test_3.yml");
+        pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/pipeline_test_3.yml");
 
         // Add commands to the bundle. These commands are executed for every test, so you only have to do it once
         // Always replace template-steps_1.yml with a mock template

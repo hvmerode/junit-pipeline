@@ -26,14 +26,13 @@ public class AzDoApi<runResult> {
     private static String TAB = "\t";
     private static String TWO_TAB = "\t\t";
     private static String THREE_TAB = "\t\t\t";
-    private static TestProperties properties = new TestProperties();
     private enum HttpMethod {GET, PUT, POST, PATCH}
     private static boolean test = false;
 
     public AzDoApi() {
     }
         // Perform Azure DevOps API call
-        public static HttpResponse callApi (String http, HttpMethod httpMethod, String json) {
+        public static HttpResponse callApi (TestProperties properties, String http, HttpMethod httpMethod, String json) {
             if (test)
                 return null;
 
@@ -91,7 +90,7 @@ public class AzDoApi<runResult> {
     }
 
     // Execute a pipeline
-    public static void callPipelineRunApi (String pipelineId) {
+    public static void callPipelineRunApi (TestProperties properties, String pipelineId) {
         logger.info("==> AzDoApi.callPipelineRunApi");
         if (pipelineId == null)
         {
@@ -108,14 +107,16 @@ public class AzDoApi<runResult> {
                     TAB + BRACKET_CLOSE + NEXTLINE +
                     BRACKET_CLOSE;
 
-            HttpResponse response = callApi(http, HttpMethod.POST, json);
+            HttpResponse response = callApi(properties, http, HttpMethod.POST, json);
             logger.info("==> Response is: " + response.toString());
         }
     }
 
     // Wait until the build finished and return the result
-    public static RunResult callRunResult (String pipelineId, int pollFrequency, int timeout) {
+    public static RunResult callRunResult (TestProperties properties, String pipelineId) {
         logger.info("==> AzDoApi.callRunResult");
+        int pollFrequency = properties.getBuildApiPollFrequency();
+        int timeout = properties.getBuildApiPollTimeout();
         RunResult runResult = new RunResult();
         Instant start = Instant.now();
         HttpResponse response;
@@ -141,7 +142,7 @@ public class AzDoApi<runResult> {
 
             // Call the API
             logger.info("==> Call the API");
-            response = callApi(http, HttpMethod.GET, json);
+            response = callApi(properties, http, HttpMethod.GET, json);
 
             // Get the result from the response
             yaml = new Yaml();
@@ -185,8 +186,9 @@ public class AzDoApi<runResult> {
     }
 
     // Create a new pipeline
-    public static String callCreatePipelineApi (String repositoryId, String path) {
+    public static String callCreatePipelineApi (TestProperties properties, String repositoryId) {
         logger.info("==> AzDoApi.callCreatePipelineApi");
+        String path = properties.getPipelinePathRepository();
         String pipelineId = null;
         String http = properties.getAzdoEndpoint() +
                 properties.getPipelinesApi() +
@@ -204,7 +206,7 @@ public class AzDoApi<runResult> {
                     TWO_TAB + BRACKET_CLOSE + NEXTLINE +
                 TAB + BRACKET_CLOSE + NEXTLINE +
                 BRACKET_CLOSE;
-        HttpResponse response = callApi(http, HttpMethod.POST, json);
+        HttpResponse response = callApi(properties, http, HttpMethod.POST, json);
 
         // Get the pipeline id from the response
         Yaml yaml = new Yaml();
@@ -220,15 +222,16 @@ public class AzDoApi<runResult> {
 
     // Check whether a pipeline  with a certain name already exists
     // If available, the pipeline Id is returned
-    public static String callGetPipelineApi (String pipelineName) {
+    public static String callGetPipelineApi (TestProperties properties) {
         logger.info("==> AzDoApi.callGetPipelineApi");
+        String pipelineName = properties.getRepositoryName();
         String pipelineId = null;
         String http = properties.getAzdoEndpoint() +
                 properties.getPipelinesApi() +
                 "?" +
                 properties.getPipelinesApiVersion();
 
-        HttpResponse response = callApi(http, HttpMethod.GET, null);
+        HttpResponse response = callApi(properties, http, HttpMethod.GET, null);
 
         // Get the repository id from the response
         Yaml yaml = new Yaml();
@@ -258,7 +261,7 @@ public class AzDoApi<runResult> {
     }
 
     // Create a new repository and return the Azure DevOps repository id
-    public static String callCreateRepoApi () {
+    public static String callCreateRepoApi (TestProperties properties) {
         logger.info("==> AzDoApi.callCreateRepoApi");
         String repositoryId = null;
         String http = properties.getAzdoEndpoint() +
@@ -272,7 +275,7 @@ public class AzDoApi<runResult> {
                 TWO_TAB + DOUBLE_QUOTE + "id" + DQUOTE_SCOL_DQUOTE + properties.getProjectId() + DOUBLE_QUOTE + NEXTLINE +
                 TAB + BRACKET_CLOSE + NEXTLINE +
                 BRACKET_CLOSE;
-        HttpResponse response = callApi(http, HttpMethod.POST, json);
+        HttpResponse response = callApi(properties, http, HttpMethod.POST, json);
         logger.info("==> AzDo API response body" + response.body().toString());
 
         // Get the repository id from the response
@@ -284,7 +287,7 @@ public class AzDoApi<runResult> {
     }
 
     // Update a repository with a new default branch
-    public static String callUpdateRepoApi (String repositoryId, String branchName) {
+    public static String callUpdateRepoApi (TestProperties properties, String repositoryId, String branchName) {
         logger.info("==> AzDoApi.callUpdateRepoApi");
         String http = properties.getAzdoEndpoint() +
                 properties.getGitApi() +
@@ -296,7 +299,7 @@ public class AzDoApi<runResult> {
         String json = BRACKET_OPEN_NEXTLINE +
                 TAB + DOUBLE_QUOTE + "defaultBranch" + DQUOTE_SCOL_DQUOTE + branchName + DOUBLE_QUOTE + NEXTLINE +
                 BRACKET_CLOSE;
-        HttpResponse response = callApi(http, HttpMethod.PATCH, json);
+        HttpResponse response = callApi(properties, http, HttpMethod.PATCH, json);
         logger.info("==> AzDo API response body" + response.body().toString());
 
         // Get the repository id from the response
@@ -309,8 +312,9 @@ public class AzDoApi<runResult> {
 
     // Check whether a Git repository with a certain name already exists
     // If available, the repository Id is returned
-    public static String callGetRepositoryApi (String repositoryName) {
+    public static String callGetRepositoryApi (TestProperties properties) {
         logger.info("==> AzDoApi.callGetRepositoryApi");
+        String repositoryName = properties.getRepositoryName();
         String repositoryId = null;
         String http = properties.getAzdoEndpoint() +
                 properties.getGitApi() +
@@ -318,7 +322,7 @@ public class AzDoApi<runResult> {
                 "?" +
                 properties.getGitApiVersion();
 
-        HttpResponse response = callApi(http, HttpMethod.GET, null);
+        HttpResponse response = callApi(properties, http, HttpMethod.GET, null);
 
         // Get the repository id from the response
         Yaml yaml = new Yaml();

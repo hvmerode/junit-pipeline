@@ -19,7 +19,7 @@ import java.util.Map;
 public class AzDoPipeline extends Pipeline {
     private static Logger logger = LoggerFactory.getLogger(AzDoPipeline.class);
     private Map<String, Object> yamlMap;
-    private TestProperties properties = new TestProperties();
+    private TestProperties properties;
     private Git git;
     String yamlFile;
     String repositoryId = null;
@@ -28,21 +28,23 @@ public class AzDoPipeline extends Pipeline {
     private YamlDocumentSet yamlDocumentSet;
     public CommandBundle commandBundle = new CommandBundle();
 
-    public AzDoPipeline(String pipelineFile) {
-        yamlDocumentSet = new YamlDocumentSet();
-        yamlDocumentSet.read(pipelineFile);
-        yamlFile = pipelineFile;
-
+    public AzDoPipeline(String propertyFile, String pipelineFile) {
         logger.info("");
         logger.info("=================================================================");
         logger.info("Start AzDoPipeline: Initializing repository and pipeline");
         logger.info("=================================================================");
+
+        properties = new TestProperties(propertyFile);
+        yamlDocumentSet = new YamlDocumentSet();
+        yamlDocumentSet.read(pipelineFile);
+        yamlFile = pipelineFile;
+
         //////////////////////////////////////////////////////////////////////////////////////////////////////////
         // If no repository exists, create a new repo in Azure DevOps. Otherwise, make use of the existing repo //
         //////////////////////////////////////////////////////////////////////////////////////////////////////////
         try {
             // Get the repositoryId of the existing repository
-            repositoryId = AzDoApi.callGetRepositoryApi(properties.getRepositoryName());
+            repositoryId = AzDoApi.callGetRepositoryApi(properties);
         }
         catch (Exception e) {
             logger.info("==> Exception occurred; continue");
@@ -55,7 +57,7 @@ public class AzDoPipeline extends Pipeline {
                 deleteDirectory(new File(properties.getTargetPath()));
 
                 // Create remote repo using the AzDo API (this may fail if exists, but just continue)
-                repositoryId = AzDoApi.callCreateRepoApi();
+                repositoryId = AzDoApi.callCreateRepoApi(properties);
 
                 CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(
                         properties.getUserTargetRepository(),
@@ -94,7 +96,7 @@ public class AzDoPipeline extends Pipeline {
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         try {
             // Get the pipelineId of the existing pipeline
-            pipelineId = AzDoApi.callGetPipelineApi (properties.getRepositoryName());
+            pipelineId = AzDoApi.callGetPipelineApi (properties);
         }
         catch (Exception e) {
             logger.info("==> Exception occurred; continue");
@@ -104,7 +106,7 @@ public class AzDoPipeline extends Pipeline {
             // Create a new pipeline if not existing
             if (pipelineId == null) {
                 // Create a pipeline; the name is equal to the name of the repository
-                pipelineId = AzDoApi.callCreatePipelineApi(repositoryId, properties.getPipelinePathRepository());
+                pipelineId = AzDoApi.callCreatePipelineApi(properties, repositoryId);
             }
         }
         catch (Exception e) {
@@ -235,8 +237,8 @@ public class AzDoPipeline extends Pipeline {
         }
 
         // Call Azure Devops API to start the pipeline and retrieve the result
-        AzDoApi.callPipelineRunApi(pipelineId);
-        runResult = AzDoApi.callRunResult(pipelineId, properties.getBuildApiPollFrequency(), properties.getBuildApiPollTimeout());
+        AzDoApi.callPipelineRunApi(properties, pipelineId);
+        runResult = AzDoApi.callRunResult(properties, pipelineId);
 
         // Re-read the original pipeline for the next test
         yamlDocumentSet.read(yamlFile);

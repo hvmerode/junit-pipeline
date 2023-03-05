@@ -46,10 +46,11 @@ public class TestProperties {
     private String repositoryName;
     private String projectId;
 
-    public TestProperties() {
+    public TestProperties(String propertyFile) {
         try {
+            logger.info("PropertyFile: " + propertyFile);
             Properties properties = new Properties();
-            InputStream is = getClass().getClassLoader().getResourceAsStream("junit_pipeline.properties");
+            InputStream is = getClass().getClassLoader().getResourceAsStream(propertyFile);
             properties.load(is);
 
             logger.info("");

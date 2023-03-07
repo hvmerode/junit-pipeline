@@ -1,6 +1,7 @@
 package azdo.junit;
 
 import azdo.command.CommandBundle;
+import azdo.utils.PomUtils;
 import azdo.yaml.ActionEnum;
 import azdo.yaml.YamlDocumentSet;
 import org.eclipse.jgit.api.AddCommand;
@@ -184,6 +185,19 @@ public class AzDoPipeline implements Pipeline {
     public static boolean isWindows(){
         String os = System.getProperty("os.name");
         return os.toLowerCase().indexOf("windows") >= 0;
+    }
+
+    /*
+        TODO
+     */
+    public void deleteDependencyFromTargetPom (String groupId, String artifactId) {
+        logger.info("==> Method AzDoPipeline.deleteDependencyFromTargetPom");
+        try {
+            PomUtils.deleteDependency(properties.getTargetPath() + "/" + "pom.xml", groupId, artifactId);
+        }
+        catch (Exception e) {
+            logger.info("==> Cannot delete the dependency from the pom.xml");
+        }
     }
 
     /* After the yaml file has been manipulated and can be used to perform the unittest, the

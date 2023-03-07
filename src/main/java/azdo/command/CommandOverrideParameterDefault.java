@@ -1,9 +1,11 @@
 package azdo.command;
-import azdo.junit.AzDoPipeline;
 
-public class CommandOverrideParameterDefault extends Command {
+import azdo.junit.Pipeline;
+
+public class CommandOverrideParameterDefault implements Command {
     private String parameterName;
     private String value;
+    private boolean replaceAll = true;
 
     public CommandOverrideParameterDefault(String parameterName, String value, boolean replaceAll){
         this.parameterName = parameterName;
@@ -14,7 +16,7 @@ public class CommandOverrideParameterDefault extends Command {
         this(parameterName, value, true);
     }
 
-    public void execute(AzDoPipeline azDoPipeline) {
-        azDoPipeline.overrideParameterDefault(parameterName, value);
+    public void execute(Pipeline pipeline) {
+        pipeline.overrideParameterDefault(parameterName, value);
     }
 }

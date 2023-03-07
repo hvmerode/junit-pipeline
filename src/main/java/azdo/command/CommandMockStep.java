@@ -1,8 +1,8 @@
 package azdo.command;
 
-import azdo.junit.AzDoPipeline;
+import azdo.junit.Pipeline;
 
-public class CommandMockStep extends Command {
+public class CommandMockStep implements Command {
     private String stepValue;
     private String inlineScript;
 
@@ -11,7 +11,7 @@ public class CommandMockStep extends Command {
         this.inlineScript = inlineScript;
     }
 
-    public void execute(AzDoPipeline azDoPipeline) {
-        azDoPipeline.mockStep(stepValue, inlineScript);
+    public void execute(Pipeline pipeline) {
+        pipeline.mockStep(stepValue, inlineScript);
     }
 }

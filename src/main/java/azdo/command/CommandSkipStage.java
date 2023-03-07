@@ -1,15 +1,16 @@
 package azdo.command;
 
 import azdo.junit.AzDoPipeline;
+import azdo.junit.Pipeline;
 
-public class CommandSkipStage extends Command {
+public class CommandSkipStage implements Command {
     private String stageName;
 
     public CommandSkipStage(String stageName) {
         this.stageName = stageName;
     }
 
-    public void execute(AzDoPipeline azDoPipeline) {
-        azDoPipeline.skipStage(stageName);
+    public void execute(Pipeline pipeline) {
+        pipeline.skipStage(stageName);
     }
 }

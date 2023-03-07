@@ -16,7 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-public class AzDoPipeline extends Pipeline {
+public class AzDoPipeline implements Pipeline {
     private static Logger logger = LoggerFactory.getLogger(AzDoPipeline.class);
     private Map<String, Object> yamlMap;
     private TestProperties properties;

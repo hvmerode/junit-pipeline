@@ -1,10 +1,11 @@
 package azdo.command;
 
-import azdo.junit.AzDoPipeline;
+import azdo.junit.Pipeline;
 
-public class CommandOverrideLiteral extends Command {
+public class CommandOverrideLiteral implements Command {
     private String findLiteral;
     private String replaceLiteral;
+    private boolean replaceAll = true;
 
     public CommandOverrideLiteral(String findLiteral, String replaceLiteral, boolean replaceAll) {
         this.findLiteral = findLiteral;
@@ -15,7 +16,9 @@ public class CommandOverrideLiteral extends Command {
         this(findLiteral, replaceLiteral, true);
     }
 
-    public void execute(AzDoPipeline azDoPipeline) {
-        azDoPipeline.overrideLiteral(findLiteral, replaceLiteral, replaceAll);
+    public void execute(Pipeline pipeline) {
+        System.out.println("==> CommandOverrideLiteral: " + this.toString()); // TEST
+        System.out.println("==> With pipeline: " + pipeline.toString()); // TEST
+        pipeline.overrideLiteral(findLiteral, replaceLiteral, replaceAll);
     }
 }

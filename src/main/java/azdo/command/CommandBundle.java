@@ -86,10 +86,18 @@ public class CommandBundle {
 
     // Execute all commands
     public void execute (Pipeline pipeline){
+        logger.info("==> Method CommandBundle.execute");
         int index = 0;
         int size = commands.size();
+        if (size == 0) {
+            logger.info("==> No commands in this bundle");
+            return;
+        }
+        Command command = null;
         for (index = 0; index < size; index++) {
-            commands.get(index).execute(pipeline);
+            logger.info("==> Executing command: " + commands.get(index).toString());
+            command = commands.get(index);
+            command.execute(pipeline);
         }
     }
 }

@@ -1,10 +1,11 @@
 package azdo.command;
 
-import azdo.junit.AzDoPipeline;
+import azdo.junit.Pipeline;
 
-public class CommandOverrideVariable extends Command {
+public class CommandOverrideVariable implements Command {
     private String variableName;
     private String value;
+    private boolean replaceAll = true;
 
     public CommandOverrideVariable(String variableName, String value, boolean replaceAll){
         this.variableName = variableName;
@@ -15,7 +16,7 @@ public class CommandOverrideVariable extends Command {
         this(variableName, value, true);
     }
 
-    public void execute(AzDoPipeline azDoPipeline) {
-        azDoPipeline.overrideVariable(variableName, value);
+    public void execute(Pipeline pipeline) {
+        pipeline.overrideVariable(variableName, value);
     }
 }

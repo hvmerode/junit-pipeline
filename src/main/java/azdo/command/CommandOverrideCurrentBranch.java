@@ -1,9 +1,10 @@
 package azdo.command;
 
-import azdo.junit.AzDoPipeline;
+import azdo.junit.Pipeline;
 
-public class CommandOverrideCurrentBranch extends Command {
+public class CommandOverrideCurrentBranch implements Command {
     private String newBranchName;
+    private boolean replaceAll = true;
 
     public CommandOverrideCurrentBranch(String newBranchName, boolean replaceAll) {
         this.newBranchName = newBranchName;
@@ -13,7 +14,8 @@ public class CommandOverrideCurrentBranch extends Command {
         this(newBranchName, true);
     }
 
-    public void execute(AzDoPipeline azDoPipeline) {
-        azDoPipeline.overrideCurrentBranch(newBranchName, replaceAll);
+    public void execute(Pipeline pipeline)
+    {
+        pipeline.overrideCurrentBranch(newBranchName, replaceAll);
     }
 }

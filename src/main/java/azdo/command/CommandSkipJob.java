@@ -1,15 +1,15 @@
 package azdo.command;
 
-import azdo.junit.AzDoPipeline;
+import azdo.junit.Pipeline;
 
-public class CommandSkipJob extends Command {
+public class CommandSkipJob implements Command {
     private String jobName;
 
     public CommandSkipJob(String jobName) {
         this.jobName = jobName;
     }
 
-    public void execute(AzDoPipeline azDoPipeline) {
-        azDoPipeline.skipJob(jobName);
+    public void execute(Pipeline pipeline) {
+        pipeline.skipJob(jobName);
     }
 }

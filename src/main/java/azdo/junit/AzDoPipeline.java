@@ -195,7 +195,7 @@ public class AzDoPipeline implements Pipeline {
        The last step is to reload the original yaml file, so it can be used for the next test.
      */
     public void startPipeline() throws IOException {
-        logger.info("==> Method startPipeline");
+        logger.info("==> Method AzDoPipeline.startPipeline");
 
         // Every time the pipeline starts, the commands in the bundle are executed
         commandBundle.execute(this);
@@ -299,7 +299,7 @@ public class AzDoPipeline implements Pipeline {
      */
     public void overrideVariable(String variableName, String value) {
 
-        logger.info("==> Method overrideVariable: " + variableName + " with " + value);
+        logger.info("==> Method AzDoPipeline.overrideVariable: " + variableName + " with " + value);
 
         // Replace according to construction 1
         yamlDocumentSet.executeCommand(ActionEnum.replaceValue,
@@ -345,7 +345,7 @@ public class AzDoPipeline implements Pipeline {
         - 16
      */
     public void overrideParameterDefault(String parameterName, String value) {
-        logger.info("==> Method overrideParameterDefault: " + parameterName + " with " + value);
+        logger.info("==> Method AzDoPipeline.overrideParameterDefault: " + parameterName + " with " + value);
         yamlDocumentSet.executeCommand(ActionEnum.replaceValue,
                 "parameters",
                 "",
@@ -368,7 +368,7 @@ public class AzDoPipeline implements Pipeline {
            tag: 2.1.0
      */
     public void overrideTemplateParameter(String parameterName, String value) {
-        logger.info("==> Method overrideTemplateParameter: " + parameterName + " with " + value);
+        logger.info("==> Method AzDoPipeline.overrideTemplateParameter: " + parameterName + " with " + value);
         yamlDocumentSet.executeCommand(ActionEnum.replaceValue,
                 parameterName,
                 "",
@@ -397,7 +397,7 @@ public class AzDoPipeline implements Pipeline {
        If replaceAll is 'false' the first occurence of literal in both the main YAML and the templates are replaced.
      */
     public void overrideLiteral(String findLiteral, String replaceLiteral, boolean replaceAll) {
-        logger.info("==> Method overrideLiteral: Replaces " + findLiteral + " with " + replaceLiteral);
+        logger.info("==> Method AzDoPipeline.overrideLiteral: Replaces " + findLiteral + " with " + replaceLiteral);
         yamlDocumentSet.executeCommand(ActionEnum.replaceLiteral,
                 "",
                 "",
@@ -422,7 +422,7 @@ public class AzDoPipeline implements Pipeline {
        If replaceAll is 'false', the first occurence in both the main YAML and the templates are replaced.
      */
     public void overrideCurrentBranch(String newBranchName, boolean replaceAll){
-        logger.info("==> Method overrideCurrentBranch with: " + newBranchName);
+        logger.info("==> Method AzDoPipeline.overrideCurrentBranch with: " + newBranchName);
         overrideLiteral("variables[\'Build.SourceBranch\']", "\'refs/heads/" + newBranchName + "\'", replaceAll);
         overrideLiteral("$(Build.SourceBranch)", "refs/heads/" + newBranchName, replaceAll);
         overrideLiteral("variables[\'Build.SourceBranchName\']", "\'" + newBranchName + "\'", replaceAll);
@@ -447,7 +447,7 @@ public class AzDoPipeline implements Pipeline {
        ==> The stage with name "my_stage" is skipped
      */
     public void skipStage(String stageName) {
-        logger.info("==> Method skipStage: " + stageName);
+        logger.info("==> Method AzDoPipeline.skipStage: " + stageName);
         yamlDocumentSet.executeCommand(ActionEnum.delete,
                 "stages",
                 "",
@@ -471,7 +471,7 @@ public class AzDoPipeline implements Pipeline {
        ==> The job with name "my_job" is skipped
      */
     public void skipJob(String jobName) {
-        logger.info("==> Method skipJob: " + jobName);
+        logger.info("==> Method AzDoPipeline.skipJob: " + jobName);
         yamlDocumentSet.executeCommand(ActionEnum.delete,
                 "jobs",
                 "",
@@ -507,7 +507,7 @@ public class AzDoPipeline implements Pipeline {
      */
     // TODO: Look into this; does not seem right
     public void skipStep(String stepName) {
-        logger.info("==> Method skipStep: " + stepName);
+        logger.info("==> Method AzDoPipeline.skipStep: " + stepName);
         yamlDocumentSet.executeCommand(ActionEnum.delete,
                 "steps",
                 "",

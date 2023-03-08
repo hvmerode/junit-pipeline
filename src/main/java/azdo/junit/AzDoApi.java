@@ -123,9 +123,9 @@ public class AzDoApi<runResult> {
         Yaml yaml;
         String status = null;
         String result = null;
+        String buildNumber = null;
 
         long timeElapsed = 0;
-        // TODO: queryOrder Does not work properly???????????????????????????????????????
         String http = properties.getAzdoEndpoint() +
                 properties.getBuildApi() +
                 "?definitions=" +
@@ -160,14 +160,14 @@ public class AzDoApi<runResult> {
                             status = value.get("status").toString();
                         if (value.get("result") != null)
                             result = value.get("result").toString();
+                        if (value.get("buildNumber") != null)
+                            buildNumber = value.get("buildNumber").toString();
                         break;
                     }
                 }
             }
 
             runResult = new RunResult(result, status);
-            logger.info("==> Result response: " + runResult.result.toString());
-            logger.info("==> Status response: " + runResult.status.toString());
 
             // Wait until the next poll is allowed
             wait(pollFrequency * 1000);
@@ -179,8 +179,9 @@ public class AzDoApi<runResult> {
                 runResult.result = RunResult.Result.undetermined;
                 runResult.status = RunResult.Status.timeout;
             }
-            logger.info("==> Result end of while: " + runResult.result.toString());
-            logger.info("==> Status end of while: " + runResult.status.toString());
+            logger.info("==> Buildnumber: " + buildNumber);
+            logger.info("==> Status response: " + runResult.status.toString());
+            logger.info("==> Status response: " + runResult.status.toString());
         }
         return runResult;
     }

@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
 public class AzDoPipeline implements Pipeline {
@@ -197,6 +199,39 @@ public class AzDoPipeline implements Pipeline {
         }
         catch (Exception e) {
             logger.info("==> Cannot delete the dependency from the pom.xml");
+        }
+    }
+
+    /*
+        TODO
+     */
+    public void addDependencyToTargetPom (String groupId, String artifactId, String version) {
+        logger.info("==> Method AzDoPipeline.addDependencyToTargetPom");
+        try {
+            PomUtils.insertDependency(properties.getTargetPath() + "/" + "pom.xml", groupId, artifactId, version);
+        }
+        catch (Exception e) {
+            logger.info("==> Cannot insert the dependency to the pom.xml");
+        }
+    }
+
+    /*
+        TODO
+     */
+    public void deleteTargetFile (String fileBaseName) throws IOException{
+        logger.info("==> Method AzDoPipeline.deleteTargetFile");
+        String fullQualifiedFileName = properties.getTargetPath() + "/" + fileBaseName;
+        Path path = Paths.get(fullQualifiedFileName);
+        path = path.normalize();
+        fullQualifiedFileName = path.toString();
+
+        if(isLinux()){
+            logger.info("==> Deleting on Linux: " + fullQualifiedFileName);
+            Runtime.getRuntime().exec("rm -f " + fullQualifiedFileName);
+        } else if(isWindows()){
+            logger.info("==> Deleting on Windows: " + "cmd.exe /c del /F /Q " + fullQualifiedFileName);
+            Runtime.getRuntime().exec("cmd.exe /c del /F /Q " + fullQualifiedFileName);
+            wait(3000);
         }
     }
 

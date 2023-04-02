@@ -90,21 +90,25 @@ public class AzDoApi<runResult> {
     }
 
     // Execute a pipeline
-    public static void callPipelineRunApi (TestProperties properties, String pipelineId) {
+    public static void callPipelineRunApi (TestProperties properties, String pipelineId, String branchName) {
         logger.info("==> AzDoApi.callPipelineRunApi");
         if (pipelineId == null)
         {
             logger.info("==> Nothing to run; the pipelineId is null");
         } else {
-            String http = properties.getAzdoEndpoint() +
+            String sourceBranch = branchName;
+            if (branchName == null || branchName.equals("main") || branchName.equals("master") || branchName.equals(""))
+                sourceBranch = "master";
+
+                String http = properties.getAzdoEndpoint() +
                     properties.getBuildApi() +
                     "?" +
                     properties.getBuildApiVersion();
 
             String json = BRACKET_OPEN_NEXTLINE +
                     TAB + DOUBLE_QUOTE + "definition" + DOUBLE_QUOTE + ": " + BRACKET_OPEN_NEXTLINE +
-                        TWO_TAB + DOUBLE_QUOTE + "id" + DOUBLE_QUOTE + ": " + pipelineId +
-                    TAB + BRACKET_CLOSE + NEXTLINE +
+                        TWO_TAB + DOUBLE_QUOTE + "id" + DOUBLE_QUOTE + ": " + pipelineId + BRACKET_CLOSE + COMMA_NEXTLINE +
+                    TAB + DOUBLE_QUOTE + "sourceBranch" + DOUBLE_QUOTE + ": " + DOUBLE_QUOTE + sourceBranch + DOUBLE_QUOTE + NEXTLINE +
                     BRACKET_CLOSE;
 
             HttpResponse response = callApi(properties, http, HttpMethod.POST, json);

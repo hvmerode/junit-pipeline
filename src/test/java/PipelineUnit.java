@@ -1,16 +1,13 @@
 import azdo.junit.AzDoPipeline;
 import azdo.junit.RunResult;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class PipelineUnit {
     private static Logger logger = LoggerFactory.getLogger(PipelineUnit.class);
     private static AzDoPipeline pipeline;
@@ -28,6 +25,7 @@ public class PipelineUnit {
     }
 
     @Test
+    @Order(1)
     public void test1() {
         logger.info("");
         logger.info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
@@ -50,7 +48,8 @@ public class PipelineUnit {
         pipeline.mockStep("AWSShellScript@1", inlineScript);
 
         try {
-            pipeline.startPipeline();
+            pipeline.startPipeline("test2");
+            //pipeline.startPipeline();
         }
         catch (IOException e) {
             e.printStackTrace();

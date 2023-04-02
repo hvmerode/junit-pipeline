@@ -130,7 +130,7 @@ public class AzDoPipeline implements Pipeline {
         logger.info("==> Method: AzDoPipeline.startPipeline");
         boolean recreate = false;
 
-        // Clone the repository to local if the branch is not master or main or not specified
+        // Clone the repository to local
         try {
             deleteDirectory(new File(properties.getTargetPath()));
             git = gitClone(branchName);
@@ -141,7 +141,7 @@ public class AzDoPipeline implements Pipeline {
             e.printStackTrace();
         }
 
-        // If git object is invalid after the clone, recreate it again
+        // If git object is invalid after the clone (for some reason), recreate it again
         if (git == null) {
             logger.info("Recreate git object");
             File f = new File(properties.getTargetPath());
@@ -195,17 +195,17 @@ public class AzDoPipeline implements Pipeline {
             }
             command.call();
             gitCommitAndPush ();
-
-            // If Git was recreated, close it
-            if (recreate) {
-                logger.info("git.close");
-                git.close();
-            }
         }
 
         catch (Exception e) {
             logger.info("Exception pushing to repo");
             e.printStackTrace();
+        }
+
+        // If Git was recreated, close it
+        if (recreate) {
+            logger.info("git.close");
+            git.close();
         }
 
         // Call Azure Devops API to start the pipeline and retrieve the result
@@ -373,12 +373,6 @@ public class AzDoPipeline implements Pipeline {
         catch (Exception e) {
             logger.info("Cannot clone, but just proceed");
         }
-
-        // Checkout
-//        logger.info("git.checkout");
-//        git.checkout()
-//                .setCreateBranch(true)
-//                .setName(branchName).call();
 
         return git;
     }

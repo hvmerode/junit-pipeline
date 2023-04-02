@@ -48,8 +48,8 @@ public class PipelineUnit {
         pipeline.mockStep("AWSShellScript@1", inlineScript);
 
         try {
-            pipeline.startPipeline("test2");
-            //pipeline.startPipeline();
+            //pipeline.startPipeline("test2");
+            pipeline.startPipeline();
         }
         catch (IOException e) {
             e.printStackTrace();

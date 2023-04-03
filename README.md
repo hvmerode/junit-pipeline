@@ -48,7 +48,6 @@ This file is located in src/main/resources. It contains the properties for your 
 * __build.api.poll.timeout__ - The timeout value of polling the result of the pipeline run. If the final result is not retrieved yet, the polling stops after a number of seconds, defined by  __build.api.poll.timeout__.
 
 ### Known limitations ##
-* ~~The updated pipeline code is pushed to the _default branch_ in the test project (master); pushing to other branches is not possible.~~
 * Only YAML templates in the same repository are taken into account. Templates in other repositories (identified with a @ behind the template name) are ignored.
 * If the pipeline makes use of a resource in the test project for the first time, it needs manual approval first; for example, a variable group or an Environment.
 * If unknown service connections are used or the updated pipeline code is not valid YAML anymore, the AzDo API returns an HTTP status code 400.
@@ -56,4 +55,7 @@ This file is located in src/main/resources. It contains the properties for your 
 * At the start, the local target repository and the remote target repository (of the test project) can become out-of-sync. Delete both the local and the remote repo and start again.
 * Copying files from the main local repo to the test local repo involves exclusion of files, using an exclusion list. This list is currently hardcoded\
   and contains "idea, target, .git and class". This should be made configurable in the junit_pipeline.properties file.
-* The project id of the Azure DevOps test project must be configured manually and is not (yet) derived automatically.
+* With the introduction of tests running in multiple branches, it is not possible to run multiple tests in one go. Second test fails
+because cloning/checkout is not possible somehow
+* ~~The updated pipeline code is pushed to the _default branch_ in the test project (master); pushing to other branches is not possible.~~
+* ~~The project id of the Azure DevOps test project must be configured manually and is not (yet) derived automatically.~~

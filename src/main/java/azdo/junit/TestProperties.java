@@ -18,38 +18,45 @@ public class TestProperties {
 
     // Target
     private String targetPath;
+    private String targetOrganization;
+    private String targetProject;
     private String pipelinePathRepository;
     private String uriTargetRepository;
-    private String branchTargetRepository;
+    //private String branchTargetRepository;
     private String userTargetRepository;
     private String passwordTargetRepository;
 
     // Pipeline
-    private String pipelineYamlName;
+    private String azdoBaseUrl;
     private String azdoEndpoint;
     private String pipelinesApi;
     private String pipelinesApiRuns;
     private String pipelinesApiVersion;
+
+    // Azure DevOps API: Git
     private String gitApi;
     private String gitApiRepositories;
     private String gitApiVersion;
 
-    // Build
+    // Azure DevOps API: Build
     private String buildApi;
     private int buildApiPollFrequency;
     private int buildApiPollTimeout;
     private String buildApiVersion;
 
+    // Azure DevOps API: Project
+    private String projectApi;
+    private String projectApiVersion;
+
     // Miscellanious
     private String commitPattern;
     ArrayList<String> commitPatternList;
     private String repositoryName;
-    private String projectId;
 
     public TestProperties(String propertyFile) {
         try {
             logger.info("PropertyFile: " + propertyFile);
-            Properties properties = new Properties();
+            properties = new Properties();
             InputStream is = getClass().getClassLoader().getResourceAsStream(propertyFile);
             properties.load(is);
 
@@ -63,16 +70,18 @@ public class TestProperties {
             logger.info("==> source.path: " + sourcePath);
 
             // Target
+            targetOrganization = properties.getProperty("target.organization");
+            logger.info("==> target.organization: " + targetOrganization);
+            targetProject = properties.getProperty("target.project");
+            logger.info("==> target.project: " + targetProject);
             targetPath = properties.getProperty("target.path");
             logger.info("==> target.path: " + targetPath);
             repositoryName = properties.getProperty("target.repository.name");
             logger.info("==> target.repository.name: " + repositoryName);
             pipelinePathRepository = properties.getProperty("repository.pipeline.path");
             logger.info("==> repository.pipeline.path: " + pipelinePathRepository);
-            uriTargetRepository = properties.getProperty("target.repository.uri") + "/" + repositoryName;
-            logger.info("==> target.repository.uri: " + uriTargetRepository);
-            branchTargetRepository = properties.getProperty("target.repository.branch");
-            logger.info("==> target.repository.branch: " + branchTargetRepository);
+            //branchTargetRepository = properties.getProperty("target.repository.branch");
+            //logger.info("==> target.repository.branch: " + branchTargetRepository);
             userTargetRepository = properties.getProperty("target.repository.user");
             logger.info("==> target.repository.user: " + userTargetRepository);
             passwordTargetRepository = properties.getProperty("target.repository.password");
@@ -87,16 +96,8 @@ public class TestProperties {
                 commitPatternList.add(values[i]);
             }
             logger.info("==> git.commit.pattern: " + commitPatternList);
-            projectId = properties.getProperty("project.id");
-            logger.info("==> project.id: " + projectId);
-
-            // Pipeline
-            azdoEndpoint = properties.getProperty("endpoint");
-            logger.info("==> endpoint: " + azdoEndpoint);
 
             // Azure DevOps Pipeline API
-            pipelineYamlName = properties.getProperty("pipeline.yaml");
-            logger.info("==> pipeline.yaml: " + pipelineYamlName);
             pipelinesApi = properties.getProperty("pipelines.api");
             logger.info("==> pipelines.api: " + pipelinesApi);
             pipelinesApiRuns = properties.getProperty("pipelines.api.runs");
@@ -122,7 +123,21 @@ public class TestProperties {
             buildApiVersion = properties.getProperty("build.api.version");
             logger.info("==> build.api.version: " + buildApiVersion);
 
-            logger.info("#################################################################");
+            // Azure DevOps Project API
+            projectApi = properties.getProperty("project.api");
+            logger.info("==> project.api: " + projectApi);
+            projectApiVersion = properties.getProperty("project.api.version");
+            logger.info("==> project.api.version: " + projectApiVersion);
+
+            // Derived properties
+            azdoBaseUrl="https://dev.azure.com/" + targetOrganization;
+            logger.info("==> Derived azdoBaseUrl: " + azdoBaseUrl);
+            uriTargetRepository = azdoBaseUrl + "/" + targetProject + "/_git/" + repositoryName;
+            logger.info("==> Derived uriTargetRepository: " + uriTargetRepository);
+            azdoEndpoint = azdoBaseUrl + "/" + targetProject + "/_apis";
+            logger.info("==> Derived azdoEndpoint: " + azdoEndpoint);
+
+                    logger.info("#################################################################");
             logger.info("End reading properties");
             logger.info("#################################################################");
             logger.info("");
@@ -135,185 +150,43 @@ public class TestProperties {
         }
     }
 
-    public String getSourcePath() {
-        return sourcePath;
+    public String getSourcePath() { return sourcePath; }
+    public String getTargetProject() {
+        return targetProject;
     }
-
-    public void setSourcePath(String sourcePath) {
-        this.sourcePath = sourcePath;
-    }
-
-    public String getTargetPath() {
-        return targetPath;
-    }
-
-    public void setTargetPath(String targetPath) {
-        this.targetPath = targetPath;
-    }
-
-    public String getPipelinePathRepository() {
-        return pipelinePathRepository;
-    }
-
-    public void setPipelinePathRepository(String pipelinePathRepository) { this.pipelinePathRepository = pipelinePathRepository;
-    }
-
-    public String getPipelineYamlName() {
-        return pipelineYamlName;
-    }
-
-    public void setPipelineYamlName(String pipelineYamlName) {
-        this.pipelineYamlName = pipelineYamlName;
-    }
-
-    public String getUriTargetRepository() {
-        return uriTargetRepository;
-    }
-
-    public void setUriTargetRepository(String uriTargetRepository) {
-        this.uriTargetRepository = uriTargetRepository;
-    }
-
-    public String getAzdoEndpoint() {
-        return azdoEndpoint;
-    }
-
-    public void setAzdoEndpoint(String azdoEndpoint) {
-        this.azdoEndpoint = azdoEndpoint;
-    }
+    public String getTargetPath() { return targetPath; }
+    public String getPipelinePathRepository() { return pipelinePathRepository; }
+    public String getUriTargetRepository() { return uriTargetRepository; }
+    public String getAzdoEndpoint() { return azdoEndpoint; }
 
     // Pipeline API
-    public String getPipelinesApi() {
-        return pipelinesApi;
-    }
-
-    public void setPipelinesApi(String pipelinesApi) {this.pipelinesApi = pipelinesApi;
-    }
-
-    public String getPipelinesApiRuns() {
-        return pipelinesApiRuns;
-    }
-
-    public void setPipelinesApiRuns(String pipelinesApiRuns) {this.pipelinesApiRuns = pipelinesApiRuns;
-    }
-
-    public String getPipelinesApiVersion() {
-        return pipelinesApiVersion;
-    }
-
-    public void setPipelinesApiVersion(String pipelinesApiVersion) {this.pipelinesApiVersion = pipelinesApiVersion;
-    }
+    public String getAzdoBaseUrl() { return azdoBaseUrl; }
+    public String getPipelinesApi() { return pipelinesApi; }
+    public String getPipelinesApiRuns() { return pipelinesApiRuns; }
+    public String getPipelinesApiVersion() { return pipelinesApiVersion; }
 
     // Git API
-    public String getGitApi() {
-        return gitApi;
-    }
-
-    public void setGitApi(String gitApi) {this.gitApi = gitApi;
-    }
-
-    public String getGitApiRepositories() {
-        return gitApiRepositories;
-    }
-
-    public void setGitApiRepositories(String gitApiRepositories) {this.gitApiRepositories = gitApiRepositories;
-    }
-
-    public String getGitApiVersion() {
-        return gitApiVersion;
-    }
-
-    public void setGitApiVersion(String gitApiVersion) {this.gitApiVersion = gitApiVersion;
-    }
-
-    public String getBranchTargetRepository() {
-        return branchTargetRepository;
-    }
-
-    public void setBranchTargetRepository(String branchTargetRepository) {
-        this.branchTargetRepository = branchTargetRepository;
-    }
-
-    public String getUserTargetRepository() {
-        return userTargetRepository;
-    }
-
-    public void setUserTargetRepository(String userTargetRepository) {
-        this.userTargetRepository = userTargetRepository;
-    }
-
-    public String getPasswordTargetRepository() {
-        return passwordTargetRepository;
-    }
-
-    public void setPasswordTargetRepository(String passwordTargetRepository) {
-        this.passwordTargetRepository = passwordTargetRepository;
-    }
+    public String getGitApi() { return gitApi; }
+    public String getGitApiRepositories() { return gitApiRepositories; }
+    public String getGitApiVersion() { return gitApiVersion; }
+//    public String getBranchTargetRepository() { return branchTargetRepository; }
+    public String getUserTargetRepository() { return userTargetRepository; }
+    public String getPasswordTargetRepository() { return passwordTargetRepository; }
 
     // Build
-    public String getBuildApi() {
-        return buildApi;
-    }
+    public String getBuildApi() { return buildApi; }
+    public int getBuildApiPollFrequency() { return buildApiPollFrequency; }
+    public int getBuildApiPollTimeout() { return buildApiPollTimeout; }
+    public String getBuildApiVersion() { return buildApiVersion; }
 
-    public void setBuildApi(String buildApi) {
-        this.buildApi = buildApi;
+    // Project
+    public String getProjectApi() { return projectApi;}
+    public String getProjectApiVersion() {
+        return projectApiVersion;
     }
-
-    public int getBuildApiPollFrequency() {
-        return buildApiPollFrequency;
-    }
-
-    public void setBuildApiPollFrequency(int buildApiPollFrequency) {
-        this.buildApiPollFrequency = buildApiPollFrequency;
-    }
-
-    public int getBuildApiPollTimeout() {
-        return buildApiPollTimeout;
-    }
-
-    public void setBuildApiPollTimeout(int buildApiPollTimeout) {
-        this.buildApiPollTimeout = buildApiPollTimeout;
-    }
-
-    public String getBuildApiVersion() {
-        return buildApiVersion;
-    }
-
-    public void setBuildApiVersion(String buildApiVersion) {
-        this.buildApiVersion = buildApiVersion;
-    }
-
 
     // Miscellanious
-    public String getCommitPattern() {
-        return commitPattern;
-    }
-
-    public void setCommitPattern(String commitPattern) {
-        this.commitPattern = commitPattern;
-    }
-
-    public ArrayList<String> getCommitPatternList() {
-        return commitPatternList;
-    }
-
-    public void setCommitPatternList(ArrayList<String> commitPatternList) {
-        this.commitPatternList = commitPatternList;
-    }
-
-    public String getRepositoryName() {
-        return repositoryName;
-    }
-
-    public void setRepositoryName(String repositoryName) {
-        this.repositoryName = repositoryName;
-    }
-
-    public String getProjectId() {
-        return projectId;
-    }
-
-    public void setProjectId(String projectId) {
-        this.projectId = projectId;
-    }
+    public String getCommitPattern() { return commitPattern; }
+    public ArrayList<String> getCommitPatternList() { return commitPatternList; }
+    public String getRepositoryName() { return repositoryName; }
 }

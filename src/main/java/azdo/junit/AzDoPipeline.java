@@ -56,11 +56,14 @@ public class AzDoPipeline implements Pipeline {
         try {
             // Create a new repository if not existing
             if (repositoryId == null) {
+                // Retrieve the project-id
+                String projectId = AzDoApi.callGetProjectIdApi(properties);
+
                 logger.info("==> Delete local repository in directory ", properties.getTargetPath());
                 deleteDirectory(new File(properties.getTargetPath()));
 
                 // Create remote repo using the AzDo API (this may fail if exists, but just continue)
-                repositoryId = AzDoApi.callCreateRepoApi(properties);
+                repositoryId = AzDoApi.callCreateRepoApi(properties, projectId);
 
                 // The repo did not exist; clone the repo to local and initialize
                 git = gitClone("");

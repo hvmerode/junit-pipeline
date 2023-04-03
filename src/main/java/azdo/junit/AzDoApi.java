@@ -89,6 +89,46 @@ public class AzDoApi<runResult> {
         return null;
     }
 
+    // Return the project-id
+    public static String callGetProjectIdApi (TestProperties properties) {
+        logger.info("==> AzDoApi.callGetProjectIdApi");
+        String projectName = properties.getTargetProject();
+        String projectId = null;
+        String http = properties.getAzdoBaseUrl() +
+                "/_apis/" +
+                properties.getProjectApi() +
+                "?" +
+                properties.getProjectApiVersion();
+
+        HttpResponse response = callApi(properties, http, HttpMethod.GET, null);
+
+        // Get the project id from the response
+        Yaml yaml = new Yaml();
+        String name = null;
+        Map<String, Object> yamlMap = yaml.load(response.body().toString());
+        logger.info("==> Response is: " + yamlMap.toString());
+        if (yamlMap.get("value") instanceof ArrayList) {
+            ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get("value");
+            if (arr != null) {
+                int size = arr.size();
+
+                // Go through list of values
+                for (int counter = 0; counter < size; counter++) {
+                    LinkedHashMap<String, Object> value = ((LinkedHashMap<String, Object>) arr.get(counter));
+                    name = value.get("name").toString();
+                    if (name != null && name.equals(projectName)){
+                        logger.info("==> Found project " + projectName);
+                        projectId = value.get("id").toString();
+                        break;
+                    }
+                }
+            }
+        }
+
+        logger.info("==> Project id is: " + projectId);
+        return projectId;
+    }
+
     // Execute a pipeline
     public static void callPipelineRunApi (TestProperties properties, String pipelineId, String branchName) {
         logger.info("==> AzDoApi.callPipelineRunApi");
@@ -266,7 +306,7 @@ public class AzDoApi<runResult> {
     }
 
     // Create a new repository and return the Azure DevOps repository id
-    public static String callCreateRepoApi (TestProperties properties) {
+    public static String callCreateRepoApi (TestProperties properties, String projectId) {
         logger.info("==> AzDoApi.callCreateRepoApi");
         String repositoryId = null;
         String http = properties.getAzdoEndpoint() +
@@ -277,7 +317,7 @@ public class AzDoApi<runResult> {
         String json = BRACKET_OPEN_NEXTLINE +
                 TAB + DOUBLE_QUOTE + "name" + DQUOTE_SCOL_DQUOTE + properties.getRepositoryName() + DOUBLE_QUOTE + COMMA_NEXTLINE +
                 TAB + DOUBLE_QUOTE + "project" + DOUBLE_QUOTE + ": " + BRACKET_OPEN_NEXTLINE +
-                TWO_TAB + DOUBLE_QUOTE + "id" + DQUOTE_SCOL_DQUOTE + properties.getProjectId() + DOUBLE_QUOTE + NEXTLINE +
+                TWO_TAB + DOUBLE_QUOTE + "id" + DQUOTE_SCOL_DQUOTE + projectId + DOUBLE_QUOTE + NEXTLINE +
                 TAB + BRACKET_CLOSE + NEXTLINE +
                 BRACKET_CLOSE;
         HttpResponse response = callApi(properties, http, HttpMethod.POST, json);

@@ -22,7 +22,6 @@ public class TestProperties {
     private String targetProject;
     private String pipelinePathRepository;
     private String uriTargetRepository;
-    //private String branchTargetRepository;
     private String userTargetRepository;
     private String passwordTargetRepository;
 
@@ -80,8 +79,6 @@ public class TestProperties {
             logger.info("==> target.repository.name: " + repositoryName);
             pipelinePathRepository = properties.getProperty("repository.pipeline.path");
             logger.info("==> repository.pipeline.path: " + pipelinePathRepository);
-            //branchTargetRepository = properties.getProperty("target.repository.branch");
-            //logger.info("==> target.repository.branch: " + branchTargetRepository);
             userTargetRepository = properties.getProperty("target.repository.user");
             logger.info("==> target.repository.user: " + userTargetRepository);
             passwordTargetRepository = properties.getProperty("target.repository.password");
@@ -89,7 +86,7 @@ public class TestProperties {
 
             // Run trough the commit pattern and create a List
             commitPattern = properties.getProperty("git.commit.pattern");
-            commitPatternList = new ArrayList<String>();
+            commitPatternList = new ArrayList<>();
             var values = commitPattern.split(",");
             for (int i = 0; i < values.length; i++)
             {
@@ -169,7 +166,6 @@ public class TestProperties {
     public String getGitApi() { return gitApi; }
     public String getGitApiRepositories() { return gitApiRepositories; }
     public String getGitApiVersion() { return gitApiVersion; }
-//    public String getBranchTargetRepository() { return branchTargetRepository; }
     public String getUserTargetRepository() { return userTargetRepository; }
     public String getPasswordTargetRepository() { return passwordTargetRepository; }
 

@@ -19,7 +19,7 @@ import java.nio.file.Paths;
 public class AzDoPipeline implements Pipeline {
     private static Logger logger = LoggerFactory.getLogger(AzDoPipeline.class);
     private TestProperties properties;
-    private Git git;
+    private Git git = null;
     private CredentialsProvider credentialsProvider;
     String yamlFile;
     String repositoryId = null;
@@ -66,26 +66,13 @@ public class AzDoPipeline implements Pipeline {
                 repositoryId = AzDoApi.callCreateRepoApi(properties, projectId);
 
                 // The repo did not exist; clone the repo to local and initialize
-                git = gitClone("");
+                git = gitClone();
             }
         }
         catch (Exception e) {
             logger.info("==> Exception occurred. Cannot create a new repository");
             e.printStackTrace();
         }
-
-        /////////////////////////////////////////////////////////
-        // Copy local resource from source to target directory //
-        /////////////////////////////////////////////////////////
-//        try {
-            // Copy all sources from the source local repo to the target local repo
-            // This is only done once for all files other than the .yml files
-//            copyAll(properties.getSourcePath(), properties.getTargetPath());
-//        }
-//        catch (Exception e) {
-//            logger.info("==> Exception occurred.Cannot copy local files to target");
-//            e.printStackTrace();
-//        }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // If no pipeline exists, create a new pipeline in Azure DevOps. Otherwise, make use of the existing pipeline //
@@ -133,15 +120,16 @@ public class AzDoPipeline implements Pipeline {
         logger.info("==> Method: AzDoPipeline.startPipeline");
         boolean recreate = false;
 
-        // Clone the repository to local
-        try {
-            deleteDirectory(new File(properties.getTargetPath()));
-            git = gitClone(branchName);
-        }
-
-        catch (Exception e) {
-            logger.info("==> Exception occurred. Cannot clone repository to local");
-            e.printStackTrace();
+        // Clone the repository to local if not done earlier
+        if (git != null) {
+            try {
+                deleteDirectory(new File(properties.getTargetPath()));
+                git = gitClone();
+            }
+            catch (Exception e) {
+                logger.info("==> Exception occurred. Cannot clone repository to local");
+                e.printStackTrace();
+            }
         }
 
         // If git object is invalid after the clone (for some reason), recreate it again
@@ -153,15 +141,17 @@ public class AzDoPipeline implements Pipeline {
         }
 
         // Perform the checkout if not master/main
+        // Note, that this may produce an error because it also tries to create a branch if the branch already exists
         if (! (branchName == null || branchName.equals("main") || branchName.equals("master") || branchName.equals(""))) {
             try {
                 logger.info("git.checkout");
                 git.checkout()
                         .setCreateBranch(true)
-                        .setName(branchName).call();
+                        .setName(branchName)
+                        .call();
             }
             catch (Exception e) {
-                logger.info("==> Exception occurred. Cannot checkout");
+                logger.info("==> Exception occurred. Cannot checkout; just continue");
                 e.printStackTrace();
             }
         }
@@ -221,13 +211,20 @@ public class AzDoPipeline implements Pipeline {
 
     private boolean deleteDirectory(File directoryToBeDeleted) {
         logger.info("==> Method: deleteDirectory");
-        File[] allContents = directoryToBeDeleted.listFiles();
-        if (allContents != null) {
-            for (File file : allContents) {
-                deleteDirectory(file);
+        try {
+            if (isLinux()) {
+                logger.info("==> Executing on Linux");
+                Runtime.getRuntime().exec("/bin/sh -c rm -r " + directoryToBeDeleted);
+            } else if (isWindows()) {
+                logger.info("==> Executing on Windows");
+                Runtime.getRuntime().exec("cmd /c rmdir " + directoryToBeDeleted);
             }
+            return true;
         }
-        return directoryToBeDeleted.delete();
+        catch (IOException e)
+        {
+            return false;
+        }
     }
 
     public static void wait(int ms)
@@ -250,7 +247,7 @@ public class AzDoPipeline implements Pipeline {
         }
         if(isLinux()){
             logger.info("==> Executing on Linux");
-            Runtime.getRuntime().exec(new String[] {"/bin/sh", "-c", filePath}, null);
+            Runtime.getRuntime().exec(new String[] {"/bin/sh ", "-c", filePath}, null);
         } else if(isWindows()){
             logger.info("==> Executing on Windows");
             Runtime.getRuntime().exec("cmd /c call " + filePath);
@@ -262,7 +259,7 @@ public class AzDoPipeline implements Pipeline {
         if(isLinux()){
             logger.info("==> Executing on Linux: " + "cp " + source + " " + target);
             // TODO: Exclude certain file types and directories
-            Runtime.getRuntime().exec("cp " + source + " " + target);
+            Runtime.getRuntime().exec("/bin/sh -c cp " + source + " " + target);
         } else if(isWindows()){
             logger.info("==> Executing on Windows: " + "xcopy " + source + " " + target + " /E /H /C /I /Y /exclude:" + target + "\\excludedfileslist.txt");
             Runtime.getRuntime().exec("cmd.exe /c mkdir " + target);
@@ -332,30 +329,30 @@ public class AzDoPipeline implements Pipeline {
 
     private void gitCommitAndPush () throws GitAPIException {
         logger.info ("==> Method: gitCommitAndPush");
-        logger.info("git.commit");
 
-        if (git == null) {
+        if (git != null) {
+            logger.info("git.commit");
+            git.commit()
+                    .setAll(true)
+                    .setAuthor(properties.getUserTargetRepository(), "")
+                    .setCommitter(properties.getUserTargetRepository(), "")
+                    .setMessage("Init repo")
+                    .call();
 
+            logger.info("git.push");
+            //RefSpec refSpec = new RefSpec("master");
+            git.push()
+                    .setPushAll()
+//                  .setRefSpecs(refSpec)
+                    .setCredentialsProvider(credentialsProvider)
+                    .setForce(true)
+                    .call();
         }
-
-
-        git.commit()
-                .setAll(true)
-                .setAuthor(properties.getUserTargetRepository(), "")
-                .setCommitter(properties.getUserTargetRepository(), "")
-                .setMessage("Init repo")
-                .call();
-
-        logger.info("git.push");
-        git.push()
-                .setPushAll()
-                .setCredentialsProvider(credentialsProvider)
-                .setForce(true)
-                .call();
     }
 
     // Clone the repo to local and initialize
-    private Git gitClone (String branchName)  throws GitAPIException {
+    //private Git gitClone (String branchName)  throws GitAPIException {
+    private Git gitClone () {
         logger.info("==> Method: gitClone");
 
         // Create the credentials provider
@@ -366,7 +363,7 @@ public class AzDoPipeline implements Pipeline {
         // Clone the repo
         try {
             logger.info("git.clone");
-            Git git = Git.cloneRepository()
+            git = Git.cloneRepository()
                     .setURI(properties.getUriTargetRepository())
                     .setCloneAllBranches(true)
                     .setCredentialsProvider(credentialsProvider)

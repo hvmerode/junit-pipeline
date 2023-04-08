@@ -1,7 +1,9 @@
 package azdo.junit;
 
 import azdo.command.CommandBundle;
+import azdo.hook.Hook;
 import azdo.utils.PomUtils;
+import azdo.utils.Utils;
 import azdo.yaml.ActionEnum;
 import azdo.yaml.YamlDocumentSet;
 import org.eclipse.jgit.api.AddCommand;
@@ -13,8 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.List;
 
 public class AzDoPipeline implements Pipeline {
     private static Logger logger = LoggerFactory.getLogger(AzDoPipeline.class);
@@ -95,7 +96,6 @@ public class AzDoPipeline implements Pipeline {
         catch (Exception e) {
             logger.info("==> Exception occurred. Cannot create a new pipeline");
             e.printStackTrace();
-
         }
 
         logger.info("");
@@ -114,9 +114,15 @@ public class AzDoPipeline implements Pipeline {
        The last step is to reload the original yaml file, so it can be used for the next test.
      */
     public void startPipeline() throws IOException {
-        startPipeline("master");
+        startPipeline("master", null);
+    }
+    public void startPipeline(List<Hook> hooks) throws IOException {
+        startPipeline("master", hooks);
     }
     public void startPipeline(String branchName) throws IOException {
+        startPipeline("master", null);
+    }
+    public void startPipeline(String branchName, List<Hook> hooks) throws IOException {
         logger.info("==> Method: AzDoPipeline.startPipeline");
         boolean recreate = false;
 
@@ -142,7 +148,7 @@ public class AzDoPipeline implements Pipeline {
 
         // Perform the checkout if not master/main
         // Note, that this may produce an error because it also tries to create a branch if the branch already exists
-        if (! (branchName == null || branchName.equals("main") || branchName.equals("master") || branchName.equals(""))) {
+//        if (! (branchName == null || branchName.equals("main") || branchName.equals("master") || branchName.equals(""))) {
             try {
                 logger.info("git.checkout");
                 git.checkout()
@@ -154,7 +160,7 @@ public class AzDoPipeline implements Pipeline {
                 logger.info("==> Exception occurred. Cannot checkout; just continue");
                 e.printStackTrace();
             }
-        }
+//        }
 
         // Copy local resources from main source to target directory
         try {
@@ -171,6 +177,15 @@ public class AzDoPipeline implements Pipeline {
 
         //  Save the manipulated main YAML and template files to the target location
         yamlDocumentSet.dumpYaml(properties.getTargetPath());
+
+        // Perform all (pre)hooks
+        if (hooks != null) {
+            logger.info("==> Execute hooks");
+            int size = hooks.size();
+            for (int i = 0; i < size; i++) {
+                hooks.get(i).executeHook();
+            }
+        }
 
         // Push the local repo to remote
         try {
@@ -212,10 +227,10 @@ public class AzDoPipeline implements Pipeline {
     private boolean deleteDirectory(File directoryToBeDeleted) {
         logger.info("==> Method: deleteDirectory");
         try {
-            if (isLinux()) {
+            if (Utils.isLinux()) {
                 logger.info("==> Executing on Linux");
                 Runtime.getRuntime().exec("/bin/sh -c rm -r " + directoryToBeDeleted);
-            } else if (isWindows()) {
+            } else if (Utils.isWindows()) {
                 logger.info("==> Executing on Windows");
                 Runtime.getRuntime().exec("cmd /c rmdir " + directoryToBeDeleted);
             }
@@ -227,28 +242,16 @@ public class AzDoPipeline implements Pipeline {
         }
     }
 
-    public static void wait(int ms)
-    {
-        try
-        {
-            Thread.sleep(ms);
-        }
-        catch(InterruptedException ex)
-        {
-            Thread.currentThread().interrupt();
-        }
-    }
-
     public void executeScript(String filePath) throws IOException{
         logger.info("==> Method: executeScript: " + filePath);
         File file = new File(filePath);
         if(!file.isFile()){
             throw new IllegalArgumentException("The file " + filePath + " does not exist");
         }
-        if(isLinux()){
+        if(Utils.isLinux()){
             logger.info("==> Executing on Linux");
             Runtime.getRuntime().exec(new String[] {"/bin/sh ", "-c", filePath}, null);
-        } else if(isWindows()){
+        } else if(Utils.isWindows()){
             logger.info("==> Executing on Windows");
             Runtime.getRuntime().exec("cmd /c call " + filePath);
         }
@@ -256,74 +259,18 @@ public class AzDoPipeline implements Pipeline {
 
     public void copyAll(String source, String target) throws IOException{
         logger.info("==> Method: copyAll");
-        if(isLinux()){
+        if(Utils.isLinux()){
             logger.info("==> Executing on Linux: " + "cp " + source + " " + target);
             // TODO: Exclude certain file types and directories
             Runtime.getRuntime().exec("/bin/sh -c cp " + source + " " + target);
-        } else if(isWindows()){
+        } else if(Utils.isWindows()){
             logger.info("==> Executing on Windows: " + "xcopy " + source + " " + target + " /E /H /C /I /Y /exclude:" + target + "\\excludedfileslist.txt");
             Runtime.getRuntime().exec("cmd.exe /c mkdir " + target);
-            wait(3000);
+            Utils.wait(3000);
             Runtime.getRuntime().exec("cmd.exe /c (echo idea& echo target& echo .git& echo class) > " + target + "\\excludedfileslist.txt");
-            wait(3000);
+            Utils.wait(3000);
             Runtime.getRuntime().exec("cmd.exe /c xcopy " + source + " " + target + " /E /H /C /I /Y /exclude:" + target + "\\excludedfileslist.txt");
-            wait(3000);
-        }
-    }
-
-    public static boolean isLinux(){
-        String os = System.getProperty("os.name");
-        return os.toLowerCase().indexOf("linux") >= 0;
-    }
-
-    public static boolean isWindows(){
-        String os = System.getProperty("os.name");
-        return os.toLowerCase().indexOf("windows") >= 0;
-    }
-
-    /*
-        TODO
-     */
-    public void deleteDependencyFromTargetPom (String groupId, String artifactId) {
-        logger.info("==> Method: AzDoPipeline.deleteDependencyFromTargetPom");
-        try {
-            PomUtils.deleteDependency(properties.getTargetPath() + "/" + "pom.xml", groupId, artifactId);
-        }
-        catch (Exception e) {
-            logger.info("==> Cannot delete the dependency from the pom.xml");
-        }
-    }
-
-    /*
-        TODO
-     */
-    public void addDependencyToTargetPom (String groupId, String artifactId, String version) {
-        logger.info("==> Method: AzDoPipeline.addDependencyToTargetPom");
-        try {
-            PomUtils.insertDependency(properties.getTargetPath() + "/" + "pom.xml", groupId, artifactId, version);
-        }
-        catch (Exception e) {
-            logger.info("==> Cannot insert the dependency to the pom.xml");
-        }
-    }
-
-    /*
-        TODO
-     */
-    public void deleteTargetFile (String fileBaseName) throws IOException{
-        logger.info("==> Method: AzDoPipeline.deleteTargetFile");
-        String fullQualifiedFileName = properties.getTargetPath() + "/" + fileBaseName;
-        Path path = Paths.get(fullQualifiedFileName);
-        path = path.normalize();
-        fullQualifiedFileName = path.toString();
-
-        if(isLinux()){
-            logger.info("==> Deleting on Linux: " + fullQualifiedFileName);
-            Runtime.getRuntime().exec("rm -f " + fullQualifiedFileName);
-        } else if(isWindows()){
-            logger.info("==> Deleting on Windows: " + "cmd.exe /c del /F /Q " + fullQualifiedFileName);
-            Runtime.getRuntime().exec("cmd.exe /c del /F /Q " + fullQualifiedFileName);
-            wait(3000);
+            Utils.wait(3000);
         }
     }
 
@@ -343,7 +290,6 @@ public class AzDoPipeline implements Pipeline {
             //RefSpec refSpec = new RefSpec("master");
             git.push()
                     .setPushAll()
-//                  .setRefSpecs(refSpec)
                     .setCredentialsProvider(credentialsProvider)
                     .setForce(true)
                     .call();
@@ -649,5 +595,9 @@ public class AzDoPipeline implements Pipeline {
 
     public void setRunResult(RunResult runResult) {
         this.runResult = runResult;
+    }
+
+    public TestProperties getProperties() {
+        return properties;
     }
 }

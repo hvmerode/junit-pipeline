@@ -1,5 +1,6 @@
 package azdo.junit;
 
+import azdo.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
@@ -214,7 +215,7 @@ public class AzDoApi<runResult> {
             runResult = new RunResult(result, status);
 
             // Wait until the next poll is allowed
-            wait(pollFrequency * 1000);
+            Utils.wait(pollFrequency * 1000);
             Instant finish = Instant.now();
             timeElapsed = Duration.between(start, finish).toSeconds();
             logger.info("==> Time elapsed: " + Long.toString(timeElapsed));
@@ -394,18 +395,6 @@ public class AzDoApi<runResult> {
 
         logger.info("==> Repository id is: " + repositoryId);
         return repositoryId;
-    }
-
-    public static void wait(int ms)
-    {
-        try
-        {
-            Thread.sleep(ms);
-        }
-        catch(InterruptedException ex)
-        {
-            Thread.currentThread().interrupt();
-        }
     }
 }
 

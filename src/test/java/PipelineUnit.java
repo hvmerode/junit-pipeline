@@ -1,9 +1,13 @@
+import azdo.hook.Hook;
 import azdo.junit.AzDoPipeline;
 import azdo.junit.RunResult;
 import org.junit.jupiter.api.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class PipelineUnit {
@@ -66,6 +70,37 @@ public class PipelineUnit {
 
         try {
             pipeline.startPipeline("myFeature");
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        Assertions.assertEquals (RunResult.Result.succeeded, pipeline.getRunResult().result);
+    }
+
+    @Test
+    @Order(3)
+    public void test3() {
+        logger.info("");
+        logger.info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        logger.info("Perform unittest: test3");
+        logger.info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+        try {
+            // Create a hook to perform an action just before starting the pipeline
+            class TestHook extends Hook {
+                @Override
+                public void executeHook() {
+                    super.executeHook();
+                    logger.info("Executes hook with an argument");
+                }
+            }
+            pipeline.skipStage("ExecuteScriptStage");
+            pipeline.skipStage("DeployStage");
+
+            // Create a list with hooks and pass it to the startPipeline
+            List<Hook> hookList = new ArrayList<>();
+            hookList.add(new TestHook());
+            pipeline.startPipeline("myFeature", hookList);
         }
         catch (IOException e) {
             e.printStackTrace();

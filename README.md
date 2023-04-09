@@ -85,6 +85,7 @@ Example:
 <br>
 
 ### How to use it ##
+***
 This repository already contains a sample unittest file called _PipelineUnit_. We take this file as an example.  
 
 <br>
@@ -97,17 +98,18 @@ AzDoPipeline pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipe
 ```
 The _junit_pipeline_my.properties_ file in this example contains my personal properties.
 The file _./pipeline/pipeline_test.yml_ is the main pipeline file. It can be stored in any folder of the code repository.
-It's path is relative to the root of the repository. The main pipeline file may contain references to other template files
-in the repository. The __junit_pipeline__ frameworks takes these templates into account manipulation.
+Its path is relative to the root of the repository. The main pipeline file may contain references to other template files
+in the repository. The __junit_pipeline__ frameworks takes these templates into account in pipeline manipulation.
 > Note, that templates in other repositories (identified with an @ behind the template name) are used just as-is. 
 > The __junit_pipeline__ framework leaves these templates untouched.
 
 <br>
 
 #### Define a command bundle ####
-It is perfectly possible to repeat a certain command in every unit test, but if you, for example, never want to
-execute a certain task, it is also possible to add an action to a command bundle that skips the tasks or
-replaces it with a mock script. In the example below, the template _template-steps_1.yml_ is replaced by
+It is perfectly possible to repeat a certain command in every unit test, but if you, for example, want to
+execute a certain task in all tests, it is also possible to add an action to a command bundle. For example, add
+a command that skips a task or replaces it with a mock script. 
+In the example below, the template _template-steps_1.yml_ is replaced by
 _template-mock.yml_ for every unit test.
 ```java
 pipeline.commandBundle.overrideLiteral("templates/steps/template-steps_1.yml", "templates/steps/template-mock.yml");
@@ -116,8 +118,8 @@ pipeline.commandBundle.overrideLiteral("templates/steps/template-steps_1.yml", "
 <br>
 
 #### Hooks ####
-Before the pipeline code is pushed to the Azure DeVOps unit test project, and started, it is possible to execute
-custom code. This code is provided as a list of 'hooks'. The unit test file _PipelineUnit.java_ show an example, __test 3__.\
+Before the pipeline code is pushed to the Azure DevOps unit test project, and started, it is possible to execute
+custom code. This code is provided as a list of 'hooks'. The unit test file _PipelineUnit.java_ show an example, _test 3__.\
 This package also contains a few custom hooks:
 * _DeleteJUnitPipelineDependency_ - Deletes the __junit-pipeline__ dependency from the pom.xml, before it is pushed to the
 Azure DevOps unit test project.
@@ -126,7 +128,7 @@ Azure DevOps unit test project.
 <br>
 
 #### Define unit test ####
-The __junit_library__ contains a set of commands - used in the unit tests - to manipulate the pipeline. Let's 
+The __junit_library__ contains a set of commands - used in unit tests - to manipulate the pipeline. Let's 
 go over them:
 
 <br>
@@ -135,8 +137,8 @@ go over them:
 public void mockStep(String stepValue, String inlineScript)
 ```
 <i>
-The original step is replaced by a mock step. This is a step of type script. The argument 'inlineScript' is added to the mock.
-Depending on the job pool this can be a Powershell script (Windows) or a bash script (Linux)
+The original step is replaced by a mock step. This is a step of the type 'script'. The argument 'inlineScript' is added to the mock.
+Depending on the job pool this can be a Powershell script (Windows) or a bash script (Linux).
 </i>
 <br>
 <br>
@@ -155,7 +157,7 @@ the same as skipping it.
   displayName: 'This is my stage'
 </pre>
 
-Call skipStage("my_stage")
+Call pipeline.skipStage("my_stage")
 ==> The stage with name "my_stage" is skipped
 </i>
 <br>
@@ -176,7 +178,7 @@ the same as skipping it.
   displayName: 'This is my job'
 </pre>
 
-Call skipJob("my_job")
+Call pipeline.skipJob("my_job")
 ==> The job with name "my_job" is skipped
 </i>
 <br>
@@ -202,7 +204,7 @@ variables:
   value: myValue
 </pre>
 
-overrideVariable("myVar", "myNewValue") results in resp.
+pipeline.overrideVariable("myVar", "myNewValue") results in resp.
 <pre>
 variables:
 myVar : myNewValue
@@ -230,8 +232,8 @@ Replace the value of a parameter in a 'template' section. Example:
     tag: $(version)
 </pre>
 
-To replace the version to a fixed value (2.1.0), use:
-overrideTemplateParameter("tag", "2.1.0"). This results in:
+To replace the version to a fixed value (2.1.0), call:
+pipeline.overrideTemplateParameter("tag", "2.1.0"). This results in:
 <pre>
 - template: step/mytemplate.yml
   parameters:
@@ -256,7 +258,7 @@ Replace the default value of a parameter in the 'parameters' section. Example:
   - 4
 </pre>
 
-overrideParameterDefault("myNumber", "4") result in:
+pipeline.overrideParameterDefault("myNumber", "4") result in:
 <pre>
 - name: myNumber
   type: number
@@ -307,8 +309,8 @@ Replace the current branch with a given branch name.
 Example: Assume the following condition:
     and(succeeded(), eq(variables['Build.SourceBranchName'], 'main'))
 
-After applying public void overrideCurrentBranch("myFeature") it becomes
-and(succeeded(), eq('myFeature', 'main'))
+After applying pipeline.overrideCurrentBranch("myFeature") it becomes
+    and(succeeded(), eq('myFeature', 'main'))
 
 If _replaceAll_ is 'true', all occurences in both the main YAML and the templates are replaced.\
 If _replaceAll_ is 'false', the first occurence in both the main YAML and the templates are replaced.

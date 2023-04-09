@@ -17,8 +17,6 @@ public class CommandOverrideLiteral implements Command {
     }
 
     public void execute(Pipeline pipeline) {
-        System.out.println("==> CommandOverrideLiteral: " + this.toString()); // TEST
-        System.out.println("==> With pipeline: " + pipeline.toString()); // TEST
         pipeline.overrideLiteral(findLiteral, replaceLiteral, replaceAll);
     }
 }

@@ -130,7 +130,7 @@ public class YamlDocument {
         // Find the section
         Map<String, Object> inner = section;
         for (Map.Entry<String, Object> entry : inner.entrySet()) {
-            System.out.println("        Key = " + entry.getKey() +
+            logger.info("        Key = " + entry.getKey() +
                     ", Value = " + entry.getValue() + ", Class: " + entry.getValue().getClass());
 
             // Check whether the section is found. If true, the next actions are performed on this section
@@ -218,7 +218,7 @@ public class YamlDocument {
 
         logger.info("==> Method: YamlDocument.findInnerSectionAndExecuteCommand: ");
         section.forEach(entry -> {
-            System.out.println("        Section = " + entry + ", Class: " + entry.getClass());
+            logger.info("        Section = " + entry + ", Class: " + entry.getClass());
 
             // If inner sections are found, go a level deeper
             if (entry instanceof Map) {
@@ -282,7 +282,7 @@ public class YamlDocument {
                 int index = 0;
                 int size = list.size();
                 for (index = 0; index < size; index++) {
-                    System.out.println("        Element = " + list.get(index) + ", Class: " + list.get(index).getClass());
+                    logger.info("        Element = " + list.get(index) + ", Class: " + list.get(index).getClass());
 
                     // If it is a Map, it contains key/value; iterate trough them to detect whether the key/value pair exists
                     if (list.get(index) instanceof Map) {
@@ -341,7 +341,7 @@ public class YamlDocument {
             int index = 0;
             int size = list.size();
             for (index = 0; index < size; index++) {
-                System.out.println("        Element = " + list.get(index) + ", Class: " + list.get(index).getClass());
+                logger.info("        Element = " + list.get(index) + ", Class: " + list.get(index).getClass());
 
                 // If it is a Map, it contains key/value; iterate trough them to detect whether the key/value pair exists
                 if (list.get(index) instanceof Map) {
@@ -384,7 +384,7 @@ public class YamlDocument {
             int index = 0;
             int size = list.size();
             for (index = 0; index < size; index++) {
-                System.out.println("        Element = " + list.get(index) + ", Class: " + list.get(index).getClass());
+                logger.info("        Element = " + list.get(index) + ", Class: " + list.get(index).getClass());
 
                 // If it is a Map, it contains key/value; iterate trough them to detect whether the key/value pair exists
                 if (list.get(index) instanceof Map) {
@@ -423,7 +423,7 @@ public class YamlDocument {
             int index = 0;
             int size = list.size();
             for (index = 0; index < size; index++) {
-                System.out.println("        Element = " + list.get(index) + ", Class: " + list.get(index).getClass());
+                logger.info("        Element = " + list.get(index) + ", Class: " + list.get(index).getClass());
 
                 // If it is a Map, it contains key/value; iterate trough them to detect whether the key/value pair exists
                 if (list.get(index) instanceof Map) {

@@ -16,7 +16,7 @@ public class PipelineUnit {
 
     @BeforeAll
     public static void setUpClass() {
-        System.out.println("setUpClass");
+        logger.info("setUpClass");
 
         // Initialize the pipeline (resource path is default)
         pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/pipeline_test.yml");
@@ -110,6 +110,6 @@ public class PipelineUnit {
 
     @AfterAll
     public static void tearDown() {
-        System.out.println("\ntearDown");
+        logger.info("\ntearDown");
     }
 }

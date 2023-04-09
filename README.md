@@ -5,8 +5,10 @@ Perform unit/integration testing for pipelines (Azure DevOps)
 This library is used to perform unit- and integration tests on (YAML) pipelines. At the moment, only Azure DevOps pipelines are supported.
 Development is still in an experimental phase and it may cause some issues when used but in general, it works.
 
-***
+<br>
+
 ### How it works ###
+***
 Assume that your application and pipeline code reside in a repository called "myrepo" in the Azure DevOps project "MyApp".
 Development on the (Java) app is straightforward. With the ___junit_pipeline___ libray, it becomes also possible to test the
 pipeline code (in this case an Azure DevOps pipeline in YAML).
@@ -28,14 +30,16 @@ do not exists, they are automatically created for you. The illustration below sh
 
 ![no picture](https://github.com/hvmerode/junit-pipeline/blob/main/junit_pipeline.png "how it works")
 
+<br>
+
 ### How to start
 ***
 #### Create Azure DevOps test project ####
 Unfortunately, testing a pipeline within the IDE is not possible. You need an Azure DevOps unit test project for this. Create a project
 using this link: [Create a project in Azure DevOps](https://learn.microsoft.com/en-us/azure/devops/organizations/projects/create-project)
 
+<br>
 
-****
 #### Configure junit_pipeline.properties ####
 This file is located in src/main/resources. It contains the properties for your project. Some important properties:
 * __source.path__ - Contains the location (directory) of the main local Git repository on your computer. This is the repository in which you develop your 
@@ -66,7 +70,8 @@ This file is located in src/main/resources. It contains the properties for your 
 * __project.api.version__ - Version of the Azure DevOps Project API; only change if it is really needed (e.g., if a new version of the API is released).
 > The property file is stored in the _resources_ folder of the code repository.
 
-***
+<br>
+
 #### pom.xml ####
 After the properties file has been created, the __junit_pipeline__ library must be added to the _pom.xml_ of your project.
 Example:
@@ -77,11 +82,13 @@ Example:
   <version>1.0.0</version>
 </dependency>
 ```
+<br>
 
 ### How to use it ##
 This repository already contains a sample unittest file called _PipelineUnit_. We take this file as an example.  
 
-***
+<br>
+
 #### Create  ___AzDoPipeline___ object ####
 Pipeline unit tests are defined in a unit test Java class. Before tests are executed, a new ___AzDoPipeline___ Java object must
 be instantiated. Its constructor requires two arguments, a property file and the main pipeline YAML file. Example:
@@ -95,6 +102,8 @@ in the repository. The __junit_pipeline__ frameworks takes these templates into 
 > Note, that templates in other repositories (identified with an @ behind the template name) are used just as-is. 
 > The __junit_pipeline__ framework leaves these templates untouched.
 
+<br>
+
 #### Define a command bundle ####
 It is perfectly possible to repeat a certain command in every unit test, but if you, for example, never want to
 execute a certain task, it is also possible to add an action to a command bundle that skips the tasks or
@@ -104,109 +113,140 @@ _template-mock.yml_ for every unit test.
 pipeline.commandBundle.overrideLiteral("templates/steps/template-steps_1.yml", "templates/steps/template-mock.yml");
 ```
 
+<br>
+
 #### Hooks ####
 Before the pipeline code is pushed to the Azure DeVOps unit test project, and started, it is possible to execute
 custom code. This code is provided as a list of 'hooks'. The unit test file _PipelineUnit.java_ show an example, __test 3__.\
 This package also contains a few custom hooks:
 * _DeleteJUnitPipelineDependency_ - Deletes the __junit-pipeline__ dependency from the pom.xml, before it is pushed to the
 Azure DevOps unit test project.
-* _DeleteTargetFile_ - Deletes a single file before it is pushed to the Azure DevOps unit test project. 
+* _DeleteTargetFile_ - Deletes a single file before it is pushed to the Azure DevOps unit test project.
 
+<br>
 
 #### Define unit test ####
 The __junit_library__ contains a set of commands - used in the unit tests - to manipulate the pipeline. Let's 
 go over them:
+
+<br>
+
 ```java
 public void mockStep(String stepValue, String inlineScript)
------------------------------------------------------------
-
+```
+<i>
 The original step is replaced by a mock step. This is a step of type script. The argument 'inlineScript' is added to the mock.
 Depending on the job pool this can be a Powershell script (Windows) or a bash script (Linux)
-```
+</i>
+<br>
+<br>
 
+***
 ```java
 public void skipStage(String stageName)
----------------------------------------
-
-Skip a stage.        
+```
+<i>Skip a stage.        
 The result is, that the stage is completely removed from the output pipeline yaml file, which basically is
 the same as skipping it.
 
-Example:
-=======
+<u>Example</u>:
+<pre>
 - stage: my_stage
   displayName: 'This is my stage'
+</pre>
 
 Call skipStage("my_stage")
- ==> The stage with name "my_stage" is skipped
-```
+==> The stage with name "my_stage" is skipped
+</i>
+<br>
+<br>
 
+***
 ```java
 public void skipJob(String jobName)
------------------------------------
-
+```
+<i>
 Skip a job.
 The result is, that the job is completely removed from the output pipeline yaml file, which basically is
 the same as skipping it.
 
-Example:
-=======
+<u>Example</u>:
+<pre>
 - job: my_job
   displayName: 'This is my job'
+</pre>
 
 Call skipJob("my_job")
 ==> The job with name "my_job" is skipped
-```
+</i>
+<br>
+<br>
 
+***
 ```java
 public void overrideVariable(String variableName, String value)
----------------------------------------------------------------
-
+```
+<br>
 Replace the value of a variable in the 'variables' section. Two constructions are possible:
 
-Construction 1:
-==============
+<u>Construction 1</u>:
+<pre>
 variables:
 myVar : myValue
+</pre>
 
-Construction 2:
-==============
+<u>Construction 2</u>:
+<pre>
 variables:
 - name: myVar
   value: myValue
+</pre>
 
 overrideVariable("myVar", "myNewValue") results in resp.
+<pre>
 variables:
 myVar : myNewValue
+</pre>
 
+<pre>
 variables:
 - name: myVar
   value: myNewValue
-
+</pre>
 This method does not replace variables defined in a Library.
-```
+</i>
+<br>
+<br>
 
+***
 ```java
 public void overrideTemplateParameter(String parameterName, String value)
--------------------------------------------------------------------------        
-
+```
+<i>
 Replace the value of a parameter in a 'template' section. Example:
+<pre>
 - template: step/mytemplate.yml
   parameters:
     tag: $(version)
+</pre>
 
 To replace the version to a fixed value (2.1.0), use:
 overrideTemplateParameter("tag", "2.1.0"). This results in:
+<pre>
 - template: step/mytemplate.yml
   parameters:
-    tag: 2.1.0
-```
+  tag: 2.1.0
+</pre>
+</i>
+<br>
 
+***
 ```java
 public void overrideParameterDefault(String parameterName, String value)
-------------------------------------------------------------------------
-
+```
+<i>
 Replace the default value of a parameter in the 'parameters' section. Example:
+<pre>
 - name: myNumber
   type: number
   default: 2
@@ -214,8 +254,10 @@ Replace the default value of a parameter in the 'parameters' section. Example:
   - 1
   - 2
   - 4
+</pre>
 
 overrideParameterDefault("myNumber", "4") result in:
+<pre>
 - name: myNumber
   type: number
   default: 4
@@ -223,44 +265,56 @@ overrideParameterDefault("myNumber", "4") result in:
   - 1
   - 2
   - 4
-```
+</pre>
+</i>
+<br>
 
+***
 ```java
 public void overrideLiteral(String findLiteral, String replaceLiteral)
-----------------------------------------------------------------------
-
+```
+<i>
 Override (or overwrite) any arbitrary string in the yaml file.
+<pre>
 - task: AzureWebApp@1
   displayName: Azure Web App Deploy
   inputs:
     azureSubscription: $(azureSubscription)
     appName: samplewebapp
+</pre>
 
 Calling pipeline.overrideLiteral ("$(azureSubscription)", "1234567890") results in
+<pre>
 - task: AzureWebApp@1
   displayName: Azure Web App Deploy
   inputs:
-    azureSubscription: 1234567890
-    appName: samplewebapp
+  azureSubscription: 1234567890
+  appName: samplewebapp
+</pre>
 
-If replaceAll is 'true' all occurences of literal in both the main YAML and the templates are replaced.
-If replaceAll is 'false' the first occurence of literal in both the main YAML and the templates are replaced.
-```
+If _replaceAll_ is 'true' all occurences of literal in both the main YAML and the templates are replaced.\
+If _replaceAll_ is 'false' the first occurence of literal in both the main YAML and the templates are replaced.
+</i>
+<br>
+<br>
 
+***
 ```java
 public void overrideCurrentBranch(String newBranchName)
--------------------------------------------------------
-
+```
+<i>
 Replace the current branch with a given branch name.
 Example: Assume the following condition:
     and(succeeded(), eq(variables['Build.SourceBranchName'], 'main'))
 
 After applying public void overrideCurrentBranch("myFeature") it becomes
-    and(succeeded(), eq('myFeature', 'main'))
+and(succeeded(), eq('myFeature', 'main'))
 
-If replaceAll is 'true', all occurences in both the main YAML and the templates are replaced.
-If replaceAll is 'false', the first occurence in both the main YAML and the templates are replaced.
-```
+If _replaceAll_ is 'true', all occurences in both the main YAML and the templates are replaced.\
+If _replaceAll_ is 'false', the first occurence in both the main YAML and the templates are replaced.
+</i>
+<br>
+<br>
 
 ***
 #### Start unit tests and retrieve the result ####
@@ -269,6 +323,12 @@ The startPipeline method has a few representations:
 * _startPipeline(String branchName)_ - Starts the pipeline with a given branch, for example a _feature_ branch.
 * _startPipeline(String branchName, List<Hook> hooks)_ - Starts the pipeline with a given branch but
   before the pipeline starts, the list with 'hooks' is executed.
+  
+The result of a pipeline run is retrieved with
+```java
+pipeline.getRunResult()
+```
+<br>
 
 ***
 ### Known limitations ##

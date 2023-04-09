@@ -17,8 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class AzDoPipeline implements Pipeline {
@@ -121,7 +119,7 @@ public class AzDoPipeline implements Pipeline {
         startPipeline("master", null);
     }
     public void startPipeline(String branchName) throws IOException {
-        startPipeline("master", null);
+        startPipeline(branchName, null);
     }
     public void startPipeline(String branchName, List<Hook> hooks) throws IOException {
         logger.info("==> Method: AzDoPipeline.startPipeline");

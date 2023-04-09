@@ -72,7 +72,7 @@ This file is located in src/main/resources. It contains the properties for your 
 
 <br>
 
-#### pom.xml ####
+#### Update pom.xml ####
 After the properties file has been created, the __junit_pipeline__ library must be added to the _pom.xml_ of your project.
 Example:
 ```xml
@@ -119,9 +119,9 @@ pipeline.commandBundle.overrideLiteral("templates/steps/template-steps_1.yml", "
 
 #### Hooks ####
 Before the pipeline code is pushed to the Azure DevOps unit test project, and started, it is possible to execute
-custom code. This code is provided as a list of 'hooks'. The unit test file _PipelineUnit.java_ show an example, _test 3__.\
+custom code. This code is provided as a list of 'hooks'. The unit test file _PipelineUnit.java_ show an example, _test 3_.\
 This package also contains a few custom hooks:
-* _DeleteJUnitPipelineDependency_ - Deletes the __junit-pipeline__ dependency from the pom.xml, before it is pushed to the
+* _DeleteJUnitPipelineDependency_ - Deletes the __junit-pipeline__ dependency from the _pom.xml_, before it is pushed to the
 Azure DevOps unit test project.
 * _DeleteTargetFile_ - Deletes a single file before it is pushed to the Azure DevOps unit test project.
 
@@ -188,7 +188,7 @@ Call pipeline.skipJob("my_job")
 ```java
 public void overrideVariable(String variableName, String value)
 ```
-<br>
+<i>
 Replace the value of a variable in the 'variables' section. Two constructions are possible:
 
 <u>Construction 1</u>:
@@ -232,12 +232,12 @@ Replace the value of a parameter in a 'template' section. Example:
     tag: $(version)
 </pre>
 
-To replace the version to a fixed value (2.1.0), call:
+To replace the version with a fixed value (2.1.0), call:
 pipeline.overrideTemplateParameter("tag", "2.1.0"). This results in:
 <pre>
 - template: step/mytemplate.yml
   parameters:
-  tag: 2.1.0
+    tag: 2.1.0
 </pre>
 </i>
 <br>
@@ -273,7 +273,7 @@ pipeline.overrideParameterDefault("myNumber", "4") result in:
 
 ***
 ```java
-public void overrideLiteral(String findLiteral, String replaceLiteral)
+public void overrideLiteral(String findLiteral, String replaceLiteral, boolean replaceAll)
 ```
 <i>
 Override (or overwrite) any arbitrary string in the yaml file.
@@ -302,15 +302,19 @@ If _replaceAll_ is 'false' the first occurence of literal in both the main YAML 
 
 ***
 ```java
-public void overrideCurrentBranch(String newBranchName)
+public void overrideCurrentBranch(String newBranchName, boolean replaceAll)
 ```
 <i>
 Replace the current branch with a given branch name.
 Example: Assume the following condition:
-    and(succeeded(), eq(variables['Build.SourceBranchName'], 'main'))
+<pre>
+and(succeeded(), eq(variables['Build.SourceBranchName'], 'main'))
+</pre>
 
 After applying pipeline.overrideCurrentBranch("myFeature") it becomes
-    and(succeeded(), eq('myFeature', 'main'))
+<pre>
+and(succeeded(), eq('myFeature', 'main'))
+</pre>
 
 If _replaceAll_ is 'true', all occurences in both the main YAML and the templates are replaced.\
 If _replaceAll_ is 'false', the first occurence in both the main YAML and the templates are replaced.

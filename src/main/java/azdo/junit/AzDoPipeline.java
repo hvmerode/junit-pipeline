@@ -8,13 +8,17 @@ import azdo.yaml.ActionEnum;
 import azdo.yaml.YamlDocumentSet;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class AzDoPipeline implements Pipeline {
@@ -116,9 +120,6 @@ public class AzDoPipeline implements Pipeline {
     public void startPipeline() throws IOException {
         startPipeline("master", null);
     }
-    public void startPipeline(List<Hook> hooks) throws IOException {
-        startPipeline("master", hooks);
-    }
     public void startPipeline(String branchName) throws IOException {
         startPipeline("master", null);
     }
@@ -146,21 +147,21 @@ public class AzDoPipeline implements Pipeline {
             recreate = true;
         }
 
-        // Perform the checkout if not master/main
-        // Note, that this may produce an error because it also tries to create a branch if the branch already exists
-//        if (! (branchName == null || branchName.equals("main") || branchName.equals("master") || branchName.equals(""))) {
-            try {
-                logger.info("git.checkout");
-                git.checkout()
-                        .setCreateBranch(true)
-                        .setName(branchName)
-                        .call();
-            }
-            catch (Exception e) {
-                logger.info("==> Exception occurred. Cannot checkout; just continue");
-                e.printStackTrace();
-            }
-//        }
+        // Check whether there is a remote branch
+        boolean isRemote = containsBranch(branchName);
+
+        // Perform the checkout
+        try {
+            logger.info("git.checkout");
+            git.checkout()
+                    .setCreateBranch(!isRemote)
+                    .setName(branchName)
+                    .call();
+        }
+        catch (Exception e) {
+            logger.info("==> Exception occurred. Cannot checkout; just continue");
+            e.printStackTrace();
+        }
 
         // Copy local resources from main source to target directory
         try {
@@ -600,4 +601,23 @@ public class AzDoPipeline implements Pipeline {
     public TestProperties getProperties() {
         return properties;
     }
+
+    private boolean containsBranch(String name) {
+        logger.info("==> Method: containsBranch");
+        try {
+            ListBranchCommand command = git.branchList();
+            command.setListMode(ListBranchCommand.ListMode.ALL);
+            List<Ref> branches = command.call();
+            for (Ref ref : branches) {
+                if (ref.getName().endsWith("/" + name)) {
+                    return true;
+                }
+            }
+        }
+        catch (Exception e) {
+            logger.info("Cannot check whether the branch is remote");
+        }
+        return false;
+    }
 }
+

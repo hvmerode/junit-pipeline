@@ -31,7 +31,9 @@ do not exists, they are automatically created for you. The illustration below sh
 ### How to start
 ***
 #### Create Azure DevOps test project ####
-TODO
+Unfortunately, testing a pipeline within the IDE is not possible. You need an Azure DevOps unit test project for this. Create a project
+using this link: [Create a project in Azure DevOps](https://learn.microsoft.com/en-us/azure/devops/organizations/projects/create-project)
+
 
 ****
 #### Configure junit_pipeline.properties ####
@@ -45,7 +47,7 @@ This file is located in src/main/resources. It contains the properties for your 
 * __target.repository.name__ - The name of the repository used in the Git repository used for testing. Best is to keep the source and target repository names identical.
 * __target.repository.user__ - User used in the Azure DevOps API calls to the test project. Can be the default name 'UserWithToken'.
 * __target.repository.password__ - The PAT (Personal Access Token) used in the Azure DevOps API calls to the test project.\
-  See https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops&tabs=Windows how to create a PAT.\
+  See [Use personal access tokens](https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops&tabs=Windows) how to create a PAT.\
   Make sure this PAT is authorized for all pipelines used in the Azure DevOps test project.
 * __repository.pipeline.path__ - The location of the main pipeline file in the repository (both in source and target).
   It is used to assign the pipeline file when creating a new pipeline in Azure DevOps.
@@ -102,50 +104,171 @@ _template-mock.yml_ for every unit test.
 pipeline.commandBundle.overrideLiteral("templates/steps/template-steps_1.yml", "templates/steps/template-mock.yml");
 ```
 
-***
+#### Hooks ####
+Before the pipeline code is pushed to the Azure DeVOps unit test project, and started, it is possible to execute
+custom code. This code is provided as a list of 'hooks'. The unit test file _PipelineUnit.java_ show an example, __test 3__.\
+This package also contains a few custom hooks:
+* _DeleteJUnitPipelineDependency_ - Deletes the __junit-pipeline__ dependency from the pom.xml, before it is pushed to the
+Azure DevOps unit test project.
+* _DeleteTargetFile_ - Deletes a single file before it is pushed to the Azure DevOps unit test project. 
+
+
 #### Define unit test ####
-The junit_library contains a set of commands - used in the unit tests - to manipulate the pipeline. Let's 
+The __junit_library__ contains a set of commands - used in the unit tests - to manipulate the pipeline. Let's 
 go over them:
 ```java
 public void mockStep(String stepValue, String inlineScript)
-Bla, bla
+-----------------------------------------------------------
+
+The original step is replaced by a mock step. This is a step of type script. The argument 'inlineScript' is added to the mock.
+Depending on the job pool this can be a Powershell script (Windows) or a bash script (Linux)
 ```
-```java
-public void skipJob(String jobName)
-Bla, bla
-```
-```java
-public void overrideVariable(String variableName, String value)
-Bla, bla
-```
-```java
-public void overrideTemplateParameter(String parameterName, String value)
-Bla, bla
-```
-```java
-public void overrideParameterDefault(String parameterName, String value)
-Bla, bla
-```
-```java
-public void overrideLiteral(String findLiteral, String replaceLiteral)
-Bla, bla
-```
-```java
-public void skipJob(String jobName)
-Bla, bla
-```
+
 ```java
 public void skipStage(String stageName)
-Bla, bla
+---------------------------------------
+
+Skip a stage.        
+The result is, that the stage is completely removed from the output pipeline yaml file, which basically is
+the same as skipping it.
+
+Example:
+=======
+- stage: my_stage
+  displayName: 'This is my stage'
+
+Call skipStage("my_stage")
+ ==> The stage with name "my_stage" is skipped
 ```
+
+```java
+public void skipJob(String jobName)
+-----------------------------------
+
+Skip a job.
+The result is, that the job is completely removed from the output pipeline yaml file, which basically is
+the same as skipping it.
+
+Example:
+=======
+- job: my_job
+  displayName: 'This is my job'
+
+Call skipJob("my_job")
+==> The job with name "my_job" is skipped
+```
+
+```java
+public void overrideVariable(String variableName, String value)
+---------------------------------------------------------------
+
+Replace the value of a variable in the 'variables' section. Two constructions are possible:
+
+Construction 1:
+==============
+variables:
+myVar : myValue
+
+Construction 2:
+==============
+variables:
+- name: myVar
+  value: myValue
+
+overrideVariable("myVar", "myNewValue") results in resp.
+variables:
+myVar : myNewValue
+
+variables:
+- name: myVar
+  value: myNewValue
+
+This method does not replace variables defined in a Library.
+```
+
+```java
+public void overrideTemplateParameter(String parameterName, String value)
+-------------------------------------------------------------------------        
+
+Replace the value of a parameter in a 'template' section. Example:
+- template: step/mytemplate.yml
+  parameters:
+    tag: $(version)
+
+To replace the version to a fixed value (2.1.0), use:
+overrideTemplateParameter("tag", "2.1.0"). This results in:
+- template: step/mytemplate.yml
+  parameters:
+    tag: 2.1.0
+```
+
+```java
+public void overrideParameterDefault(String parameterName, String value)
+------------------------------------------------------------------------
+
+Replace the default value of a parameter in the 'parameters' section. Example:
+- name: myNumber
+  type: number
+  default: 2
+  values:
+  - 1
+  - 2
+  - 4
+
+overrideParameterDefault("myNumber", "4") result in:
+- name: myNumber
+  type: number
+  default: 4
+  values:
+  - 1
+  - 2
+  - 4
+```
+
+```java
+public void overrideLiteral(String findLiteral, String replaceLiteral)
+----------------------------------------------------------------------
+
+Override (or overwrite) any arbitrary string in the yaml file.
+- task: AzureWebApp@1
+  displayName: Azure Web App Deploy
+  inputs:
+    azureSubscription: $(azureSubscription)
+    appName: samplewebapp
+
+Calling pipeline.overrideLiteral ("$(azureSubscription)", "1234567890") results in
+- task: AzureWebApp@1
+  displayName: Azure Web App Deploy
+  inputs:
+    azureSubscription: 1234567890
+    appName: samplewebapp
+
+If replaceAll is 'true' all occurences of literal in both the main YAML and the templates are replaced.
+If replaceAll is 'false' the first occurence of literal in both the main YAML and the templates are replaced.
+```
+
 ```java
 public void overrideCurrentBranch(String newBranchName)
-Bla, bla
+-------------------------------------------------------
+
+Replace the current branch with a given branch name.
+Example: Assume the following condition:
+    and(succeeded(), eq(variables['Build.SourceBranchName'], 'main'))
+
+After applying public void overrideCurrentBranch("myFeature") it becomes
+    and(succeeded(), eq('myFeature', 'main'))
+
+If replaceAll is 'true', all occurences in both the main YAML and the templates are replaced.
+If replaceAll is 'false', the first occurence in both the main YAML and the templates are replaced.
 ```
 
 ***
 #### Start unit tests and retrieve the result ####
-TODO
+The startPipeline method has a few representations:
+* _startPipeline()_ - Starts the pipeline with the default branch (in most cases, this is the _master_ branch).
+* _startPipeline(String branchName)_ - Starts the pipeline with a given branch, for example a _feature_ branch.
+* _startPipeline(String branchName, List<Hook> hooks)_ - Starts the pipeline with a given branch but
+  before the pipeline starts, the list with 'hooks' is executed.
 
 ***
 ### Known limitations ##
@@ -153,15 +276,15 @@ TODO
   test must wait before the previous one is completed.
 * Only YAML templates in the same repository are taken into account. Templates in other repositories (identified with a @ behind the template name) are ignored.
 * If the pipeline makes use of a resource in the test project for the first time, it needs manual approval first; for example, a variable group or an Environment.
-* Sometimes you get the error "org.eclipse.jgit.api.errors.RefAlreadyExistsException: Ref myFeature already exists". This
-  happens if a branch already exists (the checkout wants to create it again). Just ignore this error.
 * If unknown service connections are used or the updated pipeline code is not valid YAML anymore, the AzDo API returns an HTTP status code 400.
 * No methods yet to add, update or remove conditions in stages or jobs. Use the _overrideLiteral_ method, if possible.
 * At the start, the local target repository and the remote target repository (of the test project) can become out-of-sync. Delete both the local and the remote repo and start again.
 * Copying files from the main local repo to the test local repo involves exclusion of files, using an exclusion list. This list is currently hardcoded\
   and contains "idea, target, .git and class". This should be made configurable in the _junit_pipeline.properties_ file.
-  
 
+
+* ~~Sometimes you get the error "org.eclipse.jgit.api.errors.RefAlreadyExistsException: Ref myFeature already exists". This
+  happens if a branch already exists (the checkout wants to create it again). Just ignore this error.~~
 * ~~With the introduction of tests running in multiple branches, it is not possible to run multiple tests in one go. Second test fails
 because cloning/checkout is not possible somehow~~
 * ~~The updated pipeline code is pushed to the _default branch_ in the test project (master); pushing to other branches is not possible.~~

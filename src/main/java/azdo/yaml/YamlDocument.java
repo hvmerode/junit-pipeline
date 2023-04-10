@@ -410,17 +410,10 @@ public class YamlDocument {
         logger.info("==> inlineScript: " + inlineScript);
 
         String subType = "task";
-        switch (sectionName){
-            case "stages":
-                subType = "stage";
-                return;
-            case "jobs":
-                subType = "job";
-                return;
-            case "steps":
-                subType = "task";
-                return;
-        }
+        if ("stages".equals(sectionName))
+            subType = "stage";
+        else if ("jobs".equals(sectionName))
+            subType = "job";
 
         // Run trough the elements of the list and mock the one with key/value
         if (section.getValue() instanceof ArrayList) {

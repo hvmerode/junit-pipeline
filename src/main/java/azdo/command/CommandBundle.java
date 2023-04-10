@@ -17,13 +17,13 @@ public class CommandBundle {
 
     public void overrideVariable(String variableName, String value, boolean replaceAll) {
         logger.info("==> Method CommandBundle.overrideVariable");
-        CommandOverrideVariable command = new CommandOverrideVariable(variableName, value, replaceAll);
+        CommandOverrideVariable command = new CommandOverrideVariable(variableName, value);
         commands.add(command);
     }
 
     public void overrideParameterDefault(String parameterName, String value, boolean replaceAll) {
         logger.info("==> Method CommandBundle.overrideVariable");
-        CommandOverrideParameterDefault command = new CommandOverrideParameterDefault(parameterName, value, replaceAll);
+        CommandOverrideParameterDefault command = new CommandOverrideParameterDefault(parameterName, value);
         commands.add(command);
     }
 
@@ -33,7 +33,7 @@ public class CommandBundle {
 
     public void overrideTemplateParameter(String parameterName, String value, boolean replaceAll) {
         logger.info("==> Method CommandBundle.overrideTemplateParameter");
-        CommandOverrideTemplateParameter command = new CommandOverrideTemplateParameter(parameterName, value, replaceAll);
+        CommandOverrideTemplateParameter command = new CommandOverrideTemplateParameter(parameterName, value);
         commands.add(command);
     }
 

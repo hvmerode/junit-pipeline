@@ -286,7 +286,6 @@ public class AzDoPipeline implements Pipeline {
                     .call();
 
             logger.info("git.push");
-            //RefSpec refSpec = new RefSpec("master");
             git.push()
                     .setPushAll()
                     .setCredentialsProvider(credentialsProvider)

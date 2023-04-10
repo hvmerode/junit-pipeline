@@ -29,7 +29,16 @@ stages:
           # Validate whether pipeline variables (stored in Variable Groups) are configured
           # The pipeline stops is a mandatory variable is not configured
           - script: |
-              echo 'Not yet implemented'
+              echo 'Variable releaseBuild is not configured'
+              exit 1
+            displayName: 'Exit if the releaseBuild variable is not configured'
+            condition: eq(variables['releaseBuild'], '')
+
+          - script: |
+              echo 'Variable releaseVersion is not configured'
+              exit 1
+            displayName: 'Exit if the releaseVersion variable is not configured'
+            condition: eq(variables['releaseVersion'], '')
 
     #################################################################################################################
     # STAGE: Execute build + Package artifact + Publish artifact
@@ -112,7 +121,7 @@ stages:
           - task: SonarCloudPrepare@1
             inputs:
               SonarCloud: SonarCloudGithub
-              organization: 'hvmerode'
+              organization: 'io.github.hvmerode'
               scannerMode: 'Other'
               extraProperties: |
                 # Additional properties that will be passed to the scanner,
@@ -149,4 +158,4 @@ stages:
             displayName: 'Sonar Cloud build breaker'
             inputs:
               SonarCloud: 'SonarCloudGithub'
-              organization: 'hvmerode'
+              organization: 'io.github.hvmerode'

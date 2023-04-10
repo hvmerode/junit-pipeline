@@ -79,6 +79,10 @@ public class AzDoApi<runResult> {
                 return response;
             }
 
+        catch (InterruptedException e) {
+            logger.info("Interrupted!", e);
+            Thread.currentThread().interrupt();
+        }
         catch (Exception e) {
             logger.info("Exception:" + e.getLocalizedMessage());
         }

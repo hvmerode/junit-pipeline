@@ -121,13 +121,13 @@ stages:
           - task: SonarCloudPrepare@1
             inputs:
               SonarCloud: SonarCloudGithub
-              organization: 'hvmerode'
+              organization: 'io-github-hvmerode'
               scannerMode: 'Other'
               extraProperties: |
                 # Additional properties that will be passed to the scanner,
                 # Put one key=value per line, example:
                 # sonar.exclusions=**/*.bin
-                sonar.projectKey=io.github.hvmerode:junit-pipeline
+                sonar.projectKey=hvmerode_junit-pipeline
                 sonar.projectName=junit-pipeline
 
             # Add pipeline caching; force invalidating the cache each month
@@ -158,4 +158,4 @@ stages:
             displayName: 'Sonar Cloud build breaker'
             inputs:
               SonarCloud: 'SonarCloudGithub'
-              organization: 'hvmerode'
+              organization: 'io-github-hvmerode'

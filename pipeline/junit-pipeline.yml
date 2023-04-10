@@ -131,8 +131,8 @@ stages:
                 sonar.projectName=junit-pipeline
 
                 # For now, suppres 'Code Coverage' and 'Duplications'
-                sonar.coverage.exclusions=$(Agent.TempDirectory)\**\*.*
-                sonar.cpd.exclusions=$(Agent.TempDirectory)\**\*.*
+                sonar.coverage.exclusions=**\*.*
+                sonar.cpd.exclusions=**\*.*
 
             # Add pipeline caching; force invalidating the cache each month
           - task: Cache@2

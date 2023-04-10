@@ -286,7 +286,7 @@ public class AzDoApi<runResult> {
 
         HttpResponse response = callApi(properties, http, HttpMethod.GET, null);
 
-        // Get the repository id from the response
+        // Get the pipeline id from the response
         Yaml yaml = new Yaml();
         String name = null;
         if (response != null) {

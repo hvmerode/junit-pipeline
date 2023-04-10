@@ -20,7 +20,7 @@ public class YamlDocumentSet {
     private ArrayList<String> templateList;
 
     // Contains a map with filename + yamlDocument
-    private Map<String, YamlDocument> yamlDocuments = new LinkedHashMap<String, YamlDocument>();
+    private Map<String, YamlDocument> yamlDocuments = new LinkedHashMap<>();
 
     /*
        Reads the original main pipeline file from the local file system and creates a main YAML map object.
@@ -47,7 +47,7 @@ public class YamlDocumentSet {
 
         // Get the template files
         // Only the local templates are taken into account. External templates are excluded from unit tests
-        templateList = new ArrayList<String>();
+        templateList = new ArrayList<>();
         getTemplates(yamlMap);
 
         // Then read the template YAML files

@@ -432,7 +432,7 @@ public class YamlDocument {
                         // Replace the entry from the list with the
                         if (subType.equals(entry.getKey()) && id.equals(entry.getValue())) {
                             logger.info("Mock: " + subType + " with name " + id);
-                            LinkedHashMap<String, String> mock = new LinkedHashMap<String, String>();
+                            LinkedHashMap<String, String> mock = new LinkedHashMap<>();
                             mock.put ("script", inlineScript);
                             list.remove(index);
                             list.add(index, mock);

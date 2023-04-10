@@ -130,6 +130,10 @@ stages:
                 sonar.projectKey=hvmerode_junit-pipeline
                 sonar.projectName=junit-pipeline
 
+                # For now, suppres 'Code Coverage' and 'Duplications'
+                sonar.coverage.exclusions=$(Agent.TempDirectory)\**\*.*
+                sonar.cpd.exclusions=$(Agent.TempDirectory)\**\*.*
+
             # Add pipeline caching; force invalidating the cache each month
           - task: Cache@2
             displayName: 'Cache Maven local repo'

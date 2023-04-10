@@ -13,32 +13,24 @@ import java.util.ArrayList;
  */
 public class CommandBundle {
     private static Logger logger = LoggerFactory.getLogger(CommandBundle.class);
-    private ArrayList<Command> commands = new ArrayList<Command>();
+    private ArrayList<Command> commands = new ArrayList<>();
 
-    public void overrideVariable(String variableName, String value, boolean replaceAll) {
+    public void overrideVariable(String variableName, String value) {
         logger.info("==> Method CommandBundle.overrideVariable");
         CommandOverrideVariable command = new CommandOverrideVariable(variableName, value);
         commands.add(command);
     }
 
-    public void overrideParameterDefault(String parameterName, String value, boolean replaceAll) {
+    public void overrideParameterDefault(String parameterName, String value) {
         logger.info("==> Method CommandBundle.overrideVariable");
         CommandOverrideParameterDefault command = new CommandOverrideParameterDefault(parameterName, value);
         commands.add(command);
     }
 
-    public void overrideParameterDefault(String parameterName, String value) {
-        overrideParameterDefault(parameterName, value, true);
-    }
-
-    public void overrideTemplateParameter(String parameterName, String value, boolean replaceAll) {
+    public void overrideTemplateParameter(String parameterName, String value) {
         logger.info("==> Method CommandBundle.overrideTemplateParameter");
         CommandOverrideTemplateParameter command = new CommandOverrideTemplateParameter(parameterName, value);
         commands.add(command);
-    }
-
-    public void overrideTemplateParameter(String parameterName, String value) {
-        overrideTemplateParameter(parameterName, value, true);
     }
 
     public void overrideLiteral(String findLiteral, String replaceLiteral, boolean replaceAll) {

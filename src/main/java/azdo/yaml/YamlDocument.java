@@ -412,9 +412,15 @@ public class YamlDocument {
 
         String subType = "task";
         switch (sectionName){
-            case "stages": subType = "stage";
-            case "jobs": subType = "job";
-            case "steps": subType = "task";
+            case "stages":
+                subType = "stage";
+                return;
+            case "jobs":
+                subType = "job";
+                return;
+            case "steps":
+                subType = "task";
+                return;
         }
 
         // Run trough the elements of the list and mock the one with key/value

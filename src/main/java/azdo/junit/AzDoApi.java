@@ -66,15 +66,13 @@ public class AzDoApi<runResult> {
                 HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
                 if (response == null) {
                     logger.info("==> Response is null");
-                    throw new IOException();
                 }
                 else {
                     logger.info("==> AzDo API response" + response.toString());
 
                     // check whether the HTTP status code is valid
                     if (response.statusCode() > 299) {
-                        Exception e = new Exception("Received invalid HTTP status code from Azure DevOps API");
-                        throw e;
+                        logger.info("==> Statuscode > 299");
                     }
                 }
 
@@ -104,27 +102,29 @@ public class AzDoApi<runResult> {
         // Get the project id from the response
         Yaml yaml = new Yaml();
         String name = null;
-        Map<String, Object> yamlMap = yaml.load(response.body().toString());
-        logger.info("==> Response is: " + yamlMap.toString());
-        if (yamlMap.get("value") instanceof ArrayList) {
-            ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get("value");
-            if (arr != null) {
-                int size = arr.size();
+        if (response != null) {
+            Map<String, Object> yamlMap = yaml.load(response.body().toString());
+            logger.info("==> Response is: " + yamlMap.toString());
+            if (yamlMap.get("value") instanceof ArrayList) {
+                ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get("value");
+                if (arr != null) {
+                    int size = arr.size();
 
-                // Go through list of values
-                for (int counter = 0; counter < size; counter++) {
-                    LinkedHashMap<String, Object> value = ((LinkedHashMap<String, Object>) arr.get(counter));
-                    name = value.get("name").toString();
-                    if (name != null && name.equals(projectName)){
-                        logger.info("==> Found project " + projectName);
-                        projectId = value.get("id").toString();
-                        break;
+                    // Go through list of values
+                    for (int counter = 0; counter < size; counter++) {
+                        LinkedHashMap<String, Object> value = ((LinkedHashMap<String, Object>) arr.get(counter));
+                        name = value.get("name").toString();
+                        if (name != null && name.equals(projectName)) {
+                            logger.info("==> Found project " + projectName);
+                            projectId = value.get("id").toString();
+                            break;
+                        }
                     }
                 }
             }
+            logger.info("==> Project id is: " + projectId);
         }
 
-        logger.info("==> Project id is: " + projectId);
         return projectId;
     }
 
@@ -151,7 +151,8 @@ public class AzDoApi<runResult> {
                     BRACKET_CLOSE;
 
             HttpResponse response = callApi(properties, http, HttpMethod.POST, json);
-            logger.info("==> Response is: " + response.toString());
+            if (response != null)
+                logger.info("==> Response is: " + response.toString());
         }
     }
 
@@ -189,22 +190,24 @@ public class AzDoApi<runResult> {
 
             // Get the result from the response
             yaml = new Yaml();
-            Map<String, Object> yamlMap = yaml.load(response.body().toString());
-            logger.info("==> Response is: " + yamlMap.toString());
-            if (yamlMap.get("value") instanceof ArrayList) {
-                ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get("value");
-                if (arr != null) {
-                    int size = arr.size();
+            if (response != null) {
+                Map<String, Object> yamlMap = yaml.load(response.body().toString());
+                logger.info("==> Response is: " + yamlMap.toString());
+                if (yamlMap.get("value") instanceof ArrayList) {
+                    ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get("value");
+                    if (arr != null) {
+                        int size = arr.size();
 
-                    // Go through list of values (should be only 1)
-                    for (int counter = 0; counter < size; counter++) {
-                        LinkedHashMap<String, Object> value = ((LinkedHashMap<String, Object>) arr.get(counter));
-                        if (value.get("status") != null)
-                            status = value.get("status").toString();
-                        if (value.get("result") != null)
-                            result = value.get("result").toString();
-                        if (value.get("buildNumber") != null)
-                            buildNumber = value.get("buildNumber").toString();
+                        // Go through list of values (should be only 1)
+                        for (int counter = 0; counter < size; counter++) {
+                            LinkedHashMap<String, Object> value = ((LinkedHashMap<String, Object>) arr.get(counter));
+                            if (value.get("status") != null)
+                                status = value.get("status").toString();
+                            if (value.get("result") != null)
+                                result = value.get("result").toString();
+                            if (value.get("buildNumber") != null)
+                                buildNumber = value.get("buildNumber").toString();
+                        }
                     }
                 }
             }
@@ -217,7 +220,7 @@ public class AzDoApi<runResult> {
             timeElapsed = Duration.between(start, finish).toSeconds();
             logger.info("==> Time elapsed: " + Long.toString(timeElapsed));
 
-            if (runResult.result == RunResult.Result.none && timeElapsed > (long)timeout) {
+            if (runResult.result == RunResult.Result.none && timeElapsed > (long) timeout) {
                 runResult.result = RunResult.Result.undetermined;
                 runResult.status = RunResult.Status.timeout;
             }
@@ -225,6 +228,7 @@ public class AzDoApi<runResult> {
             logger.info("==> Status response: " + runResult.status.toString());
             logger.info("==> Status response: " + runResult.status.toString());
         }
+
         return runResult;
     }
 
@@ -253,11 +257,13 @@ public class AzDoApi<runResult> {
 
         // Get the pipeline id from the response
         Yaml yaml = new Yaml();
-        Map<String, Object> yamlMap = yaml.load(response.body().toString());
-        logger.info("==> Response is: " + yamlMap.toString());
-        if (yamlMap.get("id") != null) {
-            pipelineId = yamlMap.get("id").toString();
-            logger.info("==> Pipeline id is: " + pipelineId);
+        if (response != null) {
+            Map<String, Object> yamlMap = yaml.load(response.body().toString());
+            logger.info("==> Response is: " + yamlMap.toString());
+            if (yamlMap.get("id") != null) {
+                pipelineId = yamlMap.get("id").toString();
+                logger.info("==> Pipeline id is: " + pipelineId);
+            }
         }
 
         return pipelineId;
@@ -279,27 +285,29 @@ public class AzDoApi<runResult> {
         // Get the repository id from the response
         Yaml yaml = new Yaml();
         String name = null;
-        Map<String, Object> yamlMap = yaml.load(response.body().toString());
-        logger.info("==> Response is: " + yamlMap.toString());
-        if (yamlMap.get("value") instanceof ArrayList) {
-            ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get("value");
-            if (arr != null) {
-                int size = arr.size();
+        if (response != null) {
+            Map<String, Object> yamlMap = yaml.load(response.body().toString());
+            logger.info("==> Response is: " + yamlMap.toString());
+            if (yamlMap.get("value") instanceof ArrayList) {
+                ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get("value");
+                if (arr != null) {
+                    int size = arr.size();
 
-                // Go through list of values
-                for (int counter = 0; counter < size; counter++) {
-                    LinkedHashMap<String, Object> value = ((LinkedHashMap<String, Object>) arr.get(counter));
-                    name = value.get("name").toString();
-                    if (name != null && name.equals(pipelineName)){
-                        logger.info("==> Found pipeline " + pipelineName);
-                        pipelineId = value.get("id").toString();
-                        break;
+                    // Go through list of values
+                    for (int counter = 0; counter < size; counter++) {
+                        LinkedHashMap<String, Object> value = ((LinkedHashMap<String, Object>) arr.get(counter));
+                        name = value.get("name").toString();
+                        if (name != null && name.equals(pipelineName)) {
+                            logger.info("==> Found pipeline " + pipelineName);
+                            pipelineId = value.get("id").toString();
+                            break;
+                        }
                     }
                 }
             }
+            logger.info("==> Pipeline id is: " + pipelineId);
         }
 
-        logger.info("==> Pipeline id is: " + pipelineId);
         return pipelineId;
     }
 
@@ -319,13 +327,17 @@ public class AzDoApi<runResult> {
                 TAB + BRACKET_CLOSE + NEXTLINE +
                 BRACKET_CLOSE;
         HttpResponse response = callApi(properties, http, HttpMethod.POST, json);
-        logger.info("==> AzDo API response body" + response.body().toString());
 
-        // Get the repository id from the response
-        Yaml yaml = new Yaml();
-        Map<String, Object> yamlMap = yaml.load(response.body().toString());
-        repositoryId = yamlMap.get("id").toString();
-        logger.info("==> Repository id is: " + repositoryId);
+        if (response != null) {
+            logger.info("==> AzDo API response body" + response.body().toString());
+
+            // Get the repository id from the response
+            Yaml yaml = new Yaml();
+            Map<String, Object> yamlMap = yaml.load(response.body().toString());
+            repositoryId = yamlMap.get("id").toString();
+            logger.info("==> Repository id is: " + repositoryId);
+        }
+
         return repositoryId;
     }
 
@@ -343,13 +355,17 @@ public class AzDoApi<runResult> {
                 TAB + DOUBLE_QUOTE + "defaultBranch" + DQUOTE_SCOL_DQUOTE + branchName + DOUBLE_QUOTE + NEXTLINE +
                 BRACKET_CLOSE;
         HttpResponse response = callApi(properties, http, HttpMethod.PATCH, json);
-        logger.info("==> AzDo API response body" + response.body().toString());
 
-        // Get the repository id from the response
-        Yaml yaml = new Yaml();
-        Map<String, Object> yamlMap = yaml.load(response.body().toString());
-        repositoryId = yamlMap.get("id").toString();
-        logger.info("==> Repository id is: " + repositoryId);
+        if (response != null) {
+            logger.info("==> AzDo API response body" + response.body().toString());
+
+            // Get the repository id from the response
+            Yaml yaml = new Yaml();
+            Map<String, Object> yamlMap = yaml.load(response.body().toString());
+            repositoryId = yamlMap.get("id").toString();
+            logger.info("==> Repository id is: " + repositoryId);
+        }
+
         return repositoryId;
     }
 
@@ -370,27 +386,29 @@ public class AzDoApi<runResult> {
         // Get the repository id from the response
         Yaml yaml = new Yaml();
         String name;
-        Map<String, Object> yamlMap = yaml.load(response.body().toString());
-        logger.info("==> Response is: " + yamlMap.toString());
-        if (yamlMap.get("value") instanceof ArrayList) {
-            ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get("value");
-            if (arr != null) {
-                int size = arr.size();
+        if (response != null) {
+            Map<String, Object> yamlMap = yaml.load(response.body().toString());
+            logger.info("==> Response is: " + yamlMap.toString());
+            if (yamlMap.get("value") instanceof ArrayList) {
+                ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get("value");
+                if (arr != null) {
+                    int size = arr.size();
 
-                // Go through list of values
-                for (int counter = 0; counter < size; counter++) {
-                    LinkedHashMap<String, Object> value = ((LinkedHashMap<String, Object>) arr.get(counter));
-                    name = value.get("name").toString();
-                    if (name != null && name.equals(repositoryName)){
-                        logger.info("==> Found repository " + repositoryName);
-                        repositoryId = value.get("id").toString();
-                        break;
+                    // Go through list of values
+                    for (int counter = 0; counter < size; counter++) {
+                        LinkedHashMap<String, Object> value = ((LinkedHashMap<String, Object>) arr.get(counter));
+                        name = value.get("name").toString();
+                        if (name != null && name.equals(repositoryName)) {
+                            logger.info("==> Found repository " + repositoryName);
+                            repositoryId = value.get("id").toString();
+                            break;
+                        }
                     }
                 }
             }
+            logger.info("==> Repository id is: " + repositoryId);
         }
 
-        logger.info("==> Repository id is: " + repositoryId);
         return repositoryId;
     }
 }

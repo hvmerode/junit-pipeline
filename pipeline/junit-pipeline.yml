@@ -5,12 +5,9 @@ name: $(Date:yyyyMMdd)$(Rev:.r)
 trigger: none
 
 variables:
+  - group: junit-pipeline-group
   - name: MAVEN_CACHE_FOLDER
     value: $(Pipeline.Workspace)/.m2/repository
-  - name: releaseBuild
-    value: 'false'
-  - name: releaseVersion
-    value: 1.0.0-alpha
 
 stages:
   #################################################################################################################
@@ -121,7 +118,7 @@ stages:
                 # Additional properties that will be passed to the scanner,
                 # Put one key=value per line, example:
                 # sonar.exclusions=**/*.bin
-                sonar.projectKey=hvmerode-junit-pipeline
+                sonar.projectKey=io.github.hvmerode:junit-pipeline
                 sonar.projectName=junit-pipeline
 
             # Add pipeline caching; force invalidating the cache each month

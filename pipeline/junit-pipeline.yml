@@ -121,7 +121,7 @@ stages:
           - task: SonarCloudPrepare@1
             inputs:
               SonarCloud: SonarCloudGithub
-              organization: 'io.github.hvmerode'
+              organization: 'hvmerode'
               scannerMode: 'Other'
               extraProperties: |
                 # Additional properties that will be passed to the scanner,
@@ -158,4 +158,4 @@ stages:
             displayName: 'Sonar Cloud build breaker'
             inputs:
               SonarCloud: 'SonarCloudGithub'
-              organization: 'io.github.hvmerode'
+              organization: 'hvmerode'

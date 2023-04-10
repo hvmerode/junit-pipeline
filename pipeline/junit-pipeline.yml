@@ -73,50 +73,11 @@ stages:
               testResultsFiles: '**/TEST-*.xml'
               publishJUnitResults: true
 
-            # Prepare Git repo for release tagging: Set commiter identity
-#          - script: |
-#              git config user.email $(azdo-user)
-#              git config user.name $(azdo-user)
-#              git checkout -b $(Build.SourceBranchName)
-#            condition: eq(variables['releaseBuild'], 'true')
-#            displayName: 'Prepare Git repo for release tagging'
-
-            # Perform Maven 'release build' if branch is main
-#          - task: Maven@3
-#            condition: eq(variables['releaseBuild'], 'true')
-#            displayName: 'Build artifacts (main branch)'
-#            inputs:
-#              goals: 'clean package -U'
-#              javaHomeOption: 'JDKVersion'
-#              jdkVersionOption: '1.11'
-#              jdkArchitectureOption: 'x64'
-#              sonarQubeRunAnalysis: false
-#              options: '-B scm:tag -Dtag=$(releaseVersion) -Dusername=$(azdo-user) -Dpassword=$(personal-access-token) -DscmBranch=$(Build.SourceBranchName) -Drevision=$(releaseVersion) -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
-#              testResultsFiles: '**/TEST-*.xml'
-#              publishJUnitResults: true
-
-            # Unset commiter identity
-#          - script: |
-#              git config --unset user.email
-#              git config --unset user.name
-#              git checkout $(Build.SourceVersion)
-#              git branch -D $(Build.SourceBranchName)
-#            condition: eq(variables['releaseBuild'], 'true')
-#            displayName: 'Unset commiter identity'
-
             # Tag the pipeline if a release artifact is build
           - script: |
               echo "##vso[build.addbuildtag]$(releaseVersion)"
             condition: and(succeeded(), eq(variables['releaseBuild'], 'true'))
             displayName: 'Tag the pipeline with a version'
-
-            # Create a SH256 checksum of the application jar file
-#          - script: |
-#              export application=`find $(Pipeline.Workspace) -name application*shaded.jar`
-#              echo "SHA256 checksum of $application"
-#              sha256sum $application
-#            condition: and(succeeded(), eq(variables['Build.SourceBranchName'], 'main'))
-#            displayName: 'Calculate SHA256 checksum of the application jar file'
 
             # Publish the artifacts
           - task: CopyFiles@2
@@ -136,72 +97,59 @@ stages:
     # This stage runs in parallel with the Execute_build_publish stage to speed up the pipeline execution time.
     # It makes use of SonarCloud to validate the Java code amd Whispers to check on secrets in the respo.
     #################################################################################################################
-#  - stage: Analyze_code
-#    displayName: 'Analyze code'
-#    dependsOn: Validate_entry_criteria
-#    condition: succeeded()
-#    jobs:
+  - stage: Analyze_code
+    displayName: 'Analyze code'
+    dependsOn: Validate_entry_criteria
+    condition: succeeded()
+    jobs:
       # Perform SonarCloud analysis
-#      - job: SonarCloud
-#        pool:
-#          vmImage: 'ubuntu-latest'
-#          demands: maven
-#        workspace:
-#          clean: all
-#        continueOnError: "false"
+      - job: SonarCloud
+        pool:
+          vmImage: 'ubuntu-latest'
+          demands: maven
+        workspace:
+          clean: all
+        continueOnError: "false"
 
-#        steps:
-#          - task: SonarCloudPrepare@1
-#            inputs:
-#              SonarCloud: $(service-connection-sonarcloud)
-#              organization: 'mycorp-com'
-#              scannerMode: 'Other'
-#              extraProperties: |
+        steps:
+          - task: SonarCloudPrepare@1
+            inputs:
+              SonarCloud: SonarCloudGithub
+              organization: 'hvmerode'
+              scannerMode: 'Other'
+              extraProperties: |
                 # Additional properties that will be passed to the scanner,
                 # Put one key=value per line, example:
                 # sonar.exclusions=**/*.bin
-#                sonar.projectKey=mycorp-com_myapp
-#                sonar.projectName=myapp
+                sonar.projectKey=hvmerode-junit-pipeline
+                sonar.projectName=junit-pipeline
 
             # Add pipeline caching; force invalidating the cache each month
-#          - task: Cache@2
-#            displayName: 'Cache Maven local repo'
-#            inputs:
-#              key: 'cucumber | "$(Agent.OS)" | **/pom.xml'
-#              path: $(MAVEN_CACHE_FOLDER)
+          - task: Cache@2
+            displayName: 'Cache Maven local repo'
+            inputs:
+              key: 'maven | "$(Agent.OS)" | **/pom.xml'
+              path: $(MAVEN_CACHE_FOLDER)
 
-            # Perform Sonar Cloud check; do not pass the release version because this is not a release build
-#          - task: Maven@3
+            # Perform Sonar Cloud check
+          - task: Maven@3
 #            condition: ne(variables['Build.SourceBranchName'], 'main')
-#            displayName: 'Sonar Cloud build if branch <> main'
-#            inputs:
-#              goals: 'clean verify -U sonar:sonar -DskipTests'
-#              javaHomeOption: 'JDKVersion'
-#              jdkVersionOption: '1.11'
-#              jdkArchitectureOption: 'x64'
-#              sonarQubeRunAnalysis: true
-#              options: '-B -DscmBranch=$(Build.SourceBranchName) -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
-#              publishJUnitResults: false
+            displayName: 'Sonar Cloud build'
+            inputs:
+              goals: 'clean verify -U sonar:sonar -DskipTests'
+              javaHomeOption: 'JDKVersion'
+              jdkVersionOption: '1.11'
+              jdkArchitectureOption: 'x64'
+              sonarQubeRunAnalysis: true
+              options: '-B -DscmBranch=$(Build.SourceBranchName) -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
+              publishJUnitResults: false
 
-            # Perform Sonar Cloud check; pass the release version because this IS a release build
-#          - task: Maven@3
-#            condition: eq(variables['Build.SourceBranchName'], 'main')
-#            displayName: 'Sonar Cloud build if branch == main'
-#            inputs:
-#              goals: 'clean verify -U sonar:sonar -DskipTests'
-#              javaHomeOption: 'JDKVersion'
-#              jdkVersionOption: '1.11'
-#              jdkArchitectureOption: 'x64'
-#              sonarQubeRunAnalysis: true
-#              options: '-B -DscmBranch=$(Build.SourceBranchName) -Drevision=$(releaseVersion) -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
-#              publishJUnitResults: false
+          - task: SonarCloudPublish@1
+            inputs:
+              pollingTimeoutSec: '300'
 
-#          - task: SonarCloudPublish@1
-#            inputs:
-#              pollingTimeoutSec: '300'
-
-#          - task: sonarcloud-buildbreaker@2
-#            displayName: 'Sonar Cloud build breaker'
-#            inputs:
-#              SonarCloud: 'ServiceConnectionSonarCloud'
-#              organization: 'mycorp-com'
+          - task: sonarcloud-buildbreaker@2
+            displayName: 'Sonar Cloud build breaker'
+            inputs:
+              SonarCloud: 'SonarCloudGithub'
+              organization: 'hvmerode'

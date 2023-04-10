@@ -81,9 +81,7 @@ public class AzDoApi<runResult> {
                 return response;
             }
 
-        catch (IOException e) {
-            logger.info("IOException:" + e.getLocalizedMessage());
-        } catch (Exception e) {
+        catch (Exception e) {
             logger.info("Exception:" + e.getLocalizedMessage());
         }
 
@@ -207,7 +205,6 @@ public class AzDoApi<runResult> {
                             result = value.get("result").toString();
                         if (value.get("buildNumber") != null)
                             buildNumber = value.get("buildNumber").toString();
-                        break;
                     }
                 }
             }

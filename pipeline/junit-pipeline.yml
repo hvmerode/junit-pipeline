@@ -45,7 +45,7 @@ stages:
     # Performs Maven snapshot- and release build
     #################################################################################################################
   - stage: Execute_build_publish
-    displayName: 'Execute build, Perform unit tests and Package/Publish artifact'
+    displayName: 'Execute build, and Package/Publish artifact'
     dependsOn: Validate_entry_criteria
     condition: succeeded()
     jobs:

@@ -10,7 +10,7 @@ Development is still in an experimental phase and it may cause some issues when 
 ### How it works ###
 ***
 Assume that your application and pipeline code reside in a repository called "myrepo" in the Azure DevOps project "MyApp".
-Development on the (Java) app is straightforward. With the ___junit_pipeline___ libray, it becomes also possible to test the
+Development on the (Java) app is straightforward. With the ___junit-pipeline___ libray, it becomes also possible to test the
 pipeline code (in this case an Azure DevOps pipeline in YAML).
 Testing the pipeline code is performed by JUnit tests. In these tests, the original pipeline code is manipulated according to your needs.
 Assume, you want to mock your deployment task to prevent something to be deployed to your AWS account. With a few lines, the "AWSShellScript@1"
@@ -24,7 +24,7 @@ To test the manipulated script, execute it like this:
 ```java
 pipeline.startPipeline();
 ```
-The ___junit_pipeline___ library connects with the Azure DevOps test project (for example project "UnitTest"), and pushes the code to your test 
+The ___junit-pipeline___ library connects with the Azure DevOps test project (for example project "UnitTest"), and pushes the code to your test 
 repository (which can also be called "myrepo", if you want). It then executes the pipeline. If the repository and/or the pipeline in project "UnitTest" 
 do not exists, they are automatically created for you. The illustration below shows how it works in concept.
 
@@ -45,7 +45,7 @@ This file is located in src/main/resources. It contains the properties for your 
 * __source.path__ - Contains the location (directory) of the main local Git repository on your computer. This is the repository in which you develop your 
   app and the associated pipeline. In the example case, this repository is called "myrepo".
 * __target.path__ - Contains the location (directory) of the local Git repository used to test the pipeline. You are not actively working in this repo.\
-  It is only used for the __junit_pipeline__ framework to communicate with the Azure DevOps test project. Before you start, this directory must not exist.
+  It is only used for the __junit-pipeline__ framework to communicate with the Azure DevOps test project. Before you start, this directory must not exist.
 * __target.organization__ - The name of your organization as defined in Azure DevOps. This will be included in the Azure DevOps API calls.
 * __target.project__ - The name of the test project. In the example case it is called "UnitTest".
 * __target.repository.name__ - The name of the repository used in the Git repository used for testing. Best is to keep the source and target repository names identical.
@@ -73,11 +73,11 @@ This file is located in src/main/resources. It contains the properties for your 
 <br>
 
 #### Update pom.xml ####
-After the properties file has been created, the __junit_pipeline__ library must be added to the _pom.xml_ of your project.
+After the properties file has been created, the __junit-pipeline__ library must be added to the _pom.xml_ of your project.
 Example:
 ```xml
 <dependency>
-  <groupId>org.pipeline</groupId>
+  <groupId>io.github.hvmerode</groupId>
   <artifactId>junit-pipeline</artifactId>
   <version>1.0.0</version>
 </dependency>
@@ -99,9 +99,9 @@ AzDoPipeline pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipe
 The _junit_pipeline_my.properties_ file in this example contains my personal properties.
 The file _./pipeline/pipeline_test.yml_ is the main pipeline file. It can be stored in any folder of the code repository.
 Its path is relative to the root of the repository. The main pipeline file may contain references to other template files
-in the repository. The __junit_pipeline__ frameworks takes these templates into account in pipeline manipulation.
+in the repository. The __junit-pipeline__ frameworks takes these templates into account in pipeline manipulation.
 > Note, that templates in other repositories (identified with an @ behind the template name) are used just as-is. 
-> The __junit_pipeline__ framework leaves these templates untouched.
+> The __junit-pipeline__ framework leaves these templates untouched.
 
 <br>
 
@@ -128,7 +128,7 @@ Azure DevOps unit test project.
 <br>
 
 #### Define unit test ####
-The __junit_library__ contains a set of commands - used in unit tests - to manipulate the pipeline. Let's 
+The __junit_pipeline__ library contains a set of commands - used in unit tests - to manipulate the pipeline. Let's 
 go over them:
 
 <br>

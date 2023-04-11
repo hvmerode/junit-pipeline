@@ -32,6 +32,7 @@ public class AzDoPipeline implements Pipeline {
     RunResult runResult = null;
     private YamlDocumentSet yamlDocumentSet;
     public CommandBundle commandBundle = new CommandBundle();
+    private static final String EXCLUDEFILESLIST = "\\excludedfileslist.txt";
 
     public AzDoPipeline(String propertyFile, String pipelineFile) {
         logger.info("");
@@ -265,12 +266,12 @@ public class AzDoPipeline implements Pipeline {
             // TODO: Exclude certain file types and directories
             Runtime.getRuntime().exec("/bin/sh -c cp " + source + " " + target);
         } else if(Utils.isWindows()){
-            logger.info("Executing on Windows: " + "xcopy " + source + " " + target + " /E /H /C /I /Y /exclude:" + target + "\\excludedfileslist.txt");
+            logger.info("Executing on Windows: " + "xcopy " + source + " " + target + " /E /H /C /I /Y /exclude:" + target + EXCLUDEFILESLIST);
             Runtime.getRuntime().exec("cmd.exe /c mkdir " + target);
             Utils.wait(3000);
-            Runtime.getRuntime().exec("cmd.exe /c (echo idea& echo target& echo .git& echo class) > " + target + "\\excludedfileslist.txt");
+            Runtime.getRuntime().exec("cmd.exe /c (echo idea& echo target& echo .git& echo class) > " + target + EXCLUDEFILESLIST);
             Utils.wait(3000);
-            Runtime.getRuntime().exec("cmd.exe /c xcopy " + source + " " + target + " /E /H /C /I /Y /exclude:" + target + "\\excludedfileslist.txt");
+            Runtime.getRuntime().exec("cmd.exe /c xcopy " + source + " " + target + " /E /H /C /I /Y /exclude:" + target + EXCLUDEFILESLIST);
             Utils.wait(3000);
         }
     }

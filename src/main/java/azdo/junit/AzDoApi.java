@@ -30,6 +30,8 @@ public class AzDoApi<runResult> {
     private static final String TWO_TAB = "\t\t";
     private static final String THREE_TAB = "\t\t\t";
     private static final String APPLICATION_JSON = "application/json";
+    private static final String RESPONSE_IS = "Response is: ";
+    private static final String REPOSITORY_ID_IS = "Repository id is: ";
     private enum HttpMethod {GET, PUT, POST, PATCH}
     private static boolean test = false;
 
@@ -111,24 +113,10 @@ public class AzDoApi<runResult> {
         String name = null;
         if (response != null) {
             Map<String, Object> yamlMap = yaml.load(response.body().toString());
-            logger.info("Response is: " + yamlMap.toString());
+            logger.info(RESPONSE_IS + yamlMap.toString());
             if (yamlMap.get("value") instanceof ArrayList) {
                 ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get("value");
                 projectId = iterateYamlArrayListAndFindElement (arr, "name", projectName, "id");
-//                if (arr != null) {
-//                    int size = arr.size();
-//
-//                    // Go through list of values
-//                    for (int counter = 0; counter < size; counter++) {
-//                        LinkedHashMap<String, Object> value = ((LinkedHashMap<String, Object>) arr.get(counter));
-//                        name = value.get("name").toString();
-//                        if (name != null && name.equals(projectName)) {
-//                            logger.info("Found project " + projectName);
-//                            projectId = value.get("id").toString();
-//                            break;
-//                        }
-//                    }
-//                }
             }
             logger.info("Project id is: " + projectId);
         }
@@ -160,7 +148,7 @@ public class AzDoApi<runResult> {
 
             HttpResponse response = callApi(properties, http, HttpMethod.POST, json);
             if (response != null)
-                logger.info("Response is: " + response.toString());
+                logger.info(RESPONSE_IS + response.toString());
         }
     }
 
@@ -200,7 +188,7 @@ public class AzDoApi<runResult> {
             yaml = new Yaml();
             if (response != null) {
                 Map<String, Object> yamlMap = yaml.load(response.body().toString());
-                logger.info("Response is: " + yamlMap.toString());
+                logger.info(RESPONSE_IS + yamlMap.toString());
                 if (yamlMap.get("value") instanceof ArrayList) {
                     ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get("value");
                     if (arr != null) {
@@ -267,7 +255,7 @@ public class AzDoApi<runResult> {
         Yaml yaml = new Yaml();
         if (response != null) {
             Map<String, Object> yamlMap = yaml.load(response.body().toString());
-            logger.info("Response is: " + yamlMap.toString());
+            logger.info(RESPONSE_IS + yamlMap.toString());
             if (yamlMap.get("id") != null) {
                 pipelineId = yamlMap.get("id").toString();
                 logger.info("Pipeline id is: " + pipelineId);
@@ -295,24 +283,10 @@ public class AzDoApi<runResult> {
         String name = null;
         if (response != null) {
             Map<String, Object> yamlMap = yaml.load(response.body().toString());
-            logger.info("Response is: " + yamlMap.toString());
+            logger.info(RESPONSE_IS + yamlMap.toString());
             if (yamlMap.get("value") instanceof ArrayList) {
                 ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get("value");
                 pipelineId = iterateYamlArrayListAndFindElement (arr, "name", pipelineName, "id");
-//                if (arr != null) {
-//                    int size = arr.size();
-//
-//                    // Go through list of values
-//                    for (int counter = 0; counter < size; counter++) {
-//                        LinkedHashMap<String, Object> value = ((LinkedHashMap<String, Object>) arr.get(counter));
-//                        name = value.get("name").toString();
-//                        if (name != null && name.equals(pipelineName)) {
-//                            logger.info("Found pipeline " + pipelineName);
-//                            pipelineId = value.get("id").toString();
-//                            break;
-//                        }
-//                    }
-//                }
             }
             logger.info("Pipeline id is: " + pipelineId);
         }
@@ -344,7 +318,7 @@ public class AzDoApi<runResult> {
             Yaml yaml = new Yaml();
             Map<String, Object> yamlMap = yaml.load(response.body().toString());
             repositoryId = yamlMap.get("id").toString();
-            logger.info("Repository id is: " + repositoryId);
+            logger.info(REPOSITORY_ID_IS + repositoryId);
         }
 
         return repositoryId;
@@ -372,7 +346,7 @@ public class AzDoApi<runResult> {
             Yaml yaml = new Yaml();
             Map<String, Object> yamlMap = yaml.load(response.body().toString());
             repositoryId = yamlMap.get("id").toString();
-            logger.info("Repository id is: " + repositoryId);
+            logger.info(REPOSITORY_ID_IS + repositoryId);
         }
 
         return repositoryId;
@@ -397,26 +371,12 @@ public class AzDoApi<runResult> {
         String name;
         if (response != null) {
             Map<String, Object> yamlMap = yaml.load(response.body().toString());
-            logger.info("Response is: " + yamlMap.toString());
+            logger.info(RESPONSE_IS + yamlMap.toString());
             if (yamlMap.get("value") instanceof ArrayList) {
                 ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get("value");
                 repositoryId = iterateYamlArrayListAndFindElement (arr, "name", repositoryName, "id");
-//                if (arr != null) {
-//                    int size = arr.size();
-//
-//                    // Go through list of values
-//                    for (int counter = 0; counter < size; counter++) {
-//                        LinkedHashMap<String, Object> value = ((LinkedHashMap<String, Object>) arr.get(counter));
-//                        name = value.get("name").toString();
-//                        if (name != null && name.equals(repositoryName)) {
-//                            logger.info("Found repository " + repositoryName);
-//                            repositoryId = value.get("id").toString();
-//                            break;
-//                        }
-//                    }
-//                }
             }
-            logger.info("Repository id is: " + repositoryId);
+            logger.info(REPOSITORY_ID_IS + repositoryId);
         }
 
         return repositoryId;

@@ -4,13 +4,9 @@
 package azdo.hook;
 
 import azdo.junit.AzDoPipeline;
-import azdo.junit.TestProperties;
-import azdo.utils.PomUtils;
 import azdo.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -24,6 +20,7 @@ public class DeleteTargetFile extends Hook {
         this.fullQualifiedFileName = fullQualifiedFileName;
     }
 
+    @Override
     public void executeHook (){
         logger.info("==> Method: DeleteTargetFile.executeHook");
         Path path = Paths.get(fullQualifiedFileName);

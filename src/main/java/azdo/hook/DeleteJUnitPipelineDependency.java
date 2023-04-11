@@ -24,6 +24,8 @@ public class DeleteJUnitPipelineDependency extends Hook {
         this.groupId = groupId;
         this.artifactId = artifactId;
     }
+
+    @Override
     public void executeHook (){
         try {
             logger.info("==> Method: DeleteJUnitPipelineDependency.executeHook");

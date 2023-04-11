@@ -25,7 +25,7 @@ To test the manipulated script, execute it like this:
 pipeline.startPipeline();
 ```
 The ___junit-pipeline___ library connects with the Azure DevOps test project (for example project "UnitTest"), and pushes the code to your test 
-repository (which can also be called "myrepo", if you want). It then executes the pipeline. If the repository and/or the pipeline in project "UnitTest" 
+repository (which can be called "myrepo-test", for example). It then executes the pipeline. If the repository and/or the pipeline in project "UnitTest" 
 do not exists, they are automatically created for you. The illustration below shows how it works in concept.
 
 ![no picture](https://github.com/hvmerode/junit-pipeline/blob/main/junit_pipeline.png "how it works")

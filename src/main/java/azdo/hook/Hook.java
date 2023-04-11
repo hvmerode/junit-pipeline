@@ -4,7 +4,8 @@
 package azdo.hook;
 
 public class Hook {
-    public Hook () {
+    public void executeHook ()
+    {
+        throw new UnsupportedOperationException();
     }
-    public void executeHook (){};
 }

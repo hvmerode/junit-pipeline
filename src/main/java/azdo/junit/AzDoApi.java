@@ -32,57 +32,58 @@ public class AzDoApi<runResult> {
     private static final String APPLICATION_JSON = "application/json";
     private static final String RESPONSE_IS = "Response is: ";
     private static final String REPOSITORY_ID_IS = "Repository id is: ";
+    private static final String JSON_ELEMENT_VALUE = "value";
+    private static final String JSON_ELEMENT_NAME = "name";
+    private static final String JSON_ELEMENT_ID = "id";
     private enum HttpMethod {GET, PUT, POST, PATCH}
     private static boolean test = false;
 
-    public AzDoApi() {
-    }
-        // Perform Azure DevOps API call
-        public static HttpResponse callApi (TestProperties properties, String http, HttpMethod httpMethod, String json) {
-            if (test)
-                return null;
+    // Perform Azure DevOps API call
+    public static HttpResponse callApi (TestProperties properties, String http, HttpMethod httpMethod, String json) {
+        if (test)
+            return null;
 
-            try {
-                logger.info("==> Method: AzDoApi.callApi");
-                logger.info("HTTP Endpoint: {}", http);
-                logger.info("JSON: {}", json);
+        try {
+            logger.info("==> Method: AzDoApi.callApi");
+            logger.info("HTTP Endpoint: {}", http);
+            logger.info("JSON: {}", json);
 
-                String encodedString = Base64.getEncoder().encodeToString((properties.getUserTargetRepository() + ":" + properties.getPasswordTargetRepository()).getBytes());
-                HttpClient client = HttpClient.newHttpClient();
-                HttpRequest request;
-                if (httpMethod == HttpMethod.GET) {
-                    request = HttpRequest.newBuilder()
-                            .uri(URI.create(http))
-                            .setHeader("Content-Type", APPLICATION_JSON)
-                            .setHeader("Accept", APPLICATION_JSON)
-                            .setHeader("Authorization", "Basic " + encodedString)
-                            .GET()
-                            .build();
-                } else {
-                    request = HttpRequest.newBuilder()
-                            .uri(URI.create(http))
-                            .setHeader("Content-Type", APPLICATION_JSON)
-                            .setHeader("Accept", APPLICATION_JSON)
-                            .setHeader("Authorization", "Basic " + encodedString)
-                            .method(httpMethod.toString(), HttpRequest.BodyPublishers.ofString(json))
-                            .build();
-                }
-
-                HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
-                if (response == null) {
-                    logger.info("Response is null");
-                }
-                else {
-                    logger.info("AzDo API response" + response.toString());
-
-                    // check whether the HTTP status code is valid
-                    if (response.statusCode() > 299) {
-                        logger.info("Statuscode > 299");
-                    }
-                }
-
-                return response;
+            String encodedString = Base64.getEncoder().encodeToString((properties.getUserTargetRepository() + ":" + properties.getPasswordTargetRepository()).getBytes());
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request;
+            if (httpMethod == HttpMethod.GET) {
+                request = HttpRequest.newBuilder()
+                        .uri(URI.create(http))
+                        .setHeader("Content-Type", APPLICATION_JSON)
+                        .setHeader("Accept", APPLICATION_JSON)
+                        .setHeader("Authorization", "Basic " + encodedString)
+                        .GET()
+                        .build();
+            } else {
+                request = HttpRequest.newBuilder()
+                        .uri(URI.create(http))
+                        .setHeader("Content-Type", APPLICATION_JSON)
+                        .setHeader("Accept", APPLICATION_JSON)
+                        .setHeader("Authorization", "Basic " + encodedString)
+                        .method(httpMethod.toString(), HttpRequest.BodyPublishers.ofString(json))
+                        .build();
             }
+
+            HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response == null) {
+                logger.info("Response is null");
+            }
+            else {
+                logger.info("AzDo API response" + response.toString());
+
+                // check whether the HTTP status code is valid
+                if (response.statusCode() > 299) {
+                    logger.info("Statuscode > 299");
+                }
+            }
+
+            return response;
+        }
 
         catch (InterruptedException e) {
             logger.info("Interrupted!", e);
@@ -114,9 +115,9 @@ public class AzDoApi<runResult> {
         if (response != null) {
             Map<String, Object> yamlMap = yaml.load(response.body().toString());
             logger.info(RESPONSE_IS + yamlMap.toString());
-            if (yamlMap.get("value") instanceof ArrayList) {
-                ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get("value");
-                projectId = iterateYamlArrayListAndFindElement (arr, "name", projectName, "id");
+            if (yamlMap.get(JSON_ELEMENT_VALUE) instanceof ArrayList) {
+                ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get(JSON_ELEMENT_VALUE);
+                projectId = iterateYamlArrayListAndFindElement (arr, JSON_ELEMENT_NAME, projectName, JSON_ELEMENT_ID);
             }
             logger.info("Project id is: " + projectId);
         }
@@ -142,7 +143,7 @@ public class AzDoApi<runResult> {
 
             String json = BRACKET_OPEN_NEXTLINE +
                     TAB + DOUBLE_QUOTE + "definition" + DOUBLE_QUOTE + ": " + BRACKET_OPEN_NEXTLINE +
-                        TWO_TAB + DOUBLE_QUOTE + "id" + DOUBLE_QUOTE + ": " + pipelineId + BRACKET_CLOSE + COMMA_NEXTLINE +
+                        TWO_TAB + DOUBLE_QUOTE + JSON_ELEMENT_ID + DOUBLE_QUOTE + ": " + pipelineId + BRACKET_CLOSE + COMMA_NEXTLINE +
                     TAB + DOUBLE_QUOTE + "sourceBranch" + DOUBLE_QUOTE + ": " + DOUBLE_QUOTE + sourceBranch + DOUBLE_QUOTE + NEXTLINE +
                     BRACKET_CLOSE;
 
@@ -189,8 +190,8 @@ public class AzDoApi<runResult> {
             if (response != null) {
                 Map<String, Object> yamlMap = yaml.load(response.body().toString());
                 logger.info(RESPONSE_IS + yamlMap.toString());
-                if (yamlMap.get("value") instanceof ArrayList) {
-                    ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get("value");
+                if (yamlMap.get(JSON_ELEMENT_VALUE) instanceof ArrayList) {
+                    ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get(JSON_ELEMENT_VALUE);
                     if (arr != null) {
                         int size = arr.size();
 
@@ -238,13 +239,13 @@ public class AzDoApi<runResult> {
                 "?" +
                 properties.getPipelinesApiVersion();;
         String json = BRACKET_OPEN_NEXTLINE +
-                TAB + DOUBLE_QUOTE + "name" + DQUOTE_SCOL_DQUOTE + properties.getRepositoryName() + DOUBLE_QUOTE + COMMA_NEXTLINE +
+                TAB + DOUBLE_QUOTE + JSON_ELEMENT_NAME + DQUOTE_SCOL_DQUOTE + properties.getRepositoryName() + DOUBLE_QUOTE + COMMA_NEXTLINE +
                 TAB + DOUBLE_QUOTE + "configuration" + DOUBLE_QUOTE + ": " + BRACKET_OPEN_NEXTLINE +
                 TWO_TAB + DOUBLE_QUOTE + "type" + DQUOTE_SCOL_DQUOTE + "yaml" + DOUBLE_QUOTE + COMMA_NEXTLINE +
                 TWO_TAB + DOUBLE_QUOTE + "path" + DQUOTE_SCOL_DQUOTE + path + DOUBLE_QUOTE + COMMA_NEXTLINE +
                     TWO_TAB + DOUBLE_QUOTE + "repository" + DOUBLE_QUOTE + ": " + BRACKET_OPEN_NEXTLINE +
-                        THREE_TAB + DOUBLE_QUOTE + "id" + DQUOTE_SCOL_DQUOTE + repositoryId + DOUBLE_QUOTE + COMMA_NEXTLINE +
-                        THREE_TAB + DOUBLE_QUOTE + "name" + DQUOTE_SCOL_DQUOTE + properties.getRepositoryName() + DOUBLE_QUOTE + COMMA_NEXTLINE +
+                        THREE_TAB + DOUBLE_QUOTE + JSON_ELEMENT_ID + DQUOTE_SCOL_DQUOTE + repositoryId + DOUBLE_QUOTE + COMMA_NEXTLINE +
+                        THREE_TAB + DOUBLE_QUOTE + JSON_ELEMENT_NAME + DQUOTE_SCOL_DQUOTE + properties.getRepositoryName() + DOUBLE_QUOTE + COMMA_NEXTLINE +
                         THREE_TAB + DOUBLE_QUOTE + "type" + DQUOTE_SCOL_DQUOTE + "azureReposGit" + DOUBLE_QUOTE + NEXTLINE +
                     TWO_TAB + BRACKET_CLOSE + NEXTLINE +
                 TAB + BRACKET_CLOSE + NEXTLINE +
@@ -256,8 +257,8 @@ public class AzDoApi<runResult> {
         if (response != null) {
             Map<String, Object> yamlMap = yaml.load(response.body().toString());
             logger.info(RESPONSE_IS + yamlMap.toString());
-            if (yamlMap.get("id") != null) {
-                pipelineId = yamlMap.get("id").toString();
+            if (yamlMap.get(JSON_ELEMENT_ID) != null) {
+                pipelineId = yamlMap.get(JSON_ELEMENT_ID).toString();
                 logger.info("Pipeline id is: " + pipelineId);
             }
         }
@@ -284,9 +285,9 @@ public class AzDoApi<runResult> {
         if (response != null) {
             Map<String, Object> yamlMap = yaml.load(response.body().toString());
             logger.info(RESPONSE_IS + yamlMap.toString());
-            if (yamlMap.get("value") instanceof ArrayList) {
-                ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get("value");
-                pipelineId = iterateYamlArrayListAndFindElement (arr, "name", pipelineName, "id");
+            if (yamlMap.get(JSON_ELEMENT_VALUE) instanceof ArrayList) {
+                ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get(JSON_ELEMENT_VALUE);
+                pipelineId = iterateYamlArrayListAndFindElement (arr, JSON_ELEMENT_NAME, pipelineName, JSON_ELEMENT_ID);
             }
             logger.info("Pipeline id is: " + pipelineId);
         }
@@ -304,9 +305,9 @@ public class AzDoApi<runResult> {
                 "?" +
                 properties.getGitApiVersion();
         String json = BRACKET_OPEN_NEXTLINE +
-                TAB + DOUBLE_QUOTE + "name" + DQUOTE_SCOL_DQUOTE + properties.getRepositoryName() + DOUBLE_QUOTE + COMMA_NEXTLINE +
+                TAB + DOUBLE_QUOTE + JSON_ELEMENT_NAME + DQUOTE_SCOL_DQUOTE + properties.getRepositoryName() + DOUBLE_QUOTE + COMMA_NEXTLINE +
                 TAB + DOUBLE_QUOTE + "project" + DOUBLE_QUOTE + ": " + BRACKET_OPEN_NEXTLINE +
-                TWO_TAB + DOUBLE_QUOTE + "id" + DQUOTE_SCOL_DQUOTE + projectId + DOUBLE_QUOTE + NEXTLINE +
+                TWO_TAB + DOUBLE_QUOTE + JSON_ELEMENT_ID + DQUOTE_SCOL_DQUOTE + projectId + DOUBLE_QUOTE + NEXTLINE +
                 TAB + BRACKET_CLOSE + NEXTLINE +
                 BRACKET_CLOSE;
         HttpResponse response = callApi(properties, http, HttpMethod.POST, json);
@@ -317,7 +318,7 @@ public class AzDoApi<runResult> {
             // Get the repository id from the response
             Yaml yaml = new Yaml();
             Map<String, Object> yamlMap = yaml.load(response.body().toString());
-            repositoryId = yamlMap.get("id").toString();
+            repositoryId = yamlMap.get(JSON_ELEMENT_ID).toString();
             logger.info(REPOSITORY_ID_IS + repositoryId);
         }
 
@@ -345,7 +346,7 @@ public class AzDoApi<runResult> {
             // Get the repository id from the response
             Yaml yaml = new Yaml();
             Map<String, Object> yamlMap = yaml.load(response.body().toString());
-            repositoryId = yamlMap.get("id").toString();
+            repositoryId = yamlMap.get(JSON_ELEMENT_ID).toString();
             logger.info(REPOSITORY_ID_IS + repositoryId);
         }
 
@@ -372,9 +373,9 @@ public class AzDoApi<runResult> {
         if (response != null) {
             Map<String, Object> yamlMap = yaml.load(response.body().toString());
             logger.info(RESPONSE_IS + yamlMap.toString());
-            if (yamlMap.get("value") instanceof ArrayList) {
-                ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get("value");
-                repositoryId = iterateYamlArrayListAndFindElement (arr, "name", repositoryName, "id");
+            if (yamlMap.get(JSON_ELEMENT_VALUE) instanceof ArrayList) {
+                ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get(JSON_ELEMENT_VALUE);
+                repositoryId = iterateYamlArrayListAndFindElement (arr, JSON_ELEMENT_NAME, repositoryName, JSON_ELEMENT_ID);
             }
             logger.info(REPOSITORY_ID_IS + repositoryId);
         }

@@ -93,7 +93,6 @@ public class PipelineUnit {
             class TestHook extends Hook {
                 @Override
                 public void executeHook() {
-                    super.executeHook();
                     logger.info("Executes hook with an argument");
                 }
             }

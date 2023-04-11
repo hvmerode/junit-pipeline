@@ -1,10 +1,12 @@
+// Copyright (c) Henry van Merode.
+// Licensed under the MIT License.
+
 package azdo.junit;
 
 import azdo.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
-import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -18,15 +20,16 @@ import java.util.Map;
 
 public class AzDoApi<runResult> {
     private static Logger logger = LoggerFactory.getLogger(AzDoApi.class);
-    private static String BRACKET_OPEN_NEXTLINE = "{\n";
-    private static String BRACKET_CLOSE = "}";
-    private static String DOUBLE_QUOTE = "\"";
-    private static String DQUOTE_SCOL_DQUOTE = "\": \"";
-    private static String NEXTLINE = "\n";
-    private static String COMMA_NEXTLINE = ",\n";
-    private static String TAB = "\t";
-    private static String TWO_TAB = "\t\t";
-    private static String THREE_TAB = "\t\t\t";
+    private static final String BRACKET_OPEN_NEXTLINE = "{\n";
+    private static final String BRACKET_CLOSE = "}";
+    private static final String DOUBLE_QUOTE = "\"";
+    private static final String DQUOTE_SCOL_DQUOTE = "\": \"";
+    private static final String NEXTLINE = "\n";
+    private static final String COMMA_NEXTLINE = ",\n";
+    private static final String TAB = "\t";
+    private static final String TWO_TAB = "\t\t";
+    private static final String THREE_TAB = "\t\t\t";
+    private static final String APPLICATION_JSON = "application/json";
     private enum HttpMethod {GET, PUT, POST, PATCH}
     private static boolean test = false;
 
@@ -38,9 +41,9 @@ public class AzDoApi<runResult> {
                 return null;
 
             try {
-                logger.info("==> postApi");
-                logger.info("==> HTTP Endpoint: " + http);
-                logger.info("==> JSON: " + json);
+                logger.info("==> callApi");
+                logger.info("==> HTTP Endpoint: {}", http);
+                logger.info("==> JSON: {}", json);
 
                 String encodedString = Base64.getEncoder().encodeToString((properties.getUserTargetRepository() + ":" + properties.getPasswordTargetRepository()).getBytes());
                 HttpClient client = HttpClient.newHttpClient();
@@ -48,16 +51,16 @@ public class AzDoApi<runResult> {
                 if (httpMethod == HttpMethod.GET) {
                     request = HttpRequest.newBuilder()
                             .uri(URI.create(http))
-                            .setHeader("Content-Type", "application/json")
-                            .setHeader("Accept", "application/json")
+                            .setHeader("Content-Type", APPLICATION_JSON)
+                            .setHeader("Accept", APPLICATION_JSON)
                             .setHeader("Authorization", "Basic " + encodedString)
                             .GET()
                             .build();
                 } else {
                     request = HttpRequest.newBuilder()
                             .uri(URI.create(http))
-                            .setHeader("Content-Type", "application/json")
-                            .setHeader("Accept", "application/json")
+                            .setHeader("Content-Type", APPLICATION_JSON)
+                            .setHeader("Accept", APPLICATION_JSON)
                             .setHeader("Authorization", "Basic " + encodedString)
                             .method(httpMethod.toString(), HttpRequest.BodyPublishers.ofString(json))
                             .build();

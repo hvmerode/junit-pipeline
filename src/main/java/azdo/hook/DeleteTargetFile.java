@@ -1,4 +1,8 @@
+// Copyright (c) Henry van Merode.
+// Licensed under the MIT License.
+
 package azdo.hook;
+
 import azdo.junit.AzDoPipeline;
 import azdo.junit.TestProperties;
 import azdo.utils.PomUtils;

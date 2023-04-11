@@ -1,4 +1,8 @@
+// Copyright (c) Henry van Merode.
+// Licensed under the MIT License.
+
 package azdo.hook;
+
 import azdo.junit.AzDoPipeline;
 import azdo.utils.PomUtils;
 import org.slf4j.Logger;

@@ -1,3 +1,6 @@
+// Copyright (c) Henry van Merode.
+// Licensed under the MIT License.
+
 package azdo.junit;
 
 public interface Pipeline {

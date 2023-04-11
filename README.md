@@ -355,3 +355,6 @@ pipeline.getRunResult()
 because cloning/checkout is not possible somehow~~
 * ~~The updated pipeline code is pushed to the _default branch_ in the test project (master); pushing to other branches is not possible.~~
 * ~~The project id of the Azure DevOps test project must be configured manually and is not (yet) derived automatically.~~
+
+Copyright (c) Henry van Merode.\
+Licensed under the MIT License.

@@ -1,3 +1,6 @@
+// Copyright (c) Henry van Merode.
+// Licensed under the MIT License.
+
 package azdo.yaml;
 
 import org.slf4j.Logger;

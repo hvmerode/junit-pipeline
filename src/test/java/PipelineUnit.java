@@ -1,3 +1,6 @@
+// Copyright (c) Henry van Merode.
+// Licensed under the MIT License.
+
 import azdo.hook.Hook;
 import azdo.junit.AzDoPipeline;
 import azdo.junit.RunResult;

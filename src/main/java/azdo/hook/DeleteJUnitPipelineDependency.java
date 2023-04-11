@@ -26,7 +26,7 @@ public class DeleteJUnitPipelineDependency extends Hook {
     }
     public void executeHook (){
         try {
-            logger.info("==> Method: executeHook");
+            logger.info("==> Method: DeleteJUnitPipelineDependency.executeHook");
             PomUtils.deleteDependency(pom, groupId, artifactId);
         }
         catch (Exception e) {}

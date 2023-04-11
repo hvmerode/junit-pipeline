@@ -5,7 +5,6 @@ package azdo.junit;
 
 import azdo.command.CommandBundle;
 import azdo.hook.Hook;
-import azdo.utils.PomUtils;
 import azdo.utils.Utils;
 import azdo.yaml.ActionEnum;
 import azdo.yaml.YamlDocumentSet;
@@ -56,16 +55,16 @@ public class AzDoPipeline implements Pipeline {
             repositoryId = AzDoApi.callGetRepositoryApi(properties);
         }
         catch (Exception e) {
-            logger.info("==> Exception occurred; continue");
+            logger.info("Exception occurred; continue");
         }
 
         try {
             // Create a new repository if not existing
             if (repositoryId == null) {
-                // Retrieve the project-id
+                // Retrieve the project-id of the Azure DevOps project with a given name
                 String projectId = AzDoApi.callGetProjectIdApi(properties);
 
-                logger.info("==> Delete local repository in directory ", properties.getTargetPath());
+                logger.info("Delete local repository in directory ", properties.getTargetPath());
                 deleteDirectory(new File(properties.getTargetPath()));
 
                 // Create remote repo using the AzDo API (this may fail if exists, but just continue)
@@ -76,7 +75,7 @@ public class AzDoPipeline implements Pipeline {
             }
         }
         catch (Exception e) {
-            logger.info("==> Exception occurred. Cannot create a new repository");
+            logger.info("Exception occurred. Cannot create a new repository");
             e.printStackTrace();
         }
 
@@ -88,7 +87,7 @@ public class AzDoPipeline implements Pipeline {
             pipelineId = AzDoApi.callGetPipelineApi (properties);
         }
         catch (Exception e) {
-            logger.info("==> Exception occurred; continue");
+            logger.info("Exception occurred; continue");
         }
 
         try {
@@ -99,7 +98,7 @@ public class AzDoPipeline implements Pipeline {
             }
         }
         catch (Exception e) {
-            logger.info("==> Exception occurred. Cannot create a new pipeline");
+            logger.info("Exception occurred. Cannot create a new pipeline");
             e.printStackTrace();
         }
 
@@ -135,7 +134,7 @@ public class AzDoPipeline implements Pipeline {
                 git = gitClone();
             }
             catch (Exception e) {
-                logger.info("==> Exception occurred. Cannot clone repository to local");
+                logger.info("Exception occurred. Cannot clone repository to local");
                 e.printStackTrace();
             }
         }
@@ -160,7 +159,7 @@ public class AzDoPipeline implements Pipeline {
                     .call();
         }
         catch (Exception e) {
-            logger.info("==> Exception occurred. Cannot checkout; just continue");
+            logger.info("Exception occurred. Cannot checkout; just continue");
             e.printStackTrace();
         }
 
@@ -170,7 +169,7 @@ public class AzDoPipeline implements Pipeline {
             copyAll(properties.getSourcePath(), properties.getTargetPath());
         }
         catch (Exception e) {
-            logger.info("==> Exception occurred.Cannot copy local files to target");
+            logger.info("Exception occurred.Cannot copy local files to target");
             e.printStackTrace();
         }
 
@@ -182,7 +181,7 @@ public class AzDoPipeline implements Pipeline {
 
         // Perform all (pre)hooks
         if (hooks != null) {
-            logger.info("==> Execute hooks");
+            logger.info("Execute hooks");
             int size = hooks.size();
             for (int i = 0; i < size; i++) {
                 hooks.get(i).executeHook();
@@ -201,7 +200,7 @@ public class AzDoPipeline implements Pipeline {
             AddCommand command = git.add();
             for (int i = 0; i < size; i++) {
                 command = command.addFilepattern(properties.getCommitPatternList().get(i));
-                logger.info("==> " + properties.getCommitPatternList().get(i));
+                logger.info("Pattern " + properties.getCommitPatternList().get(i));
             }
             command.call();
             gitCommitAndPush ();
@@ -227,13 +226,13 @@ public class AzDoPipeline implements Pipeline {
     }
 
     private boolean deleteDirectory(File directoryToBeDeleted) {
-        logger.info("==> Method: deleteDirectory");
+        logger.info("==> Method: AzDoPipeline.deleteDirectory");
         try {
             if (Utils.isLinux()) {
-                logger.info("==> Executing on Linux");
+                logger.info("Executing on Linux");
                 Runtime.getRuntime().exec("/bin/sh -c rm -r " + directoryToBeDeleted);
             } else if (Utils.isWindows()) {
-                logger.info("==> Executing on Windows");
+                logger.info("Executing on Windows");
                 Runtime.getRuntime().exec("cmd /c rmdir " + directoryToBeDeleted);
             }
             return true;
@@ -245,28 +244,28 @@ public class AzDoPipeline implements Pipeline {
     }
 
     public void executeScript(String filePath) throws IOException{
-        logger.info("==> Method: executeScript: " + filePath);
+        logger.info("==> Method: AzDoPipeline.executeScript: " + filePath);
         File file = new File(filePath);
         if(!file.isFile()){
             throw new IllegalArgumentException("The file " + filePath + " does not exist");
         }
         if(Utils.isLinux()){
-            logger.info("==> Executing on Linux");
+            logger.info("Executing on Linux");
             Runtime.getRuntime().exec(new String[] {"/bin/sh ", "-c", filePath}, null);
         } else if(Utils.isWindows()){
-            logger.info("==> Executing on Windows");
+            logger.info("Executing on Windows");
             Runtime.getRuntime().exec("cmd /c call " + filePath);
         }
     }
 
     public void copyAll(String source, String target) throws IOException{
-        logger.info("==> Method: copyAll");
+        logger.info("==> Method: AzDoPipeline.copyAll");
         if(Utils.isLinux()){
-            logger.info("==> Executing on Linux: " + "cp " + source + " " + target);
+            logger.info("Executing on Linux: " + "cp " + source + " " + target);
             // TODO: Exclude certain file types and directories
             Runtime.getRuntime().exec("/bin/sh -c cp " + source + " " + target);
         } else if(Utils.isWindows()){
-            logger.info("==> Executing on Windows: " + "xcopy " + source + " " + target + " /E /H /C /I /Y /exclude:" + target + "\\excludedfileslist.txt");
+            logger.info("Executing on Windows: " + "xcopy " + source + " " + target + " /E /H /C /I /Y /exclude:" + target + "\\excludedfileslist.txt");
             Runtime.getRuntime().exec("cmd.exe /c mkdir " + target);
             Utils.wait(3000);
             Runtime.getRuntime().exec("cmd.exe /c (echo idea& echo target& echo .git& echo class) > " + target + "\\excludedfileslist.txt");
@@ -277,7 +276,7 @@ public class AzDoPipeline implements Pipeline {
     }
 
     private void gitCommitAndPush () throws GitAPIException {
-        logger.info ("==> Method: gitCommitAndPush");
+        logger.info ("==> Method: AzDoPipeline.gitCommitAndPush");
 
         if (git != null) {
             logger.info("git.commit");
@@ -300,7 +299,7 @@ public class AzDoPipeline implements Pipeline {
     // Clone the repo to local and initialize
     //private Git gitClone (String branchName)  throws GitAPIException {
     private Git gitClone () {
-        logger.info("==> Method: gitClone");
+        logger.info("==> Method: AzDoPipeline.gitClone");
 
         // Create the credentials provider
         CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(
@@ -580,6 +579,7 @@ public class AzDoPipeline implements Pipeline {
        added to the mock. Depending on the job pool this can be a Powershell script (Windows) or a bash script (Linux)
      */
     public void mockStep(String stepValue, String inlineScript){
+        logger.info("==> Method: AzDoPipeline.mockStep: " + stepValue);
         yamlDocumentSet.executeCommand(ActionEnum.mock,
                 "steps",
                 "",
@@ -603,7 +603,7 @@ public class AzDoPipeline implements Pipeline {
     }
 
     private boolean containsBranch(String name) {
-        logger.info("==> Method: containsBranch");
+        logger.info("==> Method: AzDoPipeline.containsBranch");
         try {
             ListBranchCommand command = git.branchList();
             command.setListMode(ListBranchCommand.ListMode.ALL);

@@ -39,7 +39,7 @@ public class YamlDocumentSet {
         logger.info("*****************************************************************");
 
         // First read the main YAML file
-        logger.info("==> Read the main YAML file");
+        logger.info("Read the main YAML file");
         Path mainPipelinePath = Paths.get(mainPipelineFile);
         mainPipelinePath = mainPipelinePath.normalize();
         mainPipelineFile = mainPipelinePath.toString();
@@ -54,7 +54,7 @@ public class YamlDocumentSet {
         getTemplates(yamlMap);
 
         // Then read the template YAML files
-        logger.info("==> Read the template YAML files");
+        logger.info("Read the template YAML files");
         int index = 0;
         int size = templateList.size();
         String templateFile;
@@ -80,6 +80,8 @@ public class YamlDocumentSet {
        Create a list of all templates
      */
     private void getTemplates(Map<String, Object> inner) {
+        logger.info("==> Method: YamlDocumentSet.getTemplates");
+
         // Run through the YAML file and add the template files to the list
         for (Map.Entry<String, Object> entry : inner.entrySet()) {
 
@@ -97,6 +99,8 @@ public class YamlDocumentSet {
         }
     }
     private void getTemplates(ArrayList<Object> inner) {
+        logger.info("==> Method: YamlDocumentSet.getTemplates");
+
         inner.forEach(entry -> {
             // If inner sections are found, go a level deeper
             if (entry instanceof Map) {
@@ -113,6 +117,8 @@ public class YamlDocumentSet {
        other than the original location of the pipeline file.
      */
     public void dumpYaml(String targetPath) throws IOException {
+        logger.info("==> Method: YamlDocumentSet.dumpYaml");
+
         // Dump the updated YAML files to the target directory (with the same name as the original file in the source directory)
         YamlDocument yamlDocument;
         for (Map.Entry<String, YamlDocument> entry : yamlDocuments.entrySet()) {
@@ -135,7 +141,7 @@ public class YamlDocumentSet {
                                 String keyName,
                                 String keyValue,
                                 boolean continueSearching) {
-        logger.info("==> Method: YamlDocumentSet.read");
+        logger.info("==> Method: YamlDocumentSet.executeCommand");
         YamlDocument yamlDocument;
         for (Map.Entry<String, YamlDocument> entry : yamlDocuments.entrySet()) {
             yamlDocument = entry.getValue();

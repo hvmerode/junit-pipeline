@@ -3,6 +3,7 @@
 
 package azdo.yaml;
 
+import azdo.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.DumperOptions;
@@ -39,7 +40,7 @@ public class YamlDocument {
             File file = new File(pipelineFile);
             InputStream inputStream = new FileInputStream(file);
             yamlMap = yaml.load(inputStream);
-            logger.info("==> " + yamlMap);
+            logger.info("YamlMap " + yamlMap);
         } catch (Exception e) {
             logger.info("Cannot find file ", pipelineFile);
         }
@@ -57,6 +58,8 @@ public class YamlDocument {
        other than the original location of the pipeline file.
      */
     public void dumpYaml(String targetPipelineFile) throws IOException {
+        logger.info("==> Method: YamlDocument.dumpYaml");
+
         // Dump the updated yaml to target directory (with the same name as the original file in the source directory)
         final DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
@@ -64,16 +67,7 @@ public class YamlDocument {
         final Yaml yaml = new Yaml(options);
         FileWriter writer = new FileWriter(targetPipelineFile);
         yaml.dump(yamlMap, writer);
-        wait(3000);
-    }
-
-    // Wait for a specific amount of seconds
-    public static void wait(int ms) {
-        try {
-            Thread.sleep(ms);
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        }
+        Utils.wait(3000);
     }
 
     /*
@@ -270,8 +264,8 @@ public class YamlDocument {
                               String keyValue) {
 
         logger.info("==> Method: YamlDocument.replaceValue");
-        logger.info("==> keyName: " + keyName);
-        logger.info("==> keyValue: " + keyValue);
+        logger.info("keyName: " + keyName);
+        logger.info("keyValue: " + keyValue);
 
         // First check whether the  value of this section must be replaced
         if (keyName.equals(section.getKey())) {
@@ -331,10 +325,10 @@ public class YamlDocument {
                               String keyValue) {
 
         logger.info("==> Method: YamlDocument.replaceValue");
-        logger.info("==> identifierName: " + identifierName);
-        logger.info("==> identifierValue: " + identifierValue);
-        logger.info("==> keyName: " + keyName);
-        logger.info("==> keyValue: " + keyValue);
+        logger.info("identifierName: " + identifierName);
+        logger.info("identifierValue: " + identifierValue);
+        logger.info("keyName: " + keyName);
+        logger.info("keyValue: " + keyValue);
 
         // Run trough the elements of the entry and replace the value of a keyName with keyValue
         boolean foundName = false;
@@ -377,8 +371,8 @@ public class YamlDocument {
     private void skipSection (Map.Entry<String, Object> section, String keyName, String value) {
 
         logger.info("==> Method: YamlDocument.skipSection");
-        logger.info("==> key: " + keyName);
-        logger.info("==> value: " + value);
+        logger.info("key: " + keyName);
+        logger.info("value: " + value);
 
         // Run trough the elements of the list and replace the section with key/value
         if (section.getValue() instanceof ArrayList) {
@@ -408,9 +402,9 @@ public class YamlDocument {
 
     private void mockSection(Map.Entry<String, Object> section, String sectionName, String id, String inlineScript){
         logger.info("==> Method: YamlDocument.mockSection");
-        logger.info("==> s: " + sectionName);
-        logger.info("==> id: " + id);
-        logger.info("==> inlineScript: " + inlineScript);
+        logger.info("s: " + sectionName);
+        logger.info("id: " + id);
+        logger.info("inlineScript: " + inlineScript);
 
         String subType = "task";
         if ("stages".equals(sectionName))

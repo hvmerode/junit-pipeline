@@ -10,17 +10,23 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 
+import azdo.junit.AzDoPipeline;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PomUtils {
+    private static Logger logger = LoggerFactory.getLogger(PomUtils.class);
+
     public static boolean checkDependency(String pomFile,
                                           String groupID,
                                           String artifactId,
                                           String version) throws IOException, XmlPullParserException {
+        logger.info("==> Method: PomUtils.checkDependency");
 
         // Create a MavenXpp3Reader to read the existing pom.xml file
         MavenXpp3Reader reader = new MavenXpp3Reader();
@@ -48,6 +54,7 @@ public class PomUtils {
                                         String groupID,
                                         String artifactId,
                                         String version) throws IOException, XmlPullParserException {
+        logger.info("==> Method: PomUtils.insertDependency");
 
         // Create a MavenXpp3Reader to read the existing pom.xml file
         MavenXpp3Reader reader = new MavenXpp3Reader();
@@ -72,6 +79,7 @@ public class PomUtils {
     public static void deleteDependency(String pomFile,
                                         String groupID,
                                         String artifactId) throws IOException, XmlPullParserException {
+        logger.info("==> Method: PomUtils.deleteDependency");
 
         // Create a MavenXpp3Reader to read the existing pom.xml file
         MavenXpp3Reader reader = new MavenXpp3Reader();

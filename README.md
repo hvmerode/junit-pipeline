@@ -68,7 +68,7 @@ This file is located in src/main/resources. It contains the properties for your 
 * __build.api.poll.timeout__ - The timeout value of polling the result of the pipeline run. If the final result is not retrieved yet, the polling stops after a number of seconds, defined by  __build.api.poll.timeout__.
 * __project.api__ - Name of the Azure DevOps base Project API; do not change this value.
 * __project.api.version__ - Version of the Azure DevOps Project API; only change if it is really needed (e.g., if a new version of the API is released).
-> The property file is stored in the _resources_ folder of the code repository.
+> The property file is stored in the _resources_ folder.
 
 <br>
 
@@ -107,8 +107,8 @@ in the repository. The __junit-pipeline__ frameworks takes these templates into 
 
 #### Define a command bundle ####
 It is perfectly possible to repeat a certain command in every unit test, but if you, for example, want to
-execute a certain task in all tests, it is also possible to add an action to a command bundle. For example, add
-a command that skips a task or replaces it with a mock script. 
+execute a certain task in all tests, it is also possible to add it to a command bundle. You only define it
+once and it is executed in all unit tests. For example, adding a command that skips a task or replaces it with a mock script. 
 In the example below, the template _template-steps_1.yml_ is replaced by
 _template-mock.yml_ for every unit test.
 ```java
@@ -119,11 +119,12 @@ pipeline.commandBundle.overrideLiteral("templates/steps/template-steps_1.yml", "
 
 #### Hooks ####
 Before the pipeline code is pushed to the Azure DevOps unit test project, and started, it is possible to execute
-custom code. This code is provided as a list of 'hooks'. The unit test file _PipelineUnit.java_ show an example, _test 3_.\
-This package also contains a few custom hooks:
+custom code. This code is provided as a list of 'hooks'. The unit test file _PipelineUnit.java_ shows an example, _test 3_.\
+This repository also contains a few custom hooks:
 * _DeleteJUnitPipelineDependency_ - Deletes the __junit-pipeline__ dependency from the _pom.xml_, before it is pushed to the
 Azure DevOps unit test project.
-* _DeleteTargetFile_ - Deletes a single file before it is pushed to the Azure DevOps unit test project.
+* _DeleteTargetFile_ - Deletes a single file before it is pushed to the Azure DevOps unit test project. It can be used to
+remove the file that includes the pipeline unit tests, if you don't want it to run it in the test project.
 
 <br>
 
@@ -290,8 +291,8 @@ Calling pipeline.overrideLiteral ("$(azureSubscription)", "1234567890") results 
 - task: AzureWebApp@1
   displayName: Azure Web App Deploy
   inputs:
-  azureSubscription: 1234567890
-  appName: samplewebapp
+    azureSubscription: 1234567890
+    appName: samplewebapp
 </pre>
 
 If _replaceAll_ is 'true' all occurences of literal in both the main YAML and the templates are replaced.\
@@ -336,19 +337,21 @@ pipeline.getRunResult()
 ```
 <br>
 
-***
+
 ### Known limitations ##
+***
 * Tests cannot be executed in parallel. Because the target repository is updated for each test, the next
   test must wait before the previous one is completed.
-* Only YAML templates in the same repository are taken into account. Templates in other repositories (identified with a @ behind the template name) are ignored.
+* Only YAML templates in the same repository are taken into account. Templates in other repositories (identified with a @ behind the template name) are ignored.\
+  TODO: Option to incorporate other resources (repositories) and manipulate the templates in these repos also.
 * If the pipeline makes use of a resource in the test project for the first time, it needs manual approval first; for example, a variable group or an Environment.
 * If unknown service connections are used or the updated pipeline code is not valid YAML anymore, the AzDo API returns an HTTP status code 400.
 * No methods yet to add, update or remove conditions in stages or jobs. Use the _overrideLiteral_ method, if possible.
 * At the start, the local target repository and the remote target repository (of the test project) can become out-of-sync. Delete both the local and the remote repo and start again.
-* Copying files from the main local repo to the test local repo involves exclusion of files, using an exclusion list. This list is currently hardcoded\
-  and contains "idea, target, .git and class". This should be made configurable in the _junit_pipeline.properties_ file.
+* There is no option (yet) to continue on error for all steps.
 
-
+* ~~Copying files from the main local repo to the test local repo involves exclusion of files, using an exclusion list. This list is currently hardcoded\
+  and contains "idea, target, .git and class". This should be made configurable in the _junit_pipeline.properties_ file.~~
 * ~~Sometimes you get the error "org.eclipse.jgit.api.errors.RefAlreadyExistsException: Ref myFeature already exists". This
   happens if a branch already exists (the checkout wants to create it again). Just ignore this error.~~
 * ~~With the introduction of tests running in multiple branches, it is not possible to run multiple tests in one go. Second test fails

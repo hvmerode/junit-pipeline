@@ -66,7 +66,7 @@ public class AzDoPipeline implements Pipeline {
                 String projectId = AzDoApi.callGetProjectIdApi(properties);
 
                 logger.info("Delete local repository in directory ", properties.getTargetPath());
-                deleteDirectory(new File(properties.getTargetPath()));
+                Utils.deleteDirectory(properties.getTargetPath());
 
                 // Create remote repo using the AzDo API (this may fail if exists, but just continue)
                 repositoryId = AzDoApi.callCreateRepoApi(properties, projectId);
@@ -129,15 +129,13 @@ public class AzDoPipeline implements Pipeline {
         boolean recreate = false;
 
         // Clone the repository to local if not done earlier
-        if (git != null) {
-            try {
-                deleteDirectory(new File(properties.getTargetPath()));
-                git = gitClone();
-            }
-            catch (Exception e) {
-                logger.info("Exception occurred. Cannot clone repository to local");
-                e.printStackTrace();
-            }
+        try {
+            Utils.deleteDirectory(properties.getTargetPath());
+            git = gitClone();
+        }
+        catch (Exception e) {
+            logger.info("Exception occurred. Cannot clone repository to local");
+            e.printStackTrace();
         }
 
         // If git object is invalid after the clone (for some reason), recreate it again
@@ -226,23 +224,24 @@ public class AzDoPipeline implements Pipeline {
         yamlDocumentSet.read(yamlFile);
     }
 
-    private boolean deleteDirectory(File directoryToBeDeleted) {
-        logger.info("==> Method: AzDoPipeline.deleteDirectory");
-        try {
-            if (Utils.isLinux()) {
-                logger.info("Executing on Linux");
-                Runtime.getRuntime().exec("/bin/sh -c rm -r " + directoryToBeDeleted);
-            } else if (Utils.isWindows()) {
-                logger.info("Executing on Windows");
-                Runtime.getRuntime().exec("cmd /c rmdir " + directoryToBeDeleted);
-            }
-            return true;
-        }
-        catch (IOException e)
-        {
-            return false;
-        }
-    }
+//    private boolean deleteDirectory(File directoryToBeDeleted) {
+//        logger.info("==> Method: AzDoPipeline.deleteDirectory");
+//        try {
+//            if (Utils.isLinux()) {
+//                logger.info("Executing on Linux");
+//                Runtime.getRuntime().exec("/bin/sh -c rm -r " + directoryToBeDeleted);
+//            } else if (Utils.isWindows()) {
+//                logger.info("Executing on Windows");
+//                Runtime.getRuntime().exec("cmd /c rmdir " + directoryToBeDeleted);
+//            }
+//            return true;
+//        }
+//        catch (IOException e)
+//        {
+//            logger.info("Cannot delete directory; does it exist?");
+//            return false;
+//        }
+//    }
 
     public void executeScript(String filePath) throws IOException{
         logger.info("==> Method: AzDoPipeline.executeScript: " + filePath);
@@ -269,7 +268,8 @@ public class AzDoPipeline implements Pipeline {
             logger.info("Executing on Windows: " + "xcopy " + source + " " + target + " /E /H /C /I /Y /exclude:" + target + EXCLUDEFILESLIST);
             Runtime.getRuntime().exec("cmd.exe /c mkdir " + target);
             Utils.wait(3000);
-            Runtime.getRuntime().exec("cmd.exe /c (echo idea& echo target& echo .git& echo class) > " + target + EXCLUDEFILESLIST);
+            //Runtime.getRuntime().exec("cmd.exe /c (echo idea& echo target& echo .git& echo class) > " + target + EXCLUDEFILESLIST);
+            Runtime.getRuntime().exec("cmd.exe /c " + properties.getTargetExludeList() + " > " + target + EXCLUDEFILESLIST);
             Utils.wait(3000);
             Runtime.getRuntime().exec("cmd.exe /c xcopy " + source + " " + target + " /E /H /C /I /Y /exclude:" + target + EXCLUDEFILESLIST);
             Utils.wait(3000);
@@ -298,9 +298,23 @@ public class AzDoPipeline implements Pipeline {
     }
 
     // Clone the repo to local and initialize
-    //private Git gitClone (String branchName)  throws GitAPIException {
     private Git gitClone () {
         logger.info("==> Method: AzDoPipeline.gitClone");
+
+        // Create the target path if not existing
+        Utils.makeDirectory(properties.getTargetPath());
+//        try {
+//            if (Utils.isLinux()) {
+//                logger.info("Executing on Linux");
+//                Runtime.getRuntime().exec("/bin/sh -c mkdir " + properties.getTargetPath());
+//            } else if (Utils.isWindows()) {
+//                logger.info("Executing on Windows");
+//                Runtime.getRuntime().exec("cmd /c mkdir " + properties.getTargetPath());
+//            }
+//        }
+//        catch (IOException e) {
+//            logger.info("Cannot create the target directory; it may already exist. Just continue");
+//        }
 
         // Create the credentials provider
         CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(

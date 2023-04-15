@@ -27,6 +27,7 @@ public class TestProperties {
     private String uriTargetRepository;
     private String userTargetRepository;
     private String passwordTargetRepository;
+    private String targetExludeList;
 
     // Pipeline
     private String azdoBaseUrl;
@@ -86,6 +87,21 @@ public class TestProperties {
             logger.info("target.repository.user: " + userTargetRepository);
             passwordTargetRepository = properties.getProperty("target.repository.password");
             logger.info("target.repository.password: " + passwordTargetRepository);
+
+            // Run trough the target exclude list
+            targetExludeList = "(";
+            String excludeString = properties.getProperty("target.excludelist");
+            var excludes = excludeString.split(",");
+            int length = excludes.length;
+            for (int i = 0; i < length; i++)
+            {
+                targetExludeList += "echo ";
+                targetExludeList += excludes[i].trim();
+                if (i < length - 1)
+                    targetExludeList += "& ";
+            }
+            targetExludeList += ")";
+            logger.info("target.excludelist: " + targetExludeList);
 
             // Run trough the commit pattern and create a List
             commitPattern = properties.getProperty("git.commit.pattern");
@@ -158,6 +174,7 @@ public class TestProperties {
     public String getPipelinePathRepository() { return pipelinePathRepository; }
     public String getUriTargetRepository() { return uriTargetRepository; }
     public String getAzdoEndpoint() { return azdoEndpoint; }
+    public String getTargetExludeList() { return targetExludeList; }
 
     // Pipeline API
     public String getAzdoBaseUrl() { return azdoBaseUrl; }

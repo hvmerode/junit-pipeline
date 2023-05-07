@@ -74,7 +74,7 @@ public class AzDoApi<runResult> {
                 logger.debug("Response is null");
             }
             else {
-                logger.debug("AzDo API response" + response.toString());
+                logger.debug("AzDo API response: {}", response.toString());
 
                 // check whether the HTTP status code is valid
                 if (response.statusCode() > 299) {
@@ -86,11 +86,11 @@ public class AzDoApi<runResult> {
         }
 
         catch (InterruptedException e) {
-            logger.debug("Interrupted!", e);
+            logger.debug("Interrupted! {}", e);
             Thread.currentThread().interrupt();
         }
         catch (Exception e) {
-            logger.debug("Exception:" + e.getLocalizedMessage());
+            logger.debug("Exception: {}", e.getLocalizedMessage());
         }
 
         return null;
@@ -119,7 +119,7 @@ public class AzDoApi<runResult> {
                 ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get(JSON_ELEMENT_VALUE);
                 projectId = iterateYamlArrayListAndFindElement (arr, JSON_ELEMENT_NAME, projectName, JSON_ELEMENT_ID);
             }
-            logger.debug("Project id is: " + projectId);
+            logger.debug("Project id is: {}", projectId);
         }
 
         return projectId;
@@ -215,15 +215,15 @@ public class AzDoApi<runResult> {
             Utils.wait(pollFrequency * 1000);
             Instant finish = Instant.now();
             timeElapsed = Duration.between(start, finish).toSeconds();
-            logger.debug("Time elapsed: " + Long.toString(timeElapsed));
+            logger.debug("Time elapsed: {}", Long.toString(timeElapsed));
 
             if (runResult.result == RunResult.Result.none && timeElapsed > (long) timeout) {
                 runResult.result = RunResult.Result.undetermined;
                 runResult.status = RunResult.Status.timeout;
             }
-            logger.debug("Buildnumber: " + buildNumber);
-            logger.debug("Status response: " + runResult.status.toString());
-            logger.debug("Status response: " + runResult.status.toString());
+            logger.debug("Buildnumber: {}", buildNumber);
+            logger.debug("Status response: {}", runResult.status.toString());
+            logger.debug("Status response: {}", runResult.status.toString());
         }
 
         return runResult;
@@ -259,7 +259,7 @@ public class AzDoApi<runResult> {
             logger.debug(RESPONSE_IS + yamlMap.toString());
             if (yamlMap.get(JSON_ELEMENT_ID) != null) {
                 pipelineId = yamlMap.get(JSON_ELEMENT_ID).toString();
-                logger.debug("Pipeline id is: " + pipelineId);
+                logger.debug("Pipeline id is: {}", pipelineId);
             }
         }
 
@@ -289,7 +289,7 @@ public class AzDoApi<runResult> {
                 ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get(JSON_ELEMENT_VALUE);
                 pipelineId = iterateYamlArrayListAndFindElement (arr, JSON_ELEMENT_NAME, pipelineName, JSON_ELEMENT_ID);
             }
-            logger.debug("Pipeline id is: " + pipelineId);
+            logger.debug("Pipeline id is: {}", pipelineId);
         }
 
         return pipelineId;
@@ -313,7 +313,7 @@ public class AzDoApi<runResult> {
         HttpResponse response = callApi(properties, http, HttpMethod.POST, json);
 
         if (response != null) {
-            logger.debug("AzDo API response body" + response.body().toString());
+            logger.debug("AzDo API response body: {}", response.body().toString());
 
             // Get the repository id from the response
             Yaml yaml = new Yaml();
@@ -341,7 +341,7 @@ public class AzDoApi<runResult> {
         HttpResponse response = callApi(properties, http, HttpMethod.PATCH, json);
 
         if (response != null) {
-            logger.debug("AzDo API response body" + response.body().toString());
+            logger.debug("AzDo API response body: {}", response.body().toString());
 
             // Get the repository id from the response
             Yaml yaml = new Yaml();
@@ -395,7 +395,7 @@ public class AzDoApi<runResult> {
                 LinkedHashMap<String, Object> value = ((LinkedHashMap<String, Object>) arr.get(counter));
                 name = value.get(key).toString();
                 if (name != null && name.equals(compareKey)) {
-                    logger.debug("Found value " + compareKey);
+                    logger.debug("Found value {}", compareKey);
                     compareValue = value.get(val).toString();
                     break;
                 }

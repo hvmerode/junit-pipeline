@@ -90,7 +90,7 @@ public class CommandBundle {
         }
         Command command = null;
         for (index = 0; index < size; index++) {
-            logger.debug("==> Executing command: " + commands.get(index).toString());
+            logger.debug("==> Executing command: {0}", commands.get(index).toString());
             command = commands.get(index);
             command.execute(pipeline);
         }

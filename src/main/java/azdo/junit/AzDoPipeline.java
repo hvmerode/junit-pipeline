@@ -34,6 +34,7 @@ public class AzDoPipeline implements Pipeline {
     public CommandBundle commandBundle = new CommandBundle();
     private static final String EXCLUDEFILESLIST = "\\excludedfileslist.txt";
 
+    @SuppressWarnings("java:S1192")
     public AzDoPipeline(String propertyFile, String pipelineFile) {
         logger.debug("==> Object: AzDoPipeline");
         logger.debug("");
@@ -173,7 +174,7 @@ public class AzDoPipeline implements Pipeline {
             AddCommand command = git.add();
             for (int i = 0; i < size; i++) {
                 command = command.addFilepattern(properties.getCommitPatternList().get(i));
-                logger.debug("Pattern " + properties.getCommitPatternList().get(i));
+                logger.debug("Pattern: {}", properties.getCommitPatternList().get(i));
             }
             command.call();
             gitCommitAndPush ();
@@ -199,7 +200,7 @@ public class AzDoPipeline implements Pipeline {
     }
 
     public void executeScript(String filePath) throws IOException{
-        logger.debug("==> Method: AzDoPipeline.executeScript: " + filePath);
+        logger.debug("==> Method: AzDoPipeline.executeScript: {}", filePath);
         File file = new File(filePath);
         if(!file.isFile()){
             throw new IllegalArgumentException("The file " + filePath + " does not exist");
@@ -216,11 +217,11 @@ public class AzDoPipeline implements Pipeline {
     public void copyAll(String source, String target) throws IOException{
         logger.debug("==> Method: AzDoPipeline.copyAll");
         if(Utils.isLinux()){
-            logger.debug("Executing on Linux: " + "cp " + source + " " + target);
+            logger.debug("Executing on Linux: cp {} {}", source, target);
             // TODO: Exclude certain file types and directories
             Runtime.getRuntime().exec("/bin/sh -c cp " + source + " " + target);
         } else if(Utils.isWindows()){
-            logger.debug("Executing on Windows: " + "xcopy " + source + " " + target + " /E /H /C /I /Y /exclude:" + target + EXCLUDEFILESLIST);
+            logger.debug("Executing on Windows: xcopy {} {}  /E /H /C /I /Y /exclude:{}", source, target, target + EXCLUDEFILESLIST);
             Runtime.getRuntime().exec("cmd.exe /c mkdir " + target);
             Utils.wait(3000);
             //Runtime.getRuntime().exec("cmd.exe /c (echo idea& echo target& echo .git& echo class) > " + target + EXCLUDEFILESLIST);
@@ -352,7 +353,7 @@ public class AzDoPipeline implements Pipeline {
         - 16
      */
     public void overrideParameterDefault(String parameterName, String value) {
-        logger.debug("==> Method: AzDoPipeline.overrideParameterDefault: " + parameterName + " with " + value);
+        logger.debug("==> Method: AzDoPipeline.overrideParameterDefault {} with {}", parameterName, value);
         yamlDocumentEntryPoint.executeCommand(ActionEnum.replaceValue,
                 "parameters",
                 "",
@@ -375,7 +376,7 @@ public class AzDoPipeline implements Pipeline {
            tag: 2.1.0
      */
     public void overrideTemplateParameter(String parameterName, String value) {
-        logger.debug("==> Method: AzDoPipeline.overrideTemplateParameter: " + parameterName + " with " + value);
+        logger.debug("==> Method: AzDoPipeline.overrideTemplateParameter: {} with {}", parameterName, value);
         yamlDocumentEntryPoint.executeCommand(ActionEnum.replaceValue,
                 parameterName,
                 "",
@@ -404,7 +405,7 @@ public class AzDoPipeline implements Pipeline {
        If replaceAll is 'false' the first occurence of literal in both the main YAML and the templates are replaced.
      */
     public void overrideLiteral(String findLiteral, String replaceLiteral, boolean replaceAll) {
-        logger.debug("==> Method: AzDoPipeline.overrideLiteral: Replaces " + findLiteral + " with " + replaceLiteral);
+        logger.debug("==> Method: AzDoPipeline.overrideLiteral: Replaces {} with {}", findLiteral, replaceLiteral);
         yamlDocumentEntryPoint.executeCommand(ActionEnum.replaceLiteral,
                 "",
                 "",
@@ -429,7 +430,7 @@ public class AzDoPipeline implements Pipeline {
        If replaceAll is 'false', the first occurence in both the main YAML and the templates are replaced.
      */
     public void overrideCurrentBranch(String newBranchName, boolean replaceAll){
-        logger.debug("==> Method: AzDoPipeline.overrideCurrentBranch with: " + newBranchName);
+        logger.debug("==> Method: AzDoPipeline.overrideCurrentBranch with {}", newBranchName);
         overrideLiteral("variables[\'Build.SourceBranch\']", "\'refs/heads/" + newBranchName + "\'", replaceAll);
         overrideLiteral("$(Build.SourceBranch)", "refs/heads/" + newBranchName, replaceAll);
         overrideLiteral("variables[\'Build.SourceBranchName\']", "\'" + newBranchName + "\'", replaceAll);
@@ -454,7 +455,7 @@ public class AzDoPipeline implements Pipeline {
        ==> The stage with name "my_stage" is skipped
      */
     public void skipStage(String stageName) {
-        logger.debug("==> Method: AzDoPipeline.skipStage: " + stageName);
+        logger.debug("==> Method: AzDoPipeline.skipStage: {}", stageName);
         yamlDocumentEntryPoint.executeCommand(ActionEnum.delete,
                 "stages",
                 "",
@@ -478,7 +479,7 @@ public class AzDoPipeline implements Pipeline {
        ==> The job with name "my_job" is skipped
      */
     public void skipJob(String jobName) {
-        logger.debug("==> Method: AzDoPipeline.skipJob: " + jobName);
+        logger.debug("==> Method: AzDoPipeline.skipJob: {}", jobName);
         yamlDocumentEntryPoint.executeCommand(ActionEnum.delete,
                 "jobs",
                 "",
@@ -514,7 +515,7 @@ public class AzDoPipeline implements Pipeline {
      */
     // TODO: Look into this; does not seem right
     public void skipStep(String stepName) {
-        logger.debug("==> Method: AzDoPipeline.skipStep: " + stepName);
+        logger.debug("==> Method: AzDoPipeline.skipStep: {}", stepName);
         yamlDocumentEntryPoint.executeCommand(ActionEnum.delete,
                 "steps",
                 "",
@@ -537,7 +538,7 @@ public class AzDoPipeline implements Pipeline {
        added to the mock. Depending on the job pool this can be a Powershell script (Windows) or a bash script (Linux)
      */
     public void mockStep(String stepValue, String inlineScript){
-        logger.debug("==> Method: AzDoPipeline.mockStep: " + stepValue);
+        logger.debug("==> Method: AzDoPipeline.mockStep: {}", stepValue);
         yamlDocumentEntryPoint.executeCommand(ActionEnum.mock,
                 "steps",
                 "",
@@ -595,7 +596,7 @@ public class AzDoPipeline implements Pipeline {
                 // Retrieve the project-id of the Azure DevOps project with a given name
                 String projectId = AzDoApi.callGetProjectIdApi(properties);
 
-                logger.debug("Delete local repository in directory ", localRepositoryPath);
+                logger.debug("Delete local repository in directory {}", localRepositoryPath);
                 Utils.deleteDirectory(localRepositoryPath);
 
                 // Create remote repo using the AzDo API (this may fail if exists, but just continue)

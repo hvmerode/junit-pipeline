@@ -45,7 +45,7 @@ public class Utils {
             }
         }
         catch (IOException e) {
-            logger.debug("Cannot create the target directory" + directoryName + " ; it may already exist. Just continue");
+            logger.debug("Cannot create the target directory {}; it may already exist. Just continue", directoryName);
         }
     }
 
@@ -60,7 +60,7 @@ public class Utils {
                 logger.debug("Executing on Windows");
                 Runtime.getRuntime().exec("cmd /c rmdir " + directoryToBeDeleted);
             }
-            logger.debug("Deleted directory: " + directoryName);
+            logger.debug("Deleted directory: {}", directoryName);
             return true;
         }
         catch (IOException e)

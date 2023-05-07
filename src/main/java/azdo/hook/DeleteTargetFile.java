@@ -29,16 +29,16 @@ public class DeleteTargetFile extends Hook {
 
         try {
             if (Utils.isLinux()) {
-                logger.debug("Deleting on Linux: " + fullQualifiedFileName);
+                logger.debug("Deleting on Linux: {}", fullQualifiedFileName);
                 Runtime.getRuntime().exec("rm -f " + fullQualifiedFileName);
             } else if (Utils.isWindows()) {
-                logger.debug("Deleting on Windows: " + "cmd.exe /c del /F /Q " + fullQualifiedFileName);
+                logger.debug("Deleting on Windows: cmd.exe /c del /F /Q {}", fullQualifiedFileName);
                 Runtime.getRuntime().exec("cmd.exe /c del /F /Q " + fullQualifiedFileName);
                 Utils.wait(3000);
             }
         }
         catch (Exception e) {
-            logger.debug("Cannot delete" + fullQualifiedFileName);
+            logger.debug("Cannot delete {}", fullQualifiedFileName);
         }
     }
 }

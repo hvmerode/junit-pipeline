@@ -29,16 +29,16 @@ public class Template extends YamlDocument{
             // It is an external template (defined in another repository)
             repositoryAlias = templateName.substring(templateName.lastIndexOf('@') + 1);
             templateName = templateName.substring(0, templateName.lastIndexOf('@'));
-            logger.debug("<" + templateName + "> is an external template and resides in repository <" + repositoryAlias + ">");
+            logger.debug("<{}> is an external template and resides in repository <{}>", templateName, repositoryAlias);
         }
         else {
             // It is an internal template (defined in the same repository as the main pipeline file)
             // The basePath must be set, because it is needed to resolve the location of the template on the filesystem
-            logger.debug("<" + templateName + "> is an internal template");
+            logger.debug("<{}> is an internal template", templateName);
             this.basePath = basePath;
         }
-        logger.debug("basePath is <" + basePath + ">");
-        logger.debug("originalFileName is <" + basePath + templateName + ">");
+        logger.debug("basePath is <{}>", basePath);
+        logger.debug("originalFileName is <{}>", basePath + templateName);
     }
 
     public InternalOrExternalTemplate getInternalOrExternalTemplate() {

@@ -24,6 +24,7 @@ public class YamlDocumentEntryPoint {
        Reads the original main pipeline file from the local file system and creates a main YAML map object.
        This map is kept into memory. In addition, it creates YAML maps from template files.
      */
+    @SuppressWarnings("java:S1192")
     public void read(String mainPipelineFile) {
         logger.debug("");
         logger.debug("*****************************************************************");
@@ -70,8 +71,8 @@ public class YamlDocumentEntryPoint {
         // Run through the YAML file and add the template files to the list
         boolean found = false;
         for (Map.Entry<String, Object> entry : map.entrySet()) {
-            logger.debug("Key <" + entry.getKey() + ">");
-            logger.debug("Value <" + entry.getValue() + ">");
+            logger.debug("Key: {}", entry.getKey());
+            logger.debug("Value: {}", entry.getValue());
 
             // Add all template files to the list
             if ("repository".equals(entry.getKey())) {
@@ -100,7 +101,7 @@ public class YamlDocumentEntryPoint {
                 if ("type".equals(entry.getKey()) && "git".equals(entry.getValue()))
                     logger.debug("Repository is of type Azure DevOps");
                 if ("name".equals(entry.getKey()))
-                    logger.debug("Clone repository <" + entry.getValue() + "> to the Azure DevOps test project ");
+                    logger.debug("Clone repository <{}> to the Azure DevOps test project", entry.getValue());
             }
         }
     }

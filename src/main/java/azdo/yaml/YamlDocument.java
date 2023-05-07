@@ -38,6 +38,7 @@ public class YamlDocument {
        Reads a pipeline file from the local file system and creates a yaml map object.
        This map is kept into memory and is manipulated by the methods of this class.
      */
+    @SuppressWarnings("java:S1192")
     public Map<String, Object> readYaml() {
         logger.debug("");
         logger.debug("-----------------------------------------------------------------");
@@ -50,9 +51,9 @@ public class YamlDocument {
             File file = new File(originalFileName);
             InputStream inputStream = new FileInputStream(file);
             yamlMap = yaml.load(inputStream);
-            logger.debug("YamlMap " + yamlMap);
+            logger.debug("YamlMap: {}", yamlMap);
         } catch (Exception e) {
-            logger.debug("Cannot find file ", originalFileName);
+            logger.debug("Cannot find file {}", originalFileName);
         }
 
         logger.debug("-----------------------------------------------------------------");
@@ -98,8 +99,7 @@ public class YamlDocument {
 
         // Dump the updated yaml to target directory (with the same name as the original file in the source directory)
         String path = fixPath(targetPath + "/" + originalFileName);
-        //logger.debug("Dump the yamlMap of " + originalFileName + " to " + targetPath + "/" + originalFileName);
-        logger.debug("Dump the yamlMap of " + originalFileName + " to " + path);
+        logger.debug("Dump the yamlMap of {} to {}", originalFileName, path);
         final DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         options.setPrettyFlow(true);
@@ -125,6 +125,9 @@ public class YamlDocument {
      */
     private String fixPath (String path){
         path=path.replaceAll("\\\\","/");
+        Path normalized = Paths.get(path);
+        normalized = normalized.normalize();
+        path = normalized.toString();
         return path;
     }
 
@@ -143,7 +146,7 @@ public class YamlDocument {
         logger.debug("==> Method: YamlDocument.executeCommand");
 
         if (actionEnum == ActionEnum.replaceLiteral) {
-            logger.debug("Replace literal <" + keyName + "> with <" + keyValue + ">");
+            logger.debug("Action replace literal <{}> with <{}>", keyName, keyValue);
             replaceLiteral(keyName, keyValue, continueSearching);
         }
         else {
@@ -224,16 +227,16 @@ public class YamlDocument {
         // Find the section
         Map<String, Object> inner = section;
         for (Map.Entry<String, Object> entry : inner.entrySet()) {
-            logger.debug("Key = " + entry.getKey() + ", Value = " + entry.getValue() + ", Class: " + entry.getValue().getClass());
+            logger.debug("Key = {}, Value = {}, Class = {}", entry.getKey(), entry.getValue(), entry.getValue().getClass());
 
             // Check whether the section is found. If true, the next actions are performed on this section
             if (sectionName.equals(entry.getKey())) {
                 if (sectionValue == null || sectionValue.isEmpty()) {
-                    logger.debug("Found section <" + sectionName + ">");
+                    logger.debug("Found section <{}>", sectionName);
                     sectionFound = true;
                 } else {
                     if (sectionValue.equals(entry.getValue())) {
-                        logger.debug("Found section <" + sectionValue + ">");
+                        logger.debug("Found section <{}>", sectionValue);
                         sectionFound = true;
                     }
                 }
@@ -246,23 +249,23 @@ public class YamlDocument {
                     s = sectionName;
                 else if (! (sectionValue == null || sectionValue.isEmpty()))
                     s = sectionValue;
-                logger.debug("Execute actionEnum in section <" + s + ">");
+                logger.debug("Execute actionEnum in section <{}>", s);
 
                 // Variable 'entry' contains the section segment
                 switch (actionEnum) {
                     case replaceValue:
-                        logger.debug("Replace <" + keyName + "> with value <" + keyValue + ">");
+                        //logger.debug("Replace <" + keyName + "> with value <" + keyValue + ">");
                         if (identifierName.isEmpty() && identifierValue.isEmpty())
                             replaceValue(entry, keyName, keyValue);
                         else
                             replaceValue(entry, identifierName, identifierValue, keyName, keyValue);
                         return;
                     case delete:
-                        logger.debug("Skip section <" + keyName + "> with name <" + keyValue + ">");
+                        logger.debug("Skip section <{}> with name <{}>", keyName, keyValue);
                         skipSection(entry, keyName, keyValue);
                         return;
                     case mock:
-                        logger.debug("Mock section in <" + s + "> with name <" + keyName + ">");
+                        logger.debug("Mock section in <{}> with name <{}>", s, keyName);
                         mockSection(entry, s, keyName, keyValue);
                         return;
                 }
@@ -314,7 +317,7 @@ public class YamlDocument {
             return;
 
         section.forEach(entry -> {
-            logger.debug("Section = " + entry + ", Class: " + entry.getClass());
+            logger.debug("Section = {}, Class: = {}", entry, entry.getClass());
 
             // If inner sections are found, go a level deeper
             if (entry instanceof Map) {
@@ -364,8 +367,8 @@ public class YamlDocument {
                               String keyValue) {
 
         logger.debug("==> Method: YamlDocument.replaceValue");
-        logger.debug("keyName: " + keyName);
-        logger.debug("keyValue: " + keyValue);
+        logger.debug("keyName: {}", keyName);
+        logger.debug("keyValue: {}", keyValue);
 
         // First check whether the  value of this section must be replaced
         if (keyName.equals(section.getKey())) {
@@ -378,7 +381,7 @@ public class YamlDocument {
                 int index = 0;
                 int size = list.size();
                 for (index = 0; index < size; index++) {
-                    logger.debug("Element = " + list.get(index) + ", Class: " + list.get(index).getClass());
+                    logger.debug("Element = {}, Class = {}", list.get(index), list.get(index).getClass());
 
                     // If it is a Map, it contains key/value; iterate trough them to detect whether the key/value pair exists
                     if (list.get(index) instanceof Map) {
@@ -386,8 +389,8 @@ public class YamlDocument {
                         for (Map.Entry<String, Object> entry : map.entrySet()) {
                             // Check the key/value pairs of which the value needs to be replaced
                             if (keyName.equals(entry.getKey())) {
-                                logger.debug("Found " + entry.getKey() + " with value: " + entry.getValue());
-                                logger.debug("Replace with value " + keyValue);
+                                logger.debug("Found <{}> with value <{}>", entry.getKey(), entry.getValue());
+                                logger.debug("Replace with value <{}>", keyValue);
                                 entry.setValue(keyValue);
                                 return;
                             }
@@ -425,10 +428,10 @@ public class YamlDocument {
                               String keyValue) {
 
         logger.debug("==> Method: YamlDocument.replaceValue");
-        logger.debug("identifierName: " + identifierName);
-        logger.debug("identifierValue: " + identifierValue);
-        logger.debug("keyName: " + keyName);
-        logger.debug("keyValue: " + keyValue);
+        logger.debug("identifierName: {}", identifierName);
+        logger.debug("identifierValue: {}", identifierValue);
+        logger.debug("keyName: {}", keyName);
+        logger.debug("keyValue: {}", keyValue);
 
         // Run trough the elements of the entry and replace the value of a keyName with keyValue
         boolean foundName = false;
@@ -437,7 +440,7 @@ public class YamlDocument {
             int index = 0;
             int size = list.size();
             for (index = 0; index < size; index++) {
-                logger.debug("Element = " + list.get(index) + ", Class: " + list.get(index).getClass());
+                logger.debug("Element = {}, Class = {}", list.get(index), list.get(index).getClass());
 
                 // If it is a Map, it contains key/value; iterate trough them to detect whether the key/value pair exists
                 if (list.get(index) instanceof Map) {
@@ -445,14 +448,14 @@ public class YamlDocument {
                     for (Map.Entry<String, Object> entry : map.entrySet()) {
                         if (identifierName.equals(entry.getKey()) && identifierValue.equals(entry.getValue())) {
                             // We found the name, but iterate a bit more to find the name type
-                            logger.debug("Found name " + identifierName);
+                            logger.debug("Found name: {}", identifierName);
                             foundName = true;
                         }
                         if (foundName) {
                             // Check the key/value pairs of which the value needs to be replaced
                             if (keyName.equals(entry.getKey())) {
-                                logger.debug("Found " + entry.getKey() + " with value: " + entry.getValue());
-                                logger.debug("Replace with value " + keyValue);
+                                logger.debug("Found <{}> with value <{}>", entry.getKey(), entry.getValue());
+                                logger.debug("Replace with value <{}>", keyValue);
                                 entry.setValue(keyValue);
                                 return;
                             }
@@ -471,8 +474,8 @@ public class YamlDocument {
     private void skipSection (Map.Entry<String, Object> section, String keyName, String value) {
 
         logger.debug("==> Method: YamlDocument.skipSection");
-        logger.debug("key: " + keyName);
-        logger.debug("value: " + value);
+        logger.debug("key: {}", keyName);
+        logger.debug("value: {}", value);
 
         // Run trough the elements of the list and replace the section with key/value
         if (section.getValue() instanceof ArrayList) {
@@ -480,7 +483,7 @@ public class YamlDocument {
             int index = 0;
             int size = list.size();
             for (index = 0; index < size; index++) {
-                logger.debug("Element = " + list.get(index) + ", Class: " + list.get(index).getClass());
+                logger.debug("Element = {}, Class = {}", list.get(index), list.get(index).getClass());
 
                 // If it is a Map, it contains key/value; iterate trough them to detect whether the key/value pair exists
                 if (list.get(index) instanceof Map) {
@@ -490,7 +493,7 @@ public class YamlDocument {
                         // Check whether the entry has the given key and value
                         // Delete the entry from the list if this is the case
                         if (keyName.equals(entry.getKey()) && value.equals(entry.getValue())) {
-                            logger.debug("Skip: " + value);
+                            logger.debug("Skip: {}", value);
                             list.remove(index);
                             return;
                         }
@@ -502,9 +505,9 @@ public class YamlDocument {
 
     private void mockSection(Map.Entry<String, Object> section, String sectionName, String id, String inlineScript){
         logger.debug("==> Method: YamlDocument.mockSection");
-        logger.debug("s: " + sectionName);
-        logger.debug("id: " + id);
-        logger.debug("inlineScript: " + inlineScript);
+        logger.debug("s: {}", sectionName);
+        logger.debug("id: {}", id);
+        logger.debug("inlineScript: {}", inlineScript);
 
         String subType = "task";
         if ("stages".equals(sectionName))
@@ -518,7 +521,7 @@ public class YamlDocument {
             int index = 0;
             int size = list.size();
             for (index = 0; index < size; index++) {
-                logger.debug("Element = " + list.get(index) + ", Class: " + list.get(index).getClass());
+                logger.debug("Element = {}, Class = {}", list.get(index), list.get(index).getClass());
 
                 // If it is a Map, it contains key/value; iterate trough them to detect whether the key/value pair exists
                 if (list.get(index) instanceof Map) {
@@ -528,12 +531,11 @@ public class YamlDocument {
                         // Check whether the entry has the given subtype (stage, job, task) and key (id of the subtype)
                         // Replace the entry from the list with the
                         if (subType.equals(entry.getKey()) && id.equals(entry.getValue())) {
-                            logger.debug("Mock: " + subType + " with name " + id);
+                            logger.debug("Mock: <{}> with name <{}>", subType, id);
                             LinkedHashMap<String, String> mock = new LinkedHashMap<>();
                             mock.put ("script", inlineScript);
                             list.remove(index);
                             list.add(index, mock);
-                            //list.set(index, mock);
                             return;
                         }
                     }

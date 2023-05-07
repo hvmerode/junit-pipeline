@@ -140,8 +140,43 @@ public void mockStep(String stepValue, String inlineScript)
 <i>
 The original step is replaced by a mock step. This is a step of the type 'script'. The argument 'inlineScript' is added to the mock.
 Depending on the job pool this can be a Powershell script (Windows) or a bash script (Linux).
+
+<u>Example</u>:
+<pre>
+- task: AWSShellScript@1
+  inputs:
+    awsCredentials: $(aws_connection)
+    regionName: $(aws_region)
+    scriptType: 'inline'
+    inlineScript: |
+      #!/bin/bash
+      set -ex
+      export cdk=`find $(Pipeline.Workspace)/. -name 'cdk*.jar'`
+      export app=`find $(Pipeline.Workspace)/. -name 'app*.jar'`
+
+      echo "Deploying stack"
+      cdk deploy --app '${JAVA_HOME_11_X64}/bin/java -cp $cdk com.org.app.Stack' \
+          -c env=${{ parameters.environment }} \
+          -c app=$app
+          --all \
+          --ci \
+          --require-approval never
+  displayName: 'Deploy to AWS'
+</pre>
+
+Calling in Java:
+```java
+String inlineScript = "echo \"This is a mock script\"\n" + "echo \"Mock-and-roll\"";
+pipeline.mockStep("AWSShellScript@1", inlineScript);
+```
+results in:
+<pre>
+- script: |-
+    echo "This is a mock script"
+    echo "This is line 2"
+</pre>
+
 </i>
-<br>
 <br>
 
 ***
@@ -158,7 +193,10 @@ the same as skipping it.
   displayName: 'This is my stage'
 </pre>
 
-Call pipeline.skipStage("my_stage")
+Calling in Java:
+```java
+pipeline.skipStage("my_stage")
+```
 ==> The stage with name "my_stage" is skipped
 </i>
 <br>
@@ -179,7 +217,10 @@ the same as skipping it.
   displayName: 'This is my job'
 </pre>
 
-Call pipeline.skipJob("my_job")
+Calling in Java:
+```java
+pipeline.skipJob("my_job")
+```
 ==> The job with name "my_job" is skipped
 </i>
 <br>
@@ -205,7 +246,11 @@ variables:
   value: myValue
 </pre>
 
-pipeline.overrideVariable("myVar", "myNewValue") results in resp.
+Calling in Java:
+```java
+pipeline.overrideVariable("myVar", "myNewValue")
+```
+results in resp.
 <pre>
 variables:
 myVar : myNewValue
@@ -216,7 +261,7 @@ variables:
 - name: myVar
   value: myNewValue
 </pre>
-This method does not replace variables defined in a Library.
+This method does not replace variables defined in a Library (variable group).
 </i>
 <br>
 <br>
@@ -226,7 +271,9 @@ This method does not replace variables defined in a Library.
 public void overrideTemplateParameter(String parameterName, String value)
 ```
 <i>
-Replace the value of a parameter in a 'template' section. Example:
+Replace the value of a parameter in a 'template' section.
+
+<u>Example</u>:
 <pre>
 - template: step/mytemplate.yml
   parameters:
@@ -234,7 +281,10 @@ Replace the value of a parameter in a 'template' section. Example:
 </pre>
 
 To replace the version with a fixed value (2.1.0), call:
-pipeline.overrideTemplateParameter("tag", "2.1.0"). This results in:
+```java
+pipeline.overrideTemplateParameter("tag", "2.1.0"). 
+```        
+This results in:
 <pre>
 - template: step/mytemplate.yml
   parameters:
@@ -248,7 +298,9 @@ pipeline.overrideTemplateParameter("tag", "2.1.0"). This results in:
 public void overrideParameterDefault(String parameterName, String value)
 ```
 <i>
-Replace the default value of a parameter in the 'parameters' section. Example:
+Replace the default value of a parameter in the 'parameters' section.
+
+<u>Example</u>:
 <pre>
 - name: myNumber
   type: number
@@ -259,7 +311,11 @@ Replace the default value of a parameter in the 'parameters' section. Example:
   - 4
 </pre>
 
-pipeline.overrideParameterDefault("myNumber", "4") result in:
+Calling in Java:
+```java
+pipeline.overrideParameterDefault("myNumber", "4") 
+```
+results in:
 <pre>
 - name: myNumber
   type: number
@@ -278,6 +334,8 @@ public void overrideLiteral(String findLiteral, String replaceLiteral, boolean r
 ```
 <i>
 Override (or overwrite) any arbitrary string in the yaml file.
+
+<u>Example</u>:
 <pre>
 - task: AzureWebApp@1
   displayName: Azure Web App Deploy
@@ -286,7 +344,11 @@ Override (or overwrite) any arbitrary string in the yaml file.
     appName: samplewebapp
 </pre>
 
-Calling pipeline.overrideLiteral ("$(azureSubscription)", "1234567890") results in
+Calling in Java:
+```java
+pipeline.overrideLiteral ("$(azureSubscription)", "1234567890") 
+```
+results in
 <pre>
 - task: AzureWebApp@1
   displayName: Azure Web App Deploy
@@ -307,12 +369,18 @@ public void overrideCurrentBranch(String newBranchName, boolean replaceAll)
 ```
 <i>
 Replace the current branch with a given branch name.
-Example: Assume the following condition:
+
+<u>Example</u>:\
+Assume the following condition:
 <pre>
 and(succeeded(), eq(variables['Build.SourceBranchName'], 'main'))
 </pre>
 
-After applying pipeline.overrideCurrentBranch("myFeature") it becomes
+After applying
+```java
+pipeline.overrideCurrentBranch("myFeature")
+```
+it becomes:
 <pre>
 and(succeeded(), eq('myFeature', 'main'))
 </pre>
@@ -331,7 +399,7 @@ The startPipeline method has a few representations:
 * _startPipeline(String branchName, List<Hook> hooks)_ - Starts the pipeline with a given branch but
   before the pipeline starts, the list with 'hooks' is executed.
   
-The result of a pipeline run is retrieved with
+The result of a pipeline run is retrieved using:
 ```java
 pipeline.getRunResult()
 ```

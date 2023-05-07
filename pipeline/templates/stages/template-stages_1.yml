@@ -1,18 +1,15 @@
-# Copyright (c) Henry van Merode.
-# Licensed under the MIT License.
-
 parameters:
-  - name: aNiceParam
-    type: string
-    default: param_value
-
+- name: aNiceParam
+  type: string
+  default: param_value
 stages:
-  - stage: TemplateStage_1
-    displayName: 'TemplateStage1'
-    jobs:
-      - job: TemplateStage_1_Job_1
-        pool:
-          vmImage: 'ubuntu-latest'
-        steps:
-          - script: |
-              echo 'This is job: TemplateStage_1.Job_1 with parameter ${{ parameters.aNiceParam }}'
+- stage: TemplateStage_1
+  displayName: TemplateStage1
+  jobs:
+  - job: TemplateStage_1_Job_1
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - script: |
+        echo 'This is job: TemplateStage_1.Job_1 with parameter ${{ parameters.aNiceParam }}'
+  - template: ../jobs/template-jobs_1.yml

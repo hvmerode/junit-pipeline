@@ -26,7 +26,7 @@ public class PomUtils {
                                           String groupID,
                                           String artifactId,
                                           String version) throws IOException, XmlPullParserException {
-        logger.info("==> Method: PomUtils.checkDependency");
+        logger.debug("==> Method: PomUtils.checkDependency");
 
         // Create a MavenXpp3Reader to read the existing pom.xml file
         MavenXpp3Reader reader = new MavenXpp3Reader();
@@ -54,7 +54,7 @@ public class PomUtils {
                                         String groupID,
                                         String artifactId,
                                         String version) throws IOException, XmlPullParserException {
-        logger.info("==> Method: PomUtils.insertDependency");
+        logger.debug("==> Method: PomUtils.insertDependency");
 
         // Create a MavenXpp3Reader to read the existing pom.xml file
         MavenXpp3Reader reader = new MavenXpp3Reader();
@@ -79,7 +79,7 @@ public class PomUtils {
     public static void deleteDependency(String pomFile,
                                         String groupID,
                                         String artifactId) throws IOException, XmlPullParserException {
-        logger.info("==> Method: PomUtils.deleteDependency");
+        logger.debug("==> Method: PomUtils.deleteDependency");
 
         // Create a MavenXpp3Reader to read the existing pom.xml file
         MavenXpp3Reader reader = new MavenXpp3Reader();

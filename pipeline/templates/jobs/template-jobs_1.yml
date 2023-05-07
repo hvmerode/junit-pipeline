@@ -1,15 +1,12 @@
-# Copyright (c) Henry van Merode.
-# Licensed under the MIT License.
-
 parameters:
-  - name: param_1
-    type: string
-    default: param_1_value
-
+- name: param_1
+  type: string
+  default: param_1_value
 jobs:
-  - job: TemplateJob_1
-    pool:
-      vmImage: 'ubuntu-latest'
-    steps:
-      - script: |
-          echo 'This is job: TemplateJob_1 with parameter ${{ parameters.param_1 }}'
+- job: TemplateJob_1
+  pool:
+    vmImage: ubuntu-latest
+  steps:
+  - script: |
+      echo 'This is job: TemplateJob_1 with parameter ${{ parameters.param_1 }}'
+  - template: ../steps/template-steps_1.yml

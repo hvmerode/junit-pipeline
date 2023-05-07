@@ -19,25 +19,25 @@ public class CommandBundle {
     private ArrayList<Command> commands = new ArrayList<>();
 
     public void overrideVariable(String variableName, String value) {
-        logger.info("==> Method CommandBundle.overrideVariable");
+        logger.debug("==> Method CommandBundle.overrideVariable");
         CommandOverrideVariable command = new CommandOverrideVariable(variableName, value);
         commands.add(command);
     }
 
     public void overrideParameterDefault(String parameterName, String value) {
-        logger.info("==> Method CommandBundle.overrideVariable");
+        logger.debug("==> Method CommandBundle.overrideVariable");
         CommandOverrideParameterDefault command = new CommandOverrideParameterDefault(parameterName, value);
         commands.add(command);
     }
 
     public void overrideTemplateParameter(String parameterName, String value) {
-        logger.info("==> Method CommandBundle.overrideTemplateParameter");
+        logger.debug("==> Method CommandBundle.overrideTemplateParameter");
         CommandOverrideTemplateParameter command = new CommandOverrideTemplateParameter(parameterName, value);
         commands.add(command);
     }
 
     public void overrideLiteral(String findLiteral, String replaceLiteral, boolean replaceAll) {
-        logger.info("==> Method CommandBundle.overrideLiteral");
+        logger.debug("==> Method CommandBundle.overrideLiteral");
         CommandOverrideLiteral command = new CommandOverrideLiteral(findLiteral, replaceLiteral, replaceAll);
         commands.add(command);
     }
@@ -46,7 +46,7 @@ public class CommandBundle {
     }
 
     public void overrideCurrentBranch(String newBranchName, boolean replaceAll){
-        logger.info("==> Method CommandBundle.overrideCurrentBranch");
+        logger.debug("==> Method CommandBundle.overrideCurrentBranch");
         CommandOverrideCurrentBranch command = new CommandOverrideCurrentBranch(newBranchName, replaceAll);
         commands.add(command);
     }
@@ -56,41 +56,41 @@ public class CommandBundle {
     }
 
     public void skipStage(String stageName) {
-        logger.info("==> Method CommandBundle.skipStage");
+        logger.debug("==> Method CommandBundle.skipStage");
         CommandSkipStage command = new CommandSkipStage(stageName);
         commands.add(command);
     }
 
     public void skipJob(String jobName) {
-        logger.info("==> Method CommandBundle.skipJob");
+        logger.debug("==> Method CommandBundle.skipJob");
         CommandSkipJob command = new CommandSkipJob(jobName);
         commands.add(command);
     }
 
     public void skipStep(String stepName) {
-        logger.info("==> Method CommandBundle.skipStep");
+        logger.debug("==> Method CommandBundle.skipStep");
         CommandSkipStep command = new CommandSkipStep(stepName);
         commands.add(command);
     }
 
     public void mockStep(String stepValue, String inlineScript){
-        logger.info("==> Method CommandBundle.mockStep");
+        logger.debug("==> Method CommandBundle.mockStep");
         CommandMockStep command = new CommandMockStep(stepValue, inlineScript);
         commands.add(command);
     }
 
     // Execute all commands
     public void execute (Pipeline pipeline){
-        logger.info("==> Method CommandBundle.execute");
+        logger.debug("==> Method CommandBundle.execute");
         int index = 0;
         int size = commands.size();
         if (size == 0) {
-            logger.info("==> No commands in this bundle");
+            logger.debug("==> No commands in this bundle");
             return;
         }
         Command command = null;
         for (index = 0; index < size; index++) {
-            logger.info("==> Executing command: " + commands.get(index).toString());
+            logger.debug("==> Executing command: " + commands.get(index).toString());
             command = commands.get(index);
             command.execute(pipeline);
         }

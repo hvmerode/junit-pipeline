@@ -7,7 +7,7 @@ import azdo.command.CommandBundle;
 import azdo.hook.Hook;
 import azdo.utils.Utils;
 import azdo.yaml.ActionEnum;
-import azdo.yaml.YamlDocumentSet;
+import azdo.yaml.YamlDocumentEntryPoint;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
@@ -30,19 +30,20 @@ public class AzDoPipeline implements Pipeline {
     String repositoryId = null;
     String pipelineId = null;
     RunResult runResult = null;
-    private YamlDocumentSet yamlDocumentSet;
+    private YamlDocumentEntryPoint yamlDocumentEntryPoint;
     public CommandBundle commandBundle = new CommandBundle();
     private static final String EXCLUDEFILESLIST = "\\excludedfileslist.txt";
 
     public AzDoPipeline(String propertyFile, String pipelineFile) {
-        logger.info("");
-        logger.info("=================================================================");
-        logger.info("Start AzDoPipeline: Initializing repository and pipeline");
-        logger.info("=================================================================");
+        logger.debug("==> Object: AzDoPipeline");
+        logger.debug("");
+        logger.debug("=================================================================");
+        logger.debug("Start AzDoPipeline: Initializing repository and pipeline");
+        logger.debug("=================================================================");
 
         properties = new TestProperties(propertyFile);
-        yamlDocumentSet = new YamlDocumentSet();
-        yamlDocumentSet.read(pipelineFile);
+        yamlDocumentEntryPoint = new YamlDocumentEntryPoint();
+        yamlDocumentEntryPoint.read(pipelineFile);
         yamlFile = pipelineFile;
         credentialsProvider = new UsernamePasswordCredentialsProvider(
                 properties.getUserTargetRepository(),
@@ -51,34 +52,7 @@ public class AzDoPipeline implements Pipeline {
         //////////////////////////////////////////////////////////////////////////////////////////////////////////
         // If no repository exists, create a new repo in Azure DevOps. Otherwise, make use of the existing repo //
         //////////////////////////////////////////////////////////////////////////////////////////////////////////
-        try {
-            // Get the repositoryId of the existing repository
-            repositoryId = AzDoApi.callGetRepositoryApi(properties);
-        }
-        catch (Exception e) {
-            logger.info("Exception occurred; continue");
-        }
-
-        try {
-            // Create a new repository if not existing
-            if (repositoryId == null) {
-                // Retrieve the project-id of the Azure DevOps project with a given name
-                String projectId = AzDoApi.callGetProjectIdApi(properties);
-
-                logger.info("Delete local repository in directory ", properties.getTargetPath());
-                Utils.deleteDirectory(properties.getTargetPath());
-
-                // Create remote repo using the AzDo API (this may fail if exists, but just continue)
-                repositoryId = AzDoApi.callCreateRepoApi(properties, projectId);
-
-                // The repo did not exist; clone the repo to local and initialize
-                git = gitClone();
-            }
-        }
-        catch (Exception e) {
-            logger.info("Exception occurred. Cannot create a new repository");
-            e.printStackTrace();
-        }
+        createRepositoryIfNotExists(properties.getRepositoryName());
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // If no pipeline exists, create a new pipeline in Azure DevOps. Otherwise, make use of the existing pipeline //
@@ -88,7 +62,7 @@ public class AzDoPipeline implements Pipeline {
             pipelineId = AzDoApi.callGetPipelineApi (properties);
         }
         catch (Exception e) {
-            logger.info("Exception occurred; continue");
+            logger.debug("Exception occurred; continue");
         }
 
         try {
@@ -99,15 +73,15 @@ public class AzDoPipeline implements Pipeline {
             }
         }
         catch (Exception e) {
-            logger.info("Exception occurred. Cannot create a new pipeline");
+            logger.debug("Exception occurred. Cannot create a new pipeline");
             e.printStackTrace();
         }
 
-        logger.info("");
-        logger.info("=================================================================");
-        logger.info("End AzDoPipeline: Initializing repository and pipeline");
-        logger.info("=================================================================");
-        logger.info("");
+        logger.debug("");
+        logger.debug("=================================================================");
+        logger.debug("End AzDoPipeline: Initializing repository and pipeline");
+        logger.debug("=================================================================");
+        logger.debug("");
     }
 
     /* After the yaml file has been manipulated and can be used to perform the unittest, the
@@ -125,7 +99,7 @@ public class AzDoPipeline implements Pipeline {
         startPipeline(branchName, null);
     }
     public void startPipeline(String branchName, List<Hook> hooks) throws IOException {
-        logger.info("==> Method: AzDoPipeline.startPipeline");
+        logger.debug("==> Method: AzDoPipeline.startPipeline");
         boolean recreate = false;
 
         // Clone the repository to local if not done earlier
@@ -134,13 +108,13 @@ public class AzDoPipeline implements Pipeline {
             git = gitClone();
         }
         catch (Exception e) {
-            logger.info("Exception occurred. Cannot clone repository to local");
+            logger.debug("Exception occurred. Cannot clone repository to local");
             e.printStackTrace();
         }
 
         // If git object is invalid after the clone (for some reason), recreate it again
         if (git == null) {
-            logger.info("Recreate git object");
+            logger.debug("Recreate git object");
             File f = new File(properties.getTargetPath());
             git = Git.open(f);
             recreate = true;
@@ -151,14 +125,14 @@ public class AzDoPipeline implements Pipeline {
 
         // Perform the checkout
         try {
-            logger.info("git.checkout");
+            logger.debug("git.checkout");
             git.checkout()
                     .setCreateBranch(!isRemote)
                     .setName(branchName)
                     .call();
         }
         catch (Exception e) {
-            logger.info("Exception occurred. Cannot checkout; just continue");
+            logger.debug("Exception occurred. Cannot checkout; just continue");
             e.printStackTrace();
         }
 
@@ -168,19 +142,19 @@ public class AzDoPipeline implements Pipeline {
             copyAll(properties.getSourcePath(), properties.getTargetPath());
         }
         catch (Exception e) {
-            logger.info("Exception occurred.Cannot copy local files to target");
+            logger.debug("Exception occurred.Cannot copy local files to target");
             e.printStackTrace();
         }
 
         // Execute the commands in the bundle are executed
         commandBundle.execute(this);
 
-        //  Save the manipulated main YAML and template files to the target location
-        yamlDocumentSet.dumpYaml(properties.getTargetPath());
+        //  Save the manipulated main YAML (incl. template files) to the target location
+        yamlDocumentEntryPoint.dumpYaml(properties.getTargetPath());
 
         // Perform all (pre)hooks
         if (hooks != null) {
-            logger.info("Execute hooks");
+            logger.debug("Execute hooks");
             int size = hooks.size();
             for (int i = 0; i < size; i++) {
                 hooks.get(i).executeHook();
@@ -189,7 +163,7 @@ public class AzDoPipeline implements Pipeline {
 
         // Push the local repo to remote
         try {
-            logger.info("git.add");
+            logger.debug("git.add");
             git.add()
                     .addFilepattern(".")
                     .call();
@@ -199,20 +173,20 @@ public class AzDoPipeline implements Pipeline {
             AddCommand command = git.add();
             for (int i = 0; i < size; i++) {
                 command = command.addFilepattern(properties.getCommitPatternList().get(i));
-                logger.info("Pattern " + properties.getCommitPatternList().get(i));
+                logger.debug("Pattern " + properties.getCommitPatternList().get(i));
             }
             command.call();
             gitCommitAndPush ();
         }
 
         catch (Exception e) {
-            logger.info("Exception pushing to repo");
+            logger.debug("Exception pushing to repo");
             e.printStackTrace();
         }
 
         // If Git was recreated, close it
         if (recreate) {
-            logger.info("git.close");
+            logger.debug("git.close");
             git.close();
         }
 
@@ -220,52 +194,33 @@ public class AzDoPipeline implements Pipeline {
         AzDoApi.callPipelineRunApi(properties, pipelineId, branchName);
         runResult = AzDoApi.callRunResult(properties, pipelineId);
 
-        // Re-read the original pipeline for the next test
-        yamlDocumentSet.read(yamlFile);
+        // Re-read the original pipeline for the next test (for a clean start of the next test)
+        yamlDocumentEntryPoint.read(yamlFile);
     }
 
-//    private boolean deleteDirectory(File directoryToBeDeleted) {
-//        logger.info("==> Method: AzDoPipeline.deleteDirectory");
-//        try {
-//            if (Utils.isLinux()) {
-//                logger.info("Executing on Linux");
-//                Runtime.getRuntime().exec("/bin/sh -c rm -r " + directoryToBeDeleted);
-//            } else if (Utils.isWindows()) {
-//                logger.info("Executing on Windows");
-//                Runtime.getRuntime().exec("cmd /c rmdir " + directoryToBeDeleted);
-//            }
-//            return true;
-//        }
-//        catch (IOException e)
-//        {
-//            logger.info("Cannot delete directory; does it exist?");
-//            return false;
-//        }
-//    }
-
     public void executeScript(String filePath) throws IOException{
-        logger.info("==> Method: AzDoPipeline.executeScript: " + filePath);
+        logger.debug("==> Method: AzDoPipeline.executeScript: " + filePath);
         File file = new File(filePath);
         if(!file.isFile()){
             throw new IllegalArgumentException("The file " + filePath + " does not exist");
         }
         if(Utils.isLinux()){
-            logger.info("Executing on Linux");
+            logger.debug("Executing on Linux");
             Runtime.getRuntime().exec(new String[] {"/bin/sh ", "-c", filePath}, null);
         } else if(Utils.isWindows()){
-            logger.info("Executing on Windows");
+            logger.debug("Executing on Windows");
             Runtime.getRuntime().exec("cmd /c call " + filePath);
         }
     }
 
     public void copyAll(String source, String target) throws IOException{
-        logger.info("==> Method: AzDoPipeline.copyAll");
+        logger.debug("==> Method: AzDoPipeline.copyAll");
         if(Utils.isLinux()){
-            logger.info("Executing on Linux: " + "cp " + source + " " + target);
+            logger.debug("Executing on Linux: " + "cp " + source + " " + target);
             // TODO: Exclude certain file types and directories
             Runtime.getRuntime().exec("/bin/sh -c cp " + source + " " + target);
         } else if(Utils.isWindows()){
-            logger.info("Executing on Windows: " + "xcopy " + source + " " + target + " /E /H /C /I /Y /exclude:" + target + EXCLUDEFILESLIST);
+            logger.debug("Executing on Windows: " + "xcopy " + source + " " + target + " /E /H /C /I /Y /exclude:" + target + EXCLUDEFILESLIST);
             Runtime.getRuntime().exec("cmd.exe /c mkdir " + target);
             Utils.wait(3000);
             //Runtime.getRuntime().exec("cmd.exe /c (echo idea& echo target& echo .git& echo class) > " + target + EXCLUDEFILESLIST);
@@ -277,10 +232,10 @@ public class AzDoPipeline implements Pipeline {
     }
 
     private void gitCommitAndPush () throws GitAPIException {
-        logger.info ("==> Method: AzDoPipeline.gitCommitAndPush");
+        logger.debug ("==> Method: AzDoPipeline.gitCommitAndPush");
 
         if (git != null) {
-            logger.info("git.commit");
+            logger.debug("git.commit");
             git.commit()
                     .setAll(true)
                     .setAuthor(properties.getUserTargetRepository(), "")
@@ -288,7 +243,7 @@ public class AzDoPipeline implements Pipeline {
                     .setMessage("Init repo")
                     .call();
 
-            logger.info("git.push");
+            logger.debug("git.push");
             git.push()
                     .setPushAll()
                     .setCredentialsProvider(credentialsProvider)
@@ -299,22 +254,10 @@ public class AzDoPipeline implements Pipeline {
 
     // Clone the repo to local and initialize
     private Git gitClone () {
-        logger.info("==> Method: AzDoPipeline.gitClone");
+        logger.debug("==> Method: AzDoPipeline.gitClone");
 
         // Create the target path if not existing
         Utils.makeDirectory(properties.getTargetPath());
-//        try {
-//            if (Utils.isLinux()) {
-//                logger.info("Executing on Linux");
-//                Runtime.getRuntime().exec("/bin/sh -c mkdir " + properties.getTargetPath());
-//            } else if (Utils.isWindows()) {
-//                logger.info("Executing on Windows");
-//                Runtime.getRuntime().exec("cmd /c mkdir " + properties.getTargetPath());
-//            }
-//        }
-//        catch (IOException e) {
-//            logger.info("Cannot create the target directory; it may already exist. Just continue");
-//        }
 
         // Create the credentials provider
         CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(
@@ -323,7 +266,7 @@ public class AzDoPipeline implements Pipeline {
 
         // Clone the repo
         try {
-            logger.info("git.clone");
+            logger.debug("git.clone");
             git = Git.cloneRepository()
                     .setURI(properties.getUriTargetRepository())
                     .setCloneAllBranches(true)
@@ -332,7 +275,7 @@ public class AzDoPipeline implements Pipeline {
                     .call();
         }
         catch (Exception e) {
-            logger.info("Cannot clone, but just proceed");
+            logger.debug("Cannot clone, but just proceed");
         }
 
         return git;
@@ -363,10 +306,10 @@ public class AzDoPipeline implements Pipeline {
      */
     public void overrideVariable(String variableName, String value) {
 
-        logger.info("==> Method: AzDoPipeline.overrideVariable: " + variableName + " with " + value);
+        logger.debug("==> Method: AzDoPipeline.overrideVariable: " + variableName + " with " + value);
 
         // Replace according to construction 1
-        yamlDocumentSet.executeCommand(ActionEnum.replaceValue,
+        yamlDocumentEntryPoint.executeCommand(ActionEnum.replaceValue,
                 "variables",
                 "",
                 "",
@@ -376,7 +319,7 @@ public class AzDoPipeline implements Pipeline {
                 false);
 
         // Replace according to construction 2
-        yamlDocumentSet.executeCommand(ActionEnum.replaceValue,
+        yamlDocumentEntryPoint.executeCommand(ActionEnum.replaceValue,
                 "variables",
                 "",
                 "name",
@@ -409,8 +352,8 @@ public class AzDoPipeline implements Pipeline {
         - 16
      */
     public void overrideParameterDefault(String parameterName, String value) {
-        logger.info("==> Method: AzDoPipeline.overrideParameterDefault: " + parameterName + " with " + value);
-        yamlDocumentSet.executeCommand(ActionEnum.replaceValue,
+        logger.debug("==> Method: AzDoPipeline.overrideParameterDefault: " + parameterName + " with " + value);
+        yamlDocumentEntryPoint.executeCommand(ActionEnum.replaceValue,
                 "parameters",
                 "",
                 "name",
@@ -432,8 +375,8 @@ public class AzDoPipeline implements Pipeline {
            tag: 2.1.0
      */
     public void overrideTemplateParameter(String parameterName, String value) {
-        logger.info("==> Method: AzDoPipeline.overrideTemplateParameter: " + parameterName + " with " + value);
-        yamlDocumentSet.executeCommand(ActionEnum.replaceValue,
+        logger.debug("==> Method: AzDoPipeline.overrideTemplateParameter: " + parameterName + " with " + value);
+        yamlDocumentEntryPoint.executeCommand(ActionEnum.replaceValue,
                 parameterName,
                 "",
                 "",
@@ -461,8 +404,8 @@ public class AzDoPipeline implements Pipeline {
        If replaceAll is 'false' the first occurence of literal in both the main YAML and the templates are replaced.
      */
     public void overrideLiteral(String findLiteral, String replaceLiteral, boolean replaceAll) {
-        logger.info("==> Method: AzDoPipeline.overrideLiteral: Replaces " + findLiteral + " with " + replaceLiteral);
-        yamlDocumentSet.executeCommand(ActionEnum.replaceLiteral,
+        logger.debug("==> Method: AzDoPipeline.overrideLiteral: Replaces " + findLiteral + " with " + replaceLiteral);
+        yamlDocumentEntryPoint.executeCommand(ActionEnum.replaceLiteral,
                 "",
                 "",
                 "",
@@ -486,7 +429,7 @@ public class AzDoPipeline implements Pipeline {
        If replaceAll is 'false', the first occurence in both the main YAML and the templates are replaced.
      */
     public void overrideCurrentBranch(String newBranchName, boolean replaceAll){
-        logger.info("==> Method: AzDoPipeline.overrideCurrentBranch with: " + newBranchName);
+        logger.debug("==> Method: AzDoPipeline.overrideCurrentBranch with: " + newBranchName);
         overrideLiteral("variables[\'Build.SourceBranch\']", "\'refs/heads/" + newBranchName + "\'", replaceAll);
         overrideLiteral("$(Build.SourceBranch)", "refs/heads/" + newBranchName, replaceAll);
         overrideLiteral("variables[\'Build.SourceBranchName\']", "\'" + newBranchName + "\'", replaceAll);
@@ -511,8 +454,8 @@ public class AzDoPipeline implements Pipeline {
        ==> The stage with name "my_stage" is skipped
      */
     public void skipStage(String stageName) {
-        logger.info("==> Method: AzDoPipeline.skipStage: " + stageName);
-        yamlDocumentSet.executeCommand(ActionEnum.delete,
+        logger.debug("==> Method: AzDoPipeline.skipStage: " + stageName);
+        yamlDocumentEntryPoint.executeCommand(ActionEnum.delete,
                 "stages",
                 "",
                 "",
@@ -535,8 +478,8 @@ public class AzDoPipeline implements Pipeline {
        ==> The job with name "my_job" is skipped
      */
     public void skipJob(String jobName) {
-        logger.info("==> Method: AzDoPipeline.skipJob: " + jobName);
-        yamlDocumentSet.executeCommand(ActionEnum.delete,
+        logger.debug("==> Method: AzDoPipeline.skipJob: " + jobName);
+        yamlDocumentEntryPoint.executeCommand(ActionEnum.delete,
                 "jobs",
                 "",
                 "",
@@ -571,8 +514,8 @@ public class AzDoPipeline implements Pipeline {
      */
     // TODO: Look into this; does not seem right
     public void skipStep(String stepName) {
-        logger.info("==> Method: AzDoPipeline.skipStep: " + stepName);
-        yamlDocumentSet.executeCommand(ActionEnum.delete,
+        logger.debug("==> Method: AzDoPipeline.skipStep: " + stepName);
+        yamlDocumentEntryPoint.executeCommand(ActionEnum.delete,
                 "steps",
                 "",
                 "",
@@ -580,7 +523,7 @@ public class AzDoPipeline implements Pipeline {
                 "step",
                 stepName,
                 false);
-        yamlDocumentSet.executeCommand(ActionEnum.delete,
+        yamlDocumentEntryPoint.executeCommand(ActionEnum.delete,
                 "steps",
                 "",
                 "",
@@ -594,8 +537,8 @@ public class AzDoPipeline implements Pipeline {
        added to the mock. Depending on the job pool this can be a Powershell script (Windows) or a bash script (Linux)
      */
     public void mockStep(String stepValue, String inlineScript){
-        logger.info("==> Method: AzDoPipeline.mockStep: " + stepValue);
-        yamlDocumentSet.executeCommand(ActionEnum.mock,
+        logger.debug("==> Method: AzDoPipeline.mockStep: " + stepValue);
+        yamlDocumentEntryPoint.executeCommand(ActionEnum.mock,
                 "steps",
                 "",
                 "",
@@ -618,7 +561,7 @@ public class AzDoPipeline implements Pipeline {
     }
 
     private boolean containsBranch(String name) {
-        logger.info("==> Method: AzDoPipeline.containsBranch");
+        logger.debug("==> Method: AzDoPipeline.containsBranch");
         try {
             ListBranchCommand command = git.branchList();
             command.setListMode(ListBranchCommand.ListMode.ALL);
@@ -630,9 +573,42 @@ public class AzDoPipeline implements Pipeline {
             }
         }
         catch (Exception e) {
-            logger.info("Cannot check whether the branch is remote");
+            logger.debug("Cannot check whether the branch is remote");
         }
         return false;
+    }
+
+    // Create a new repo in Azure DevOps (if it not exists)
+    private void createRepositoryIfNotExists (String repositoryName){
+        String localRepositoryPath = ""; // Local directory where to which this repository will be cloned
+        try {
+            // Get the repositoryId of the existing repository
+            repositoryId = AzDoApi.callGetRepositoryApi(properties, repositoryName);
+        }
+        catch (Exception e) {
+            logger.debug("Exception occurred. Repository probable does exist; continue");
+        }
+
+        try {
+            // Create a new repository if not existing
+            if (repositoryId == null) {
+                // Retrieve the project-id of the Azure DevOps project with a given name
+                String projectId = AzDoApi.callGetProjectIdApi(properties);
+
+                logger.debug("Delete local repository in directory ", localRepositoryPath);
+                Utils.deleteDirectory(localRepositoryPath);
+
+                // Create remote repo using the AzDo API (this may fail if exists, but just continue)
+                repositoryId = AzDoApi.callCreateRepoApi(properties, repositoryName, projectId);
+
+                // The repo did not exist; clone the repo to local and initialize
+                git = gitClone();
+            }
+        }
+        catch (Exception e) {
+            logger.debug("Exception occurred. Cannot create a new repository");
+            e.printStackTrace();
+        }
     }
 }
 

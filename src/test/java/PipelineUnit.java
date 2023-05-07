@@ -19,7 +19,7 @@ public class PipelineUnit {
 
     @BeforeAll
     public static void setUpClass() {
-        logger.info("setUpClass");
+        logger.debug("setUpClass");
 
         // Initialize the pipeline (resource path is default)
         pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/pipeline_test.yml");
@@ -32,12 +32,13 @@ public class PipelineUnit {
     @Test
     @Order(1)
     public void test1() {
-        logger.info("");
-        logger.info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-        logger.info("Perform unittest: test1");
-        logger.info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        logger.debug("");
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        logger.debug("Perform unittest: test1");
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
         pipeline.overrideTemplateParameter("aNiceParam", "aNiceValue");
+        pipeline.overrideLiteral("This is step 1 of file template-steps_1.yml with", "This is", true);
         pipeline.overrideParameterDefault("aNiceParam", "aNiceDefault");
         pipeline.overrideParameterDefault("param_1", "xxx");
         pipeline.overrideParameterDefault("sleep", "5");
@@ -62,10 +63,10 @@ public class PipelineUnit {
     @Test
     @Order(2)
     public void test2() {
-        logger.info("");
-        logger.info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-        logger.info("Perform unittest: test2");
-        logger.info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        logger.debug("");
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        logger.debug("Perform unittest: test2");
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
         String inlineScript = "echo \"This is a mock script\"\n" +
                 "echo \"This is line 2\"";
@@ -83,17 +84,17 @@ public class PipelineUnit {
     @Test
     @Order(3)
     public void test3() {
-        logger.info("");
-        logger.info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-        logger.info("Perform unittest: test3");
-        logger.info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        logger.debug("");
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        logger.debug("Perform unittest: test3");
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
         try {
             // Create a hook to perform an action just before starting the pipeline
             class TestHook extends Hook {
                 @Override
                 public void executeHook() {
-                    logger.info("Executes hook with an argument");
+                    logger.debug("Executes hook with an argument");
                 }
             }
             pipeline.skipStage("ExecuteScriptStage");
@@ -112,6 +113,6 @@ public class PipelineUnit {
 
     @AfterAll
     public static void tearDown() {
-        logger.info("\ntearDown");
+        logger.debug("\ntearDown");
     }
 }

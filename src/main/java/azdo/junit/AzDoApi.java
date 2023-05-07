@@ -44,9 +44,9 @@ public class AzDoApi<runResult> {
             return null;
 
         try {
-            logger.info("==> Method: AzDoApi.callApi");
-            logger.info("HTTP Endpoint: {}", http);
-            logger.info("JSON: {}", json);
+            logger.debug("==> Method: AzDoApi.callApi");
+            logger.debug("HTTP Endpoint: {}", http);
+            logger.debug("JSON: {}", json);
 
             String encodedString = Base64.getEncoder().encodeToString((properties.getUserTargetRepository() + ":" + properties.getPasswordTargetRepository()).getBytes());
             HttpClient client = HttpClient.newHttpClient();
@@ -71,14 +71,14 @@ public class AzDoApi<runResult> {
 
             HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
             if (response == null) {
-                logger.info("Response is null");
+                logger.debug("Response is null");
             }
             else {
-                logger.info("AzDo API response" + response.toString());
+                logger.debug("AzDo API response" + response.toString());
 
                 // check whether the HTTP status code is valid
                 if (response.statusCode() > 299) {
-                    logger.info("Statuscode > 299");
+                    logger.debug("Statuscode > 299");
                 }
             }
 
@@ -86,11 +86,11 @@ public class AzDoApi<runResult> {
         }
 
         catch (InterruptedException e) {
-            logger.info("Interrupted!", e);
+            logger.debug("Interrupted!", e);
             Thread.currentThread().interrupt();
         }
         catch (Exception e) {
-            logger.info("Exception:" + e.getLocalizedMessage());
+            logger.debug("Exception:" + e.getLocalizedMessage());
         }
 
         return null;
@@ -98,7 +98,7 @@ public class AzDoApi<runResult> {
 
     // Return the project-id
     public static String callGetProjectIdApi (TestProperties properties) {
-        logger.info("==> Method: AzDoApi.callGetProjectIdApi");
+        logger.debug("==> Method: AzDoApi.callGetProjectIdApi");
         String projectName = properties.getTargetProject();
         String projectId = null;
         String http = properties.getAzdoBaseUrl() +
@@ -114,12 +114,12 @@ public class AzDoApi<runResult> {
         String name = null;
         if (response != null) {
             Map<String, Object> yamlMap = yaml.load(response.body().toString());
-            logger.info(RESPONSE_IS + yamlMap.toString());
+            logger.debug(RESPONSE_IS + yamlMap.toString());
             if (yamlMap.get(JSON_ELEMENT_VALUE) instanceof ArrayList) {
                 ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get(JSON_ELEMENT_VALUE);
                 projectId = iterateYamlArrayListAndFindElement (arr, JSON_ELEMENT_NAME, projectName, JSON_ELEMENT_ID);
             }
-            logger.info("Project id is: " + projectId);
+            logger.debug("Project id is: " + projectId);
         }
 
         return projectId;
@@ -127,10 +127,10 @@ public class AzDoApi<runResult> {
 
     // Execute a pipeline
     public static void callPipelineRunApi (TestProperties properties, String pipelineId, String branchName) {
-        logger.info("==> Method: AzDoApi.callPipelineRunApi");
+        logger.debug("==> Method: AzDoApi.callPipelineRunApi");
         if (pipelineId == null)
         {
-            logger.info("Nothing to run; the pipelineId is null");
+            logger.debug("Nothing to run; the pipelineId is null");
         } else {
             String sourceBranch = branchName;
             if (branchName == null || branchName.equals("main") || branchName.equals("master") || branchName.equals(""))
@@ -149,13 +149,13 @@ public class AzDoApi<runResult> {
 
             HttpResponse response = callApi(properties, http, HttpMethod.POST, json);
             if (response != null)
-                logger.info(RESPONSE_IS + response.toString());
+                logger.debug(RESPONSE_IS + response.toString());
         }
     }
 
     // Wait until the build finished and return the result
     public static RunResult callRunResult (TestProperties properties, String pipelineId) {
-        logger.info("==> Method: AzDoApi.callRunResult");
+        logger.debug("==> Method: AzDoApi.callRunResult");
         int pollFrequency = properties.getBuildApiPollFrequency();
         int timeout = properties.getBuildApiPollTimeout();
         RunResult runResult = new RunResult();
@@ -182,14 +182,14 @@ public class AzDoApi<runResult> {
         while (runResult.result == RunResult.Result.none) {
 
             // Call the API
-            logger.info("Call the API");
+            logger.debug("Call the API");
             response = callApi(properties, http, HttpMethod.GET, json);
 
             // Get the result from the response
             yaml = new Yaml();
             if (response != null) {
                 Map<String, Object> yamlMap = yaml.load(response.body().toString());
-                logger.info(RESPONSE_IS + yamlMap.toString());
+                logger.debug(RESPONSE_IS + yamlMap.toString());
                 if (yamlMap.get(JSON_ELEMENT_VALUE) instanceof ArrayList) {
                     ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get(JSON_ELEMENT_VALUE);
                     if (arr != null) {
@@ -215,15 +215,15 @@ public class AzDoApi<runResult> {
             Utils.wait(pollFrequency * 1000);
             Instant finish = Instant.now();
             timeElapsed = Duration.between(start, finish).toSeconds();
-            logger.info("Time elapsed: " + Long.toString(timeElapsed));
+            logger.debug("Time elapsed: " + Long.toString(timeElapsed));
 
             if (runResult.result == RunResult.Result.none && timeElapsed > (long) timeout) {
                 runResult.result = RunResult.Result.undetermined;
                 runResult.status = RunResult.Status.timeout;
             }
-            logger.info("Buildnumber: " + buildNumber);
-            logger.info("Status response: " + runResult.status.toString());
-            logger.info("Status response: " + runResult.status.toString());
+            logger.debug("Buildnumber: " + buildNumber);
+            logger.debug("Status response: " + runResult.status.toString());
+            logger.debug("Status response: " + runResult.status.toString());
         }
 
         return runResult;
@@ -231,7 +231,7 @@ public class AzDoApi<runResult> {
 
     // Create a new pipeline
     public static String callCreatePipelineApi (TestProperties properties, String repositoryId) {
-        logger.info("==> Method: AzDoApi.callCreatePipelineApi");
+        logger.debug("==> Method: AzDoApi.callCreatePipelineApi");
         String path = properties.getPipelinePathRepository();
         String pipelineId = null;
         String http = properties.getAzdoEndpoint() +
@@ -256,10 +256,10 @@ public class AzDoApi<runResult> {
         Yaml yaml = new Yaml();
         if (response != null) {
             Map<String, Object> yamlMap = yaml.load(response.body().toString());
-            logger.info(RESPONSE_IS + yamlMap.toString());
+            logger.debug(RESPONSE_IS + yamlMap.toString());
             if (yamlMap.get(JSON_ELEMENT_ID) != null) {
                 pipelineId = yamlMap.get(JSON_ELEMENT_ID).toString();
-                logger.info("Pipeline id is: " + pipelineId);
+                logger.debug("Pipeline id is: " + pipelineId);
             }
         }
 
@@ -269,7 +269,7 @@ public class AzDoApi<runResult> {
     // Check whether a pipeline  with a certain name already exists
     // If available, the pipeline Id is returned
     public static String callGetPipelineApi (TestProperties properties) {
-        logger.info("==> Method: AzDoApi.callGetPipelineApi");
+        logger.debug("==> Method: AzDoApi.callGetPipelineApi");
         String pipelineName = properties.getRepositoryName();
         String pipelineId = null;
         String http = properties.getAzdoEndpoint() +
@@ -284,20 +284,20 @@ public class AzDoApi<runResult> {
         String name = null;
         if (response != null) {
             Map<String, Object> yamlMap = yaml.load(response.body().toString());
-            logger.info(RESPONSE_IS + yamlMap.toString());
+            logger.debug(RESPONSE_IS + yamlMap.toString());
             if (yamlMap.get(JSON_ELEMENT_VALUE) instanceof ArrayList) {
                 ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get(JSON_ELEMENT_VALUE);
                 pipelineId = iterateYamlArrayListAndFindElement (arr, JSON_ELEMENT_NAME, pipelineName, JSON_ELEMENT_ID);
             }
-            logger.info("Pipeline id is: " + pipelineId);
+            logger.debug("Pipeline id is: " + pipelineId);
         }
 
         return pipelineId;
     }
 
-    // Create a new repository and return the Azure DevOps repository id
-    public static String callCreateRepoApi (TestProperties properties, String projectId) {
-        logger.info("==> Method: AzDoApi.callCreateRepoApi");
+    // Create a new repository and return the Azure DevOps repository Id
+    public static String callCreateRepoApi (TestProperties properties, String repositoryName, String projectId) {
+        logger.debug("==> Method: AzDoApi.callCreateRepoApi");
         String repositoryId = null;
         String http = properties.getAzdoEndpoint() +
                 properties.getGitApi() +
@@ -305,7 +305,7 @@ public class AzDoApi<runResult> {
                 "?" +
                 properties.getGitApiVersion();
         String json = BRACKET_OPEN_NEXTLINE +
-                TAB + DOUBLE_QUOTE + JSON_ELEMENT_NAME + DQUOTE_SCOL_DQUOTE + properties.getRepositoryName() + DOUBLE_QUOTE + COMMA_NEXTLINE +
+                TAB + DOUBLE_QUOTE + JSON_ELEMENT_NAME + DQUOTE_SCOL_DQUOTE + repositoryName + DOUBLE_QUOTE + COMMA_NEXTLINE +
                 TAB + DOUBLE_QUOTE + "project" + DOUBLE_QUOTE + ": " + BRACKET_OPEN_NEXTLINE +
                 TWO_TAB + DOUBLE_QUOTE + JSON_ELEMENT_ID + DQUOTE_SCOL_DQUOTE + projectId + DOUBLE_QUOTE + NEXTLINE +
                 TAB + BRACKET_CLOSE + NEXTLINE +
@@ -313,13 +313,13 @@ public class AzDoApi<runResult> {
         HttpResponse response = callApi(properties, http, HttpMethod.POST, json);
 
         if (response != null) {
-            logger.info("AzDo API response body" + response.body().toString());
+            logger.debug("AzDo API response body" + response.body().toString());
 
             // Get the repository id from the response
             Yaml yaml = new Yaml();
             Map<String, Object> yamlMap = yaml.load(response.body().toString());
             repositoryId = yamlMap.get(JSON_ELEMENT_ID).toString();
-            logger.info(REPOSITORY_ID_IS + repositoryId);
+            logger.debug(REPOSITORY_ID_IS + repositoryId);
         }
 
         return repositoryId;
@@ -327,7 +327,7 @@ public class AzDoApi<runResult> {
 
     // Update a repository with a new default branch
     public static String callUpdateRepoApi (TestProperties properties, String repositoryId, String branchName) {
-        logger.info("==> Method: AzDoApi.callUpdateRepoApi");
+        logger.debug("==> Method: AzDoApi.callUpdateRepoApi");
         String http = properties.getAzdoEndpoint() +
                 properties.getGitApi() +
                 properties.getGitApiRepositories() +
@@ -341,13 +341,13 @@ public class AzDoApi<runResult> {
         HttpResponse response = callApi(properties, http, HttpMethod.PATCH, json);
 
         if (response != null) {
-            logger.info("AzDo API response body" + response.body().toString());
+            logger.debug("AzDo API response body" + response.body().toString());
 
             // Get the repository id from the response
             Yaml yaml = new Yaml();
             Map<String, Object> yamlMap = yaml.load(response.body().toString());
             repositoryId = yamlMap.get(JSON_ELEMENT_ID).toString();
-            logger.info(REPOSITORY_ID_IS + repositoryId);
+            logger.debug(REPOSITORY_ID_IS + repositoryId);
         }
 
         return repositoryId;
@@ -355,9 +355,8 @@ public class AzDoApi<runResult> {
 
     // Check whether a Git repository with a certain name already exists
     // If available, the repository Id is returned
-    public static String callGetRepositoryApi (TestProperties properties) {
-        logger.info("==> Method: AzDoApi.callGetRepositoryApi");
-        String repositoryName = properties.getRepositoryName();
+    public static String callGetRepositoryApi (TestProperties properties, String repositoryName) {
+        logger.debug("==> Method: AzDoApi.callGetRepositoryApi");
         String repositoryId = null;
         String http = properties.getAzdoEndpoint() +
                 properties.getGitApi() +
@@ -372,12 +371,12 @@ public class AzDoApi<runResult> {
         String name;
         if (response != null) {
             Map<String, Object> yamlMap = yaml.load(response.body().toString());
-            logger.info(RESPONSE_IS + yamlMap.toString());
+            logger.debug(RESPONSE_IS + yamlMap.toString());
             if (yamlMap.get(JSON_ELEMENT_VALUE) instanceof ArrayList) {
                 ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get(JSON_ELEMENT_VALUE);
                 repositoryId = iterateYamlArrayListAndFindElement (arr, JSON_ELEMENT_NAME, repositoryName, JSON_ELEMENT_ID);
             }
-            logger.info(REPOSITORY_ID_IS + repositoryId);
+            logger.debug(REPOSITORY_ID_IS + repositoryId);
         }
 
         return repositoryId;
@@ -385,7 +384,7 @@ public class AzDoApi<runResult> {
 
     // Return the value of a certain key
     public static String iterateYamlArrayListAndFindElement (ArrayList<Object> arr, String key, String compareKey, String val) {
-        logger.info("==> Method: AzDoApi.iterateYamlArrayListAndFindElement");
+        logger.debug("==> Method: AzDoApi.iterateYamlArrayListAndFindElement");
         String compareValue = null;
         if (arr != null) {
             int size = arr.size();
@@ -396,7 +395,7 @@ public class AzDoApi<runResult> {
                 LinkedHashMap<String, Object> value = ((LinkedHashMap<String, Object>) arr.get(counter));
                 name = value.get(key).toString();
                 if (name != null && name.equals(compareKey)) {
-                    logger.info("Found value " + compareKey);
+                    logger.debug("Found value " + compareKey);
                     compareValue = value.get(val).toString();
                     break;
                 }

@@ -58,35 +58,36 @@ public class TestProperties {
 
     public TestProperties(String propertyFile) {
         try {
-            logger.info("PropertyFile: " + propertyFile);
+            logger.debug("==> Object: TestProperties");
+            logger.debug("PropertyFile: " + propertyFile);
             properties = new Properties();
             InputStream is = getClass().getClassLoader().getResourceAsStream(propertyFile);
             properties.load(is);
 
-            logger.info("");
-            logger.info("#################################################################");
-            logger.info("Start reading properties");
-            logger.info("#################################################################");
+            logger.debug("");
+            logger.debug("#################################################################");
+            logger.debug("Start reading properties");
+            logger.debug("#################################################################");
 
             // Source
             sourcePath = properties.getProperty("source.path");
-            logger.info("source.path: " + sourcePath);
+            logger.debug("source.path: " + sourcePath);
 
             // Target
             targetOrganization = properties.getProperty("target.organization");
-            logger.info("target.organization: " + targetOrganization);
+            logger.debug("target.organization: " + targetOrganization);
             targetProject = properties.getProperty("target.project");
-            logger.info("target.project: " + targetProject);
+            logger.debug("target.project: " + targetProject);
             targetPath = properties.getProperty("target.path");
-            logger.info("target.path: " + targetPath);
+            logger.debug("target.path: " + targetPath);
             repositoryName = properties.getProperty("target.repository.name");
-            logger.info("target.repository.name: " + repositoryName);
+            logger.debug("target.repository.name: " + repositoryName);
             pipelinePathRepository = properties.getProperty("repository.pipeline.path");
-            logger.info("repository.pipeline.path: " + pipelinePathRepository);
+            logger.debug("repository.pipeline.path: " + pipelinePathRepository);
             userTargetRepository = properties.getProperty("target.repository.user");
-            logger.info("target.repository.user: " + userTargetRepository);
+            logger.debug("target.repository.user: " + userTargetRepository);
             passwordTargetRepository = properties.getProperty("target.repository.password");
-            logger.info("target.repository.password: " + passwordTargetRepository);
+            logger.debug("target.repository.password: " + passwordTargetRepository);
 
             // Run trough the target exclude list
             targetExludeList = "(";
@@ -101,7 +102,7 @@ public class TestProperties {
                     targetExludeList += "& ";
             }
             targetExludeList += ")";
-            logger.info("target.excludelist: " + targetExludeList);
+            logger.debug("target.excludelist: " + targetExludeList);
 
             // Run trough the commit pattern and create a List
             commitPattern = properties.getProperty("git.commit.pattern");
@@ -111,58 +112,58 @@ public class TestProperties {
             {
                 commitPatternList.add(values[i]);
             }
-            logger.info("git.commit.pattern: " + commitPatternList);
+            logger.debug("git.commit.pattern: " + commitPatternList);
 
             // Azure DevOps Pipeline API
             pipelinesApi = properties.getProperty("pipelines.api");
-            logger.info("pipelines.api: " + pipelinesApi);
+            logger.debug("pipelines.api: " + pipelinesApi);
             pipelinesApiRuns = properties.getProperty("pipelines.api.runs");
-            logger.info("pipelines.api.runs: " + pipelinesApiRuns);
+            logger.debug("pipelines.api.runs: " + pipelinesApiRuns);
             pipelinesApiVersion = properties.getProperty("pipelines.api.version");
-            logger.info("pipelines.api.version: " + pipelinesApiVersion);
+            logger.debug("pipelines.api.version: " + pipelinesApiVersion);
 
             // Azure DevOps Git API
             gitApi = properties.getProperty("git.api");
-            logger.info("git.api: " + gitApi);
+            logger.debug("git.api: " + gitApi);
             gitApiRepositories = properties.getProperty("git.api.repositories");
-            logger.info("git.api.repositories: " + gitApiRepositories);
+            logger.debug("git.api.repositories: " + gitApiRepositories);
             gitApiVersion = properties.getProperty("git.api.version");
-            logger.info("git.api.version: " + gitApiVersion);
+            logger.debug("git.api.version: " + gitApiVersion);
 
             // Azure DevOps Build API
             buildApi = properties.getProperty("build.api");
-            logger.info("build.api: " + buildApi);
+            logger.debug("build.api: " + buildApi);
             buildApiPollFrequency = Integer.parseInt(properties.getProperty("build.api.poll.frequency"));
-            logger.info("build.api.poll.frequency: " + buildApiPollFrequency);
+            logger.debug("build.api.poll.frequency: " + buildApiPollFrequency);
             buildApiPollTimeout = Integer.parseInt(properties.getProperty("build.api.poll.timeout"));
-            logger.info("build.api.poll.timeout: " + buildApiPollTimeout);
+            logger.debug("build.api.poll.timeout: " + buildApiPollTimeout);
             buildApiVersion = properties.getProperty("build.api.version");
-            logger.info("build.api.version: " + buildApiVersion);
+            logger.debug("build.api.version: " + buildApiVersion);
 
             // Azure DevOps Project API
             projectApi = properties.getProperty("project.api");
-            logger.info("project.api: " + projectApi);
+            logger.debug("project.api: " + projectApi);
             projectApiVersion = properties.getProperty("project.api.version");
-            logger.info("project.api.version: " + projectApiVersion);
+            logger.debug("project.api.version: " + projectApiVersion);
 
             // Derived properties
             azdoBaseUrl="https://dev.azure.com/" + targetOrganization;
-            logger.info("Derived azdoBaseUrl: " + azdoBaseUrl);
+            logger.debug("Derived azdoBaseUrl: " + azdoBaseUrl);
             uriTargetRepository = azdoBaseUrl + "/" + targetProject + "/_git/" + repositoryName;
-            logger.info("Derived uriTargetRepository: " + uriTargetRepository);
+            logger.debug("Derived uriTargetRepository: " + uriTargetRepository);
             azdoEndpoint = azdoBaseUrl + "/" + targetProject + "/_apis";
-            logger.info("Derived azdoEndpoint: " + azdoEndpoint);
+            logger.debug("Derived azdoEndpoint: " + azdoEndpoint);
 
-                    logger.info("#################################################################");
-            logger.info("End reading properties");
-            logger.info("#################################################################");
-            logger.info("");
+                    logger.debug("#################################################################");
+            logger.debug("End reading properties");
+            logger.debug("#################################################################");
+            logger.debug("");
         }
         catch (FileNotFoundException e) {
-            logger.info("File not found");
+            logger.debug("File not found");
         }
         catch (IOException e) {
-            logger.info("IOException");
+            logger.debug("IOException");
         }
     }
 

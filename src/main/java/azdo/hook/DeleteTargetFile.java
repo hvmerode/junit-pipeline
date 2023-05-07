@@ -16,29 +16,29 @@ public class DeleteTargetFile extends Hook {
     private String fullQualifiedFileName;
     private static Logger logger = LoggerFactory.getLogger(AzDoPipeline.class);
     public DeleteTargetFile(String fullQualifiedFileName) {
-        logger.info("Class: DeleteTargetFile");
+        logger.debug("Class: DeleteTargetFile");
         this.fullQualifiedFileName = fullQualifiedFileName;
     }
 
     @Override
     public void executeHook (){
-        logger.info("==> Method: DeleteTargetFile.executeHook");
+        logger.debug("==> Method: DeleteTargetFile.executeHook");
         Path path = Paths.get(fullQualifiedFileName);
         path = path.normalize();
         fullQualifiedFileName = path.toString();
 
         try {
             if (Utils.isLinux()) {
-                logger.info("Deleting on Linux: " + fullQualifiedFileName);
+                logger.debug("Deleting on Linux: " + fullQualifiedFileName);
                 Runtime.getRuntime().exec("rm -f " + fullQualifiedFileName);
             } else if (Utils.isWindows()) {
-                logger.info("Deleting on Windows: " + "cmd.exe /c del /F /Q " + fullQualifiedFileName);
+                logger.debug("Deleting on Windows: " + "cmd.exe /c del /F /Q " + fullQualifiedFileName);
                 Runtime.getRuntime().exec("cmd.exe /c del /F /Q " + fullQualifiedFileName);
                 Utils.wait(3000);
             }
         }
         catch (Exception e) {
-            logger.info("Cannot delete" + fullQualifiedFileName);
+            logger.debug("Cannot delete" + fullQualifiedFileName);
         }
     }
 }

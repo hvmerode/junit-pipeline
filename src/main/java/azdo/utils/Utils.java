@@ -34,37 +34,38 @@ public class Utils {
 
     public static void makeDirectory (String directoryName) {
         // Create the target path if not existing
-        logger.info("==> Method: Utils.makeDirectory");
+        logger.debug("==> Method: Utils.makeDirectory");
         try {
             if (isLinux()) {
-                logger.info("Executing on Linux");
+                logger.debug("Executing on Linux");
                 Runtime.getRuntime().exec("/bin/sh -c mkdir " + directoryName);
             } else if (isWindows()) {
-                logger.info("Executing on Windows");
+                logger.debug("Executing on Windows");
                 Runtime.getRuntime().exec("cmd /c mkdir " + directoryName);
             }
         }
         catch (IOException e) {
-            logger.info("Cannot create the target directory" + directoryName + " ; it may already exist. Just continue");
+            logger.debug("Cannot create the target directory" + directoryName + " ; it may already exist. Just continue");
         }
     }
 
     public static boolean deleteDirectory(String directoryName) {
-        logger.info("==> Method: Utils.deleteDirectory");
+        logger.debug("==> Method: Utils.deleteDirectory");
         try {
             File directoryToBeDeleted = new File(directoryName);
             if (Utils.isLinux()) {
-                logger.info("Executing on Linux");
+                logger.debug("Executing on Linux");
                 Runtime.getRuntime().exec("/bin/sh -c rm -r " + directoryToBeDeleted);
             } else if (Utils.isWindows()) {
-                logger.info("Executing on Windows");
+                logger.debug("Executing on Windows");
                 Runtime.getRuntime().exec("cmd /c rmdir " + directoryToBeDeleted);
             }
+            logger.debug("Deleted directory: " + directoryName);
             return true;
         }
         catch (IOException e)
         {
-            logger.info("Cannot delete directory; does it exist?");
+            logger.debug("Cannot delete directory; does it exist?");
             return false;
         }
     }

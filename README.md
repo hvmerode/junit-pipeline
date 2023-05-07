@@ -129,7 +129,7 @@ remove the file that includes the pipeline unit tests, if you don't want it to r
 <br>
 
 #### Define unit test ####
-The __junit_pipeline__ library contains a set of commands - used in unit tests - to manipulate the pipeline. Let's 
+The __junit-pipeline__ library contains a set of commands - used in unit tests - to manipulate the pipeline. Let's 
 go over them:
 
 <br>

@@ -48,7 +48,7 @@ public class AzDoApi<runResult> {
             logger.debug("HTTP Endpoint: {}", http);
             logger.debug("JSON: {}", json);
 
-            String encodedString = Base64.getEncoder().encodeToString((properties.getUserTargetRepository() + ":" + properties.getPasswordTargetRepository()).getBytes());
+            String encodedString = Base64.getEncoder().encodeToString((properties.getAzDoUser() + ":" + properties.getAzdoPat()).getBytes());
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request;
             if (httpMethod == HttpMethod.GET) {

@@ -21,12 +21,13 @@ public class TestProperties {
 
     // Target
     private String targetPath;
+    private String targetBasePathExternal;
     private String targetOrganization;
     private String targetProject;
     private String pipelinePathRepository;
     private String uriTargetRepository;
-    private String userTargetRepository;
-    private String passwordTargetRepository;
+    private String azdoUser;
+    private String azdoPat;
     private String targetExludeList;
 
     // Pipeline
@@ -81,14 +82,16 @@ public class TestProperties {
             logger.debug("target.project: {}", targetProject);
             targetPath = properties.getProperty("target.path");
             logger.debug("target.path: {}", targetPath);
+            targetBasePathExternal = properties.getProperty("target.base.path.external");
+            logger.debug("target.path: {}", targetBasePathExternal);
             repositoryName = properties.getProperty("target.repository.name");
             logger.debug("target.repository.name: {}", repositoryName);
             pipelinePathRepository = properties.getProperty("repository.pipeline.path");
             logger.debug("repository.pipeline.path: {}", pipelinePathRepository);
-            userTargetRepository = properties.getProperty("target.repository.user");
-            logger.debug("target.repository.user: {}", userTargetRepository);
-            passwordTargetRepository = properties.getProperty("target.repository.password");
-            logger.debug("target.repository.password: {}", passwordTargetRepository);
+            azdoUser = properties.getProperty("azdo.user");
+            logger.debug("azdo.user: {}", azdoUser);
+            azdoPat = properties.getProperty("azdo.pat");
+            logger.debug("azdo.pat: {}", azdoPat);
 
             // Run trough the target exclude list
             targetExludeList = "(";
@@ -172,7 +175,11 @@ public class TestProperties {
     public String getTargetProject() {
         return targetProject;
     }
+    public String getTargetOrganization() {
+        return targetOrganization;
+    }
     public String getTargetPath() { return targetPath; }
+    public String getTargetBasePathExternal() { return targetBasePathExternal; }
     public String getPipelinePathRepository() { return pipelinePathRepository; }
     public String getUriTargetRepository() { return uriTargetRepository; }
     public String getAzdoEndpoint() { return azdoEndpoint; }
@@ -188,8 +195,8 @@ public class TestProperties {
     public String getGitApi() { return gitApi; }
     public String getGitApiRepositories() { return gitApiRepositories; }
     public String getGitApiVersion() { return gitApiVersion; }
-    public String getUserTargetRepository() { return userTargetRepository; }
-    public String getPasswordTargetRepository() { return passwordTargetRepository; }
+    public String getAzDoUser() { return azdoUser; }
+    public String getAzdoPat() { return azdoPat; }
 
     // Build
     public String getBuildApi() { return buildApi; }

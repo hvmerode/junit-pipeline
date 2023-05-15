@@ -44,11 +44,16 @@ public class AzDoPipeline implements Pipeline {
 
         properties = new TestProperties(propertyFile);
         yamlDocumentEntryPoint = new YamlDocumentEntryPoint();
-        yamlDocumentEntryPoint.read(pipelineFile);
+        yamlDocumentEntryPoint.read(pipelineFile,
+                properties.getTargetBasePathExternal(),
+                properties.getAzDoUser(),
+                properties.getAzdoPat(),
+                properties.getTargetOrganization(),
+                properties.getTargetProject());
         yamlFile = pipelineFile;
         credentialsProvider = new UsernamePasswordCredentialsProvider(
-                properties.getUserTargetRepository(),
-                properties.getPasswordTargetRepository());
+                properties.getAzDoUser(),
+                properties.getAzdoPat());
 
         //////////////////////////////////////////////////////////////////////////////////////////////////////////
         // If no repository exists, create a new repo in Azure DevOps. Otherwise, make use of the existing repo //
@@ -196,7 +201,12 @@ public class AzDoPipeline implements Pipeline {
         runResult = AzDoApi.callRunResult(properties, pipelineId);
 
         // Re-read the original pipeline for the next test (for a clean start of the next test)
-        yamlDocumentEntryPoint.read(yamlFile);
+        yamlDocumentEntryPoint.read(yamlFile,
+                properties.getTargetBasePathExternal(),
+                properties.getAzDoUser(),
+                properties.getAzdoPat(),
+                properties.getTargetOrganization(),
+                properties.getTargetProject());
     }
 
     public void executeScript(String filePath) throws IOException{
@@ -239,8 +249,8 @@ public class AzDoPipeline implements Pipeline {
             logger.debug("git.commit");
             git.commit()
                     .setAll(true)
-                    .setAuthor(properties.getUserTargetRepository(), "")
-                    .setCommitter(properties.getUserTargetRepository(), "")
+                    .setAuthor(properties.getAzDoUser(), "")
+                    .setCommitter(properties.getAzDoUser(), "")
                     .setMessage("Init repo")
                     .call();
 
@@ -262,8 +272,8 @@ public class AzDoPipeline implements Pipeline {
 
         // Create the credentials provider
         CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(
-                properties.getUserTargetRepository(),
-                properties.getPasswordTargetRepository());
+                properties.getAzDoUser(),
+                properties.getAzdoPat());
 
         // Clone the repo
         try {

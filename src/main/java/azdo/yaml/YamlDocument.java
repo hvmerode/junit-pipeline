@@ -66,6 +66,8 @@ public class YamlDocument {
 
     // Get the template files and read them
     void readTemplates(){
+        logger.debug("==> Method: YamlDocument.readTemplates");
+
         templateList = new ArrayList<>(); // Use a new, empty list
         Path pathMain = Paths.get(originalFileName);
 

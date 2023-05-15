@@ -3,6 +3,7 @@
 
 package azdo.yaml;
 
+import azdo.utils.GitUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
@@ -25,7 +26,12 @@ public class YamlDocumentEntryPoint {
        This map is kept into memory. In addition, it creates YAML maps from template files.
      */
     @SuppressWarnings("java:S1192")
-    public void read(String mainPipelineFile) {
+    public void read(String mainPipelineFile,
+                     String targetBasePathExternal,
+                     String azdoUser,
+                     String azdoPat,
+                     String organization,
+                     String project) {
         logger.debug("");
         logger.debug("*****************************************************************");
         logger.debug("Start YamlDocumentEntryPoint.read");
@@ -41,7 +47,12 @@ public class YamlDocumentEntryPoint {
 
         // Get all repositories from the resources section
         // TODO: Other repos must also be cloned to the local filesystem
-        getRepositoriesFromResources(yamlMap);
+        getRepositoriesFromResources(yamlMap,
+                targetBasePathExternal,
+                azdoUser,
+                azdoPat,
+                organization,
+                project);
 
         // Read the templates
         // TODO: For external templates the location from where they are read must be derived
@@ -65,8 +76,15 @@ public class YamlDocumentEntryPoint {
     // - Change the resources/repositories section in the manipulated main pipeline in such a way,
     //   that is points to the correct repository in the Azure DevOps test project. This may mean
     //   that the type changes from 'github' to 'git'
-    private void getRepositoriesFromResources(Map<String, Object> map) {
+    private void getRepositoriesFromResources(Map<String, Object> map,
+                                              String targetBasePathExternal,
+                                              String azdoUser,
+                                              String azdoPat,
+                                              String organization,
+                                              String project) {
         logger.debug("==> Method: YamlDocumentEntryPoint.getRepositoriesFromResources");
+        String repository;
+        String repositoryProject;
 
         // Run through the YAML file and add the template files to the list
         boolean found = false;
@@ -82,10 +100,20 @@ public class YamlDocumentEntryPoint {
             else {
                 // Go a level deeper
                 if (entry.getValue() instanceof Map) {
-                    getRepositoriesFromResources((Map<String, Object>) entry.getValue());
+                    getRepositoriesFromResources((Map<String, Object>) entry.getValue(),
+                            targetBasePathExternal,
+                            azdoUser,
+                            azdoPat,
+                            organization,
+                            project);
                 }
                 if (entry.getValue() instanceof ArrayList) {
-                    getRepositoriesFromResources((ArrayList<Object>) entry.getValue());
+                    getRepositoriesFromResources((ArrayList<Object>) entry.getValue(),
+                            targetBasePathExternal,
+                            azdoUser,
+                            azdoPat,
+                            organization,
+                            project);
                 }
             }
             if (found) {
@@ -100,22 +128,63 @@ public class YamlDocumentEntryPoint {
                     logger.debug("Repository is of type Github");
                 if ("type".equals(entry.getKey()) && "git".equals(entry.getValue()))
                     logger.debug("Repository is of type Azure DevOps");
-                if ("name".equals(entry.getKey()))
+                if ("name".equals(entry.getKey())) {
                     logger.debug("Clone repository <{}> to the Azure DevOps test project", entry.getValue());
+                    repository = entry.getValue().toString();
+                    String[] parts = repository.split("/");
+                    repositoryProject = parts[0];
+                    if (repositoryProject == null || repositoryProject.isEmpty()) {
+                        // If the project of the external repository is not configured, it is assumed that it is part of the Azure DevOps test project
+                        // This is a bad idea, because the files in this repository will be overwritten. The source repository should be in another Azure DevOps project
+                        // Maybe trow an exception?
+                        repositoryProject = project;
+                    }
+                    repository = parts[1];
+                    targetBasePathExternal = targetBasePathExternal + "/" + repository;
+
+                    // Copy (clone) the external repositories to the local filesystem
+                    GitUtils.azdoClone(targetBasePathExternal,
+                            repository,
+                            azdoUser,
+                            azdoPat,
+                            organization,
+                            repositoryProject);
+
+                    // TODO: If the repo is cloned, the .git directory should be deleted
+                    // Overwriting templates in these repos and commiting them are not part if this method
+
+                    return;
+                }
             }
         }
     }
 
-    private void getRepositoriesFromResources(ArrayList<Object> inner) {
+    private void getRepositoriesFromResources(ArrayList<Object> inner,
+                                              String targetBasePathExternal,
+                                              String azdoUser,
+                                              String azdoPat,
+                                              String organization,
+                                              String project) {
         logger.debug("==> Method: YamlDocumentEntryPoint.getRepositoriesFromResources");
 
         inner.forEach(entry -> {
             // If inner sections are found, go a level deeper
             if (entry instanceof Map) {
-                getRepositoriesFromResources((Map<String, Object>)entry);
+                getRepositoriesFromResources((Map<String, Object>)entry,
+                        targetBasePathExternal,
+                        azdoUser,
+                        azdoPat,
+                        organization,
+                        project);
             }
             if (entry instanceof ArrayList) {
-                getRepositoriesFromResources((ArrayList<Object>)entry);
+                getRepositoriesFromResources((ArrayList<Object>)entry,
+                        targetBasePathExternal,
+                        azdoUser,
+                        azdoPat,
+                        organization,
+                        project);
+
             }
         });
     }

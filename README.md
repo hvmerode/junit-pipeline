@@ -48,11 +48,12 @@ This file is located in src/main/resources. It contains the properties for your 
   It is only used for the __junit-pipeline__ framework to communicate with the Azure DevOps test project. Before you start, this directory must not exist.
 * __target.organization__ - The name of your organization as defined in Azure DevOps. This will be included in the Azure DevOps API calls.
 * __target.project__ - The name of the test project. In the example case it is called "UnitTest".
+* __target.base.path.external__ - The location (local directory) containing external Git repositories, defined in the __repositories__ section of the main pipeline YAML file.\ 
 * __target.repository.name__ - The name of the repository used in the Git repository used for testing. Best is to keep the source and target repository names identical.
-* __target.repository.user__ - User used in the Azure DevOps API calls to the test project. Can be the default name 'UserWithToken'.
-* __target.repository.password__ - The PAT (Personal Access Token) used in the Azure DevOps API calls to the test project.\
+* __azdo.user__ - User used in the Azure DevOps API calls. Can be the default name 'UserWithToken'.
+* __azdo.pat__ - The PAT (Personal Access Token) used in the Azure DevOps API calls.\
   See [Use personal access tokens](https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops&tabs=Windows) how to create a PAT.\
-  Make sure this PAT is authorized for all pipelines used in the Azure DevOps test project.
+  Make sure this PAT is authorized to clone repositories in other Azure DevOps projects in the organization (other than the test project). 
 * __repository.pipeline.path__ - The location of the main pipeline file in the repository (both in source and target).
   It is used to assign the pipeline file when creating a new pipeline in Azure DevOps.
 * __git.commit.pattern__ - Defines the type of files pushed to the local- and remote test repo (this is a subset of the files from the main repo)

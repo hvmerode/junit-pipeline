@@ -6,11 +6,14 @@ name: $(Date:yyyyMMdd)$(Rev:.r)
 
 trigger: none
 
-# Make sure there is a repo with this name in Azure DevOps
+# Make sure there is a repo with this name in Azure DevOps project UnitTest
 resources:
   repositories:
     - repository: external
-      name: pipeline-templates
+      name: Templates/Templates
+      type: git
+    - repository: external2
+      name: hvmerode/azdo-templates
       type: git
 
 parameters:
@@ -64,7 +67,7 @@ stages:
         pool:
           vmImage: 'ubuntu-latest'
         steps:
-          - template: external-template-test.yml@external
+          - template: test-template.yml@external
           - script: |
               echo 'Job_2.Task_3: Sleep some seconds'
               sleep ${{ parameters.sleep }};

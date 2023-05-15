@@ -5,6 +5,7 @@ package azdo.junit;
 
 import azdo.command.CommandBundle;
 import azdo.hook.Hook;
+import azdo.utils.GitUtils;
 import azdo.utils.Utils;
 import azdo.yaml.ActionEnum;
 import azdo.yaml.YamlDocumentEntryPoint;
@@ -111,7 +112,8 @@ public class AzDoPipeline implements Pipeline {
         // Clone the repository to local if not done earlier
         try {
             Utils.deleteDirectory(properties.getTargetPath());
-            git = gitClone();
+            //git = gitClone();
+            gitClone();
         }
         catch (Exception e) {
             logger.debug("Exception occurred. Cannot clone repository to local");
@@ -264,33 +266,45 @@ public class AzDoPipeline implements Pipeline {
     }
 
     // Clone the repo to local and initialize
-    private Git gitClone () {
+    private void gitClone () {
         logger.debug("==> Method: AzDoPipeline.gitClone");
 
+        GitUtils.cloneAzdoToLocal(properties.getTargetPath(),
+                properties.getRepositoryName(),
+                properties.getAzDoUser(),
+                properties.getAzdoPat(),
+                properties.getTargetOrganization(),
+                properties.getTargetProject());
+    }
+
+//    private Git gitClone () {
+//        logger.debug("==> Method: AzDoPipeline.gitClone");
+
         // Create the target path if not existing
-        Utils.makeDirectory(properties.getTargetPath());
+//        Utils.makeDirectory(properties.getTargetPath());
 
         // Create the credentials provider
-        CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(
-                properties.getAzDoUser(),
-                properties.getAzdoPat());
+//        CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(
+//                properties.getAzDoUser(),
+//                properties.getAzdoPat());
 
         // Clone the repo
-        try {
-            logger.debug("git.clone");
-            git = Git.cloneRepository()
-                    .setURI(properties.getUriTargetRepository())
-                    .setCloneAllBranches(true)
-                    .setCredentialsProvider(credentialsProvider)
-                    .setDirectory(new File(properties.getTargetPath()))
-                    .call();
-        }
-        catch (Exception e) {
-            logger.debug("Cannot clone, but just proceed");
-        }
+//        try {
+//            logger.debug("git.clone");
+//            git = Git.cloneRepository()
+//                    .setURI(properties.getUriTargetRepository())
+//                    .setCloneAllBranches(true)
+//                    .setCredentialsProvider(credentialsProvider)
+//                    .setDirectory(new File(properties.getTargetPath()))
+//                    .call();
+//        }
+//        catch (Exception e) {
+//            logger.debug("Cannot clone, but just proceed");
+//        }
 
-        return git;
-    }
+//        return git;
+//    }
+
 
     /* Replace the value of a variable in the 'variables' section. Two constructions are possible:
 
@@ -613,7 +627,8 @@ public class AzDoPipeline implements Pipeline {
                 repositoryId = AzDoApi.callCreateRepoApi(properties, repositoryName, projectId);
 
                 // The repo did not exist; clone the repo to local and initialize
-                git = gitClone();
+                //git = gitClone();
+                gitClone();
             }
         }
         catch (Exception e) {

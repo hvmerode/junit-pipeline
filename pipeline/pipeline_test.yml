@@ -6,7 +6,8 @@ name: $(Date:yyyyMMdd)$(Rev:.r)
 
 trigger: none
 
-# Make sure there is a repo with this name in Azure DevOps project UnitTest
+# Define 2 repositories, one is an Azre DevOps repo and the other a GitHub repo
+# Note, that the 'endpoint' parameter is mandatory for a GitHub repository
 resources:
   repositories:
     - repository: external
@@ -14,7 +15,8 @@ resources:
       type: git
     - repository: external2
       name: hvmerode/azdo-templates
-      type: git
+      type: github
+      endpoint: GitHubEndpoint
 
 parameters:
   - name: param_1

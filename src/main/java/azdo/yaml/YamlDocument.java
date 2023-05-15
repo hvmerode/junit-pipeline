@@ -100,7 +100,7 @@ public class YamlDocument {
         logger.debug("==> Method: YamlDocument.dumpYaml");
 
         // Dump the updated yaml to target directory (with the same name as the original file in the source directory)
-        String path = fixPath(targetPath + "/" + originalFileName);
+        String path = Utils.fixPath(targetPath + "/" + originalFileName);
         logger.debug("Dump the yamlMap of {} to {}", originalFileName, path);
         final DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
@@ -119,18 +119,6 @@ public class YamlDocument {
             template = templateList.get(index);
             template.dumpYaml(targetPath);
         }
-    }
-
-    /*
-       Makes sure that a path resembles the correct path on the file system
-       Fortunately, Windows also accepts forward slashes
-     */
-    private String fixPath (String path){
-        path=path.replaceAll("\\\\","/");
-        Path normalized = Paths.get(path);
-        normalized = normalized.normalize();
-        path = normalized.toString();
-        return path;
     }
 
     /*

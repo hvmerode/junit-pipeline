@@ -3,26 +3,18 @@
 
 package azdo.utils;
 
-import azdo.junit.TestProperties;
-import org.apache.maven.model.Dependency;
-import org.apache.maven.model.Model;
-import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
-import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.io.*;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Iterator;
-import java.util.List;
 
 public class Utils {
     private static Logger logger = LoggerFactory.getLogger(Utils.class);
+    private static final String EXCLUDEFILESLIST = "\\excludedfileslist.txt";
 
     public static boolean isLinux(){
         String os = System.getProperty("os.name");
@@ -37,6 +29,7 @@ public class Utils {
     public static void makeDirectory (String directoryName) {
         // Create the target path if not existing
         logger.debug("==> Method: Utils.makeDirectory");
+
         try {
             if (isLinux()) {
                 logger.debug("Executing on Linux");
@@ -45,6 +38,7 @@ public class Utils {
                 logger.debug("Executing on Windows");
                 Runtime.getRuntime().exec("cmd /c mkdir " + directoryName);
             }
+            logger.debug("Directory {} created", directoryName);
         }
         catch (IOException e) {
             logger.debug("Cannot create the target directory {}; it may already exist. Just continue", directoryName);
@@ -53,26 +47,73 @@ public class Utils {
 
     public static boolean deleteDirectory(String directoryName) {
         logger.debug("==> Method: Utils.deleteDirectory");
+
         String dir = fixPath(directoryName);
+
+        // This method makes use of Apache FileUtils, which can be used both on Linux and Windows
         try {
-            if (Utils.isLinux()) {
-                logger.debug("Executing on Linux");
-                Runtime.getRuntime().exec("/bin/sh -c rm -r " + dir);
-            }
-            else if (Utils.isWindows()) {
-                logger.debug("Executing on Windows");
-                Runtime.getRuntime().exec("cmd /c rmdir /s /q " + dir);
+                logger.debug("Executing...");
+                FileUtils.deleteDirectory(new File(dir));
                 logger.debug("Deleted directory: {}", dir);
                 wait(1000);
-            }
         }
         catch (IOException e)
         {
-            logger.debug("Cannot delete directory; does it exist?");
+            logger.debug("Cannot delete directory {}; does it exist?", dir);
             return false;
         }
 
         return true;
+    }
+
+    public static boolean createDirectory(String directoryName) {
+        logger.debug("==> Method: Utils.createDirectory");
+
+        String dir = fixPath(directoryName);
+        try {
+            if (Utils.isLinux()) {
+                logger.debug("Executing on Linux");
+                Runtime.getRuntime().exec("/bin/sh -c mkdir " + dir);
+            }
+            else if (Utils.isWindows()) {
+                logger.debug("Executing on Windows");
+                Runtime.getRuntime().exec("cmd /c mkdir " + dir);
+                wait(1000);
+            }
+            logger.debug("Created directory: {}", dir);
+        }
+        catch (IOException e)
+        {
+            logger.debug("Cannot create directory; it probably exists already?");
+            return false;
+        }
+
+        return true;
+    }
+
+    public static void copyAll(String source,
+                               String target,
+                               String excludeList) throws IOException{
+        logger.debug("==> Method: AzDoUtils.copyAll");
+
+        source = fixPath(source);
+        target = fixPath(target);
+        if(Utils.isLinux()){
+            logger.debug("Executing on Linux: cp {} {}", source, target);
+            // TODO: Exclude certain file types and directories
+            Runtime.getRuntime().exec("/bin/sh -c cp " + source + " " + target);
+        } else if(Utils.isWindows()) {
+            if (excludeList == null || excludeList.isEmpty()) {
+                logger.debug("Executing on Windows: xcopy {} {}  /E /H /C /I /Y ", source, target);
+                Runtime.getRuntime().exec("cmd.exe /c xcopy " + source + " " + target + " /E /H /C /I /Y ");
+            }
+            else {
+                logger.debug("Executing on Windows: xcopy {} {}  /E /H /C /I /Y /exclude:{}", source, target, target + EXCLUDEFILESLIST);
+                Runtime.getRuntime().exec("cmd.exe /c " + excludeList + " > " + target + EXCLUDEFILESLIST);
+                Runtime.getRuntime().exec("cmd.exe /c xcopy " + source + " " + target + " /E /H /C /I /Y /exclude:" + target + EXCLUDEFILESLIST);
+            }
+            Utils.wait(3000); // Time needed to unlock files in Windows
+        }
     }
 
     /*

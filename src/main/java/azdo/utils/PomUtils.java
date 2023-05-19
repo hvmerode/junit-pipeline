@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
-
 import azdo.junit.AzDoPipeline;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;

@@ -3,8 +3,11 @@
 
 package azdo.yaml;
 
+import azdo.utils.PropertyUtils;
+import azdo.utils.AzDoUtils;
 import azdo.utils.GitUtils;
 import azdo.utils.Utils;
+import org.eclipse.jgit.api.Git;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
@@ -14,8 +17,8 @@ import java.util.ArrayList;
 import java.util.Map;
 
 /*
-    A YamlDocumentEntryPoint is the entry point of the main pipeline file.
- */
+   A YamlDocumentEntryPoint is the entry point of the main pipeline file.
+*/
 public class YamlDocumentEntryPoint {
     private static Logger logger = LoggerFactory.getLogger(YamlDocumentEntryPoint.class);
 
@@ -23,20 +26,71 @@ public class YamlDocumentEntryPoint {
     private YamlDocument mainYamlDocument;
 
     /*
+        Parses the yaml map of the main pipeline file and initializes the resources (external repositories)
+     */
+    @SuppressWarnings("java:S1192")
+    public void initExternalResources (Map<String, Object> yamlMap, PropertyUtils properties) {
+        logger.debug("==> Method: YamlDocumentEntryPoint.initExternalResources");
+
+        if (yamlMap == null) {
+            logger.debug("The yamlMap parameter is null; return");
+            return;
+        }
+
+        // Get all repositories containing external templates from the resources section
+        ArrayList<RepositoryResource> repositoryList = getRepositoriesFromResources(yamlMap, properties.getTargetBasePathExternal());
+
+        // Clone the repositories containing external templates from the remote (source) repository to
+        // the local file system, and remove the .git directory
+        // The .git directory must be removed to 'unmount' from the original repository; it is later pushed to
+        // the Azure DevOps test repository.
+        // The directory must be copied to prevent that it is overwritten by the createRemoteRepositories command
+        // TODO: The cloneAndRenameExternalRepositories method does not take the ref into account; this needs to be fixed later
+        cloneAndRenameExternalRepositories(repositoryList,
+                properties.getAzDoUser(),
+                properties.getAzdoPat(),
+                properties.getTargetOrganization(),
+                true);
+
+        // Create remote repositories in the Azure DevOps test project
+        // These repositories are copies from the original external repositories
+        // To have them all in one Azure DevOps test project means that they can also be manipulated
+        createRemoteRepositories(repositoryList,
+                properties.getAzDoUser(),
+                properties.getAzdoPat(),
+                properties.getTargetOrganization(),
+                properties.getTargetProject(),
+                properties.getAzdoBaseUrl(),
+                properties.getAzdoEndpoint(),
+                properties.getGitApi(),
+                properties.getGitApiVersion(),
+                properties.getProjectApi(),
+                properties.getProjectApiVersion(),
+                properties.getGitApiRepositories());
+
+        // Copy the files of the source (local copy of external repository files) to the local target
+        copyAllSourceFiles(repositoryList, properties.getTargetExludeList());
+
+        // Read the templates
+        // TODO: For external templates the location from where they are read must be derived from repositoryList
+        //mainYamlDocument.readTemplates();
+
+        // Change the resources/repositories section in the main pipeline in such a way,
+        // that is points to the correct repository in the Azure DevOps test project. This may mean
+        // that the type changes from 'github' to 'git' and the ref is always master (even if it originally was another branch)
+        // TODO
+
+        // Checkout/push all local repositories containing external templates to Azure DevOps
+        commitAndPushAllCode (repositoryList, properties.getAzDoUser(), properties.getAzdoPat(), properties.getCommitPatternList());
+    }
+
+    /*
        Reads the original main pipeline file from the local file system and creates a main YAML map object.
        This map is kept into memory. In addition, it creates YAML maps from template files.
      */
     @SuppressWarnings("java:S1192")
-    public void read(String mainPipelineFile,
-                     String targetBasePathExternal,
-                     String azdoUser,
-                     String azdoPat,
-                     String organization,
-                     String project) {
-        logger.debug("");
-        logger.debug("*****************************************************************");
-        logger.debug("Start YamlDocumentEntryPoint.read");
-        logger.debug("*****************************************************************");
+    public Map<String, Object> read (String mainPipelineFile) {
+        logger.debug("==> Method: YamlDocumentEntryPoint.read");
 
         // First read the main YAML file
         logger.debug("Read the main YAML file " + mainPipelineFile);
@@ -46,88 +100,181 @@ public class YamlDocumentEntryPoint {
         mainYamlDocument = new YamlDocument(mainPipelineFile);
         Map<String, Object> yamlMap = mainYamlDocument.readYaml();
 
-        // Get all repositories from the resources section
-        ArrayList<RepositoryResource> repositoryList = getRepositoriesFromResources(yamlMap);
-
-        // Clone the repositories from the remote (source) repository to local and remove the .git directory
-        // The .git directory must be removed to 'unmount' from the original repository; it is later pushed to
-        // the test repository.
-        cloneRepositories(repositoryList,
-                targetBasePathExternal,
-                azdoUser,
-                azdoPat,
-                organization,
-                true);
-
-
-        // Change the resources/repositories section in the main pipeline in such a way,
-        // that is points to the correct repository in the Azure DevOps test project. This may mean
-        // that the type changes from 'github' to 'git'
-        // TODO
-
         // Read the templates
-        // TODO: For external templates the location from where they are read must be derived
+        // TODO: For external templates the location from where they are read must be derived from repositoryList
         mainYamlDocument.readTemplates();
 
-        // Checkout/push to Azure DevOps
-        // TODO
-
-        logger.debug("*****************************************************************");
-        logger.debug("End YamlDocumentEntryPoint.read");
-        logger.debug("*****************************************************************");
-        logger.debug("");
+        return yamlMap;
     }
 
-    private void cloneRepositories (ArrayList<RepositoryResource> repositoryResourceList,
-                                    String targetBasePathExternal,
-                                    String azdoUser,
-                                    String azdoPat,
-                                    String organization,
-                                    boolean deleteGitDirectory) {
-        logger.debug("==> Method: YamlDocumentEntryPoint.cloneRepositories");
+//    private void checkoutRepositories (ArrayList<RepositoryResource> repositoryResourceList,
+//                                       String targetBasePathExternal) {
+//        logger.debug("==> Method: YamlDocumentEntryPoint.checkoutRepositories");
+//
+//        repositoryResourceList.forEach(repository -> {
+//            try {
+//                File f = new File(targetBasePathExternal + "/" + repository.name);
+//                Git git = Git.open(f);
+//
+//                // Perform the checkout
+//                logger.debug("git.checkout");
+//                git.checkout()
+//                        .setName(repository.name)
+//                        .call();
+//            }
+//            catch (Exception e) {
+//                logger.debug("Exception occurred. Cannot checkout; just continue");
+//                e.printStackTrace();
+//            }
+//        });
+//    }
+
+    private void createRemoteRepositories(ArrayList<RepositoryResource> repositoryResourceList,
+                                          String azdoUser,
+                                          String azdoPat,
+                                          String organization,
+                                          String project,
+                                          String azdoBaseUrl,
+                                          String azdoEndpoint,
+                                          String azdoGitApi,
+                                          String azdoGitApiVersion,
+                                          String azdoProjectApi,
+                                          String azdoProjectApiVersion,
+                                          String azdoGitApiRepositories) {
+        logger.debug("==> Method: YamlDocumentEntryPoint.createRemoteRepositories");
+
+        repositoryResourceList.forEach(repository -> {
+            // Create the repository in the test project
+            String path = repository.localBase + "/" + repository.name;
+            logger.debug("Path: {}", path);
+            //Utils.deleteDirectory(path); // Delete it first
+            AzDoUtils.createRepositoryIfNotExists (azdoUser,
+                    azdoPat,
+                    path,
+                    repository.name,
+                    organization,
+                    project,
+                    azdoBaseUrl,
+                    azdoEndpoint,
+                    azdoGitApi,
+                    azdoGitApiVersion,
+                    azdoProjectApi,
+                    azdoProjectApiVersion,
+                    azdoGitApiRepositories);
+
+            // Checkout main branch
+            Git git = GitUtils.createGit (path);
+            boolean isRemote = GitUtils.containsBranch(git, "master");
+            GitUtils.checkout(git, path, "master", !isRemote);
+        });
+    }
+
+    private void commitAndPushAllCode (ArrayList<RepositoryResource> repositoryResourceList,
+                                       String azdoUser,
+                                       String azdoPat,
+                                       ArrayList<String> commitPatternList) {
+        logger.debug("==> Method: YamlDocumentEntryPoint.commitAndPushAllCode");
+
+        repositoryResourceList.forEach(repository -> {
+            Git git = GitUtils.createGit (repository.localBase + "/" + repository.name);
+
+            if (git != null) {
+                logger.debug("Commit and Push repository {}", repository.name);
+                GitUtils.commitAndPush(git,
+                        azdoUser,
+                        azdoPat,
+                        commitPatternList);
+            }
+        });
+    }
+
+    private void copyAllSourceFiles (ArrayList<RepositoryResource> repositoryResourceList, String excludeList) {
+        logger.debug("==> Method: YamlDocumentEntryPoint.copyAllSourceFiles");
+
+        repositoryResourceList.forEach(repository -> {
+            String source = repository.localBase + "/" + repository.name + RepositoryResource.LOCAL_SOURCE_POSTFIX;
+            String target = repository.localBase + "/" + repository.name;
+            logger.debug("source: {}", source);
+            logger.debug("target: {}", target);
+            try {
+                Utils.copyAll(source, target, excludeList);
+            }
+            catch (IOException e) {
+                logger.debug("Exception occurred while copying files from {}", source);
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private void cloneAndRenameExternalRepositories (ArrayList<RepositoryResource> repositoryResourceList,
+                                                     String azdoUser,
+                                                     String azdoPat,
+                                                     String organization,
+                                                     boolean deleteGitDirectory) {
+        logger.debug("==> Method: YamlDocumentEntryPoint.cloneAndRenameExternalRepositories");
 
         repositoryResourceList.forEach(repository -> {
             // Copy (clone) the external repositories to the local filesystem
-            String path = "";
+            String source = repository.localBase + "/" +  repository.name + RepositoryResource.LOCAL_SOURCE_POSTFIX;
+            String temp = repository.localBase + "/" + repository.name;
+            Git git = null;
 
             if (repository.type != null) {
-                path = targetBasePathExternal + "/" + repository.name;
                 if ("git".equals(repository.type)) {
-                    GitUtils.cloneAzdoToLocal(path,
+                    git = GitUtils.cloneAzdoToLocal(temp,
                             repository.name,
                             azdoUser,
                             azdoPat,
                             organization,
                             repository.project);
                 } else if ("github".equals(repository.type)) {
-                    GitUtils.cloneGitHubToLocal(path,
+                    git = GitUtils.cloneGitHubToLocal(temp,
                             repository.name,
                             repository.project);
                 }
+
+                // Git must be closed, otherwise the .git directory cannot be deleted
+                if (git != null) {
+                    git.close();
+                    Utils.wait(1000);
+                }
+            }
+
+            // Keep the cloned repository. It acts as a local source
+            try {
+                Utils.copyAll(temp, source, "");
+            }
+            catch (Exception e) {
+                logger.debug("Cannot copy temp {} to source {}", temp, source);
+                e.printStackTrace();
             }
 
             /*
-               If the repo is cloned, the .git directory should be deleted
-               Reason is that it is cloned from another repository, but it must be pushed to the target Azure DevOps project
+               If the repo is cloned and copied, the .git directory should be deleted
+               Reason is that it is cloned from another repository, but the files must be pushed to the target Azure DevOps test project
                The cloned repository still references to the original repository
              */
             if (deleteGitDirectory)
-                Utils.deleteDirectory(path + "/.git");
+                Utils.deleteDirectory(source + "/.git");
+
+            // Delete the original local repository, because it is re-used by the createRemoteRepositories method
+            Utils.deleteDirectory(temp);
         });
     }
 
     // Get the repositories in the resources section from the main .yml file
-    private ArrayList<RepositoryResource> getRepositoriesFromResources(Map<String, Object> map) {
+    private ArrayList<RepositoryResource> getRepositoriesFromResources(Map<String, Object> map, String basePathExternal) {
         logger.debug("==> Method: YamlDocumentEntryPoint.getRepositoriesFromResources (first method signature)");
 
         ArrayList<RepositoryResource> repositoryResourceList = new ArrayList<>();
-        repositoryResourceList = getRepositoriesFromResources (map, repositoryResourceList);
+        getRepositoriesFromResources (map, repositoryResourceList, basePathExternal);
         return repositoryResourceList;
     }
 
     // Get a list of repositories
-    private ArrayList<RepositoryResource> getRepositoriesFromResources (Map<String, Object> map,
-                                                                       ArrayList<RepositoryResource> repositoryResourceList) {
+    private void getRepositoriesFromResources (Map<String, Object> map,
+                                               ArrayList<RepositoryResource> repositoryResourceList,
+                                               String basePathExternal) {
         logger.debug("==> Method: YamlDocumentEntryPoint.getRepositoriesFromResources (second method signature)");
 
         RepositoryResource repositoryResource = new RepositoryResource();
@@ -145,10 +292,10 @@ public class YamlDocumentEntryPoint {
             } else {
                 // Go a level deeper
                 if (entry.getValue() instanceof Map) {
-                    getRepositoriesFromResources((Map<String, Object>) entry.getValue(), repositoryResourceList);
+                    getRepositoriesFromResources((Map<String, Object>) entry.getValue(), repositoryResourceList, basePathExternal);
                 }
                 if (entry.getValue() instanceof ArrayList) {
-                    getRepositoriesFromResources((ArrayList<Object>) entry.getValue(), repositoryResourceList);
+                    getRepositoriesFromResources((ArrayList<Object>) entry.getValue(), repositoryResourceList, basePathExternal);
                 }
             }
 
@@ -171,6 +318,7 @@ public class YamlDocumentEntryPoint {
 
                     repositoryResource.name = name;
                     repositoryResource.project = project;
+                    repositoryResource.localBase = basePathExternal;
                 }
                 if ("trigger".equals(entry.getKey())) {
                     repositoryResource.trigger = entry.getValue().toString();
@@ -191,19 +339,20 @@ public class YamlDocumentEntryPoint {
                     repositoryResource.type);
             repositoryResourceList.add(repositoryResource);
         }
-        return repositoryResourceList;
     }
 
-    private void getRepositoriesFromResources(ArrayList<Object> inner, ArrayList<RepositoryResource> repositoryResourceList) {
+    private void getRepositoriesFromResources(ArrayList<Object> inner,
+                                              ArrayList<RepositoryResource> repositoryResourceList,
+                                              String basePathExternal) {
         logger.debug("==> Method: YamlDocumentEntryPoint.getRepositoriesFromResources (third method signature)");
 
         inner.forEach(entry -> {
             // If inner sections are found, go a level deeper
             if (entry instanceof Map) {
-                getRepositoriesFromResources((Map<String, Object>)entry, repositoryResourceList);
+                getRepositoriesFromResources((Map<String, Object>)entry, repositoryResourceList, basePathExternal);
             }
             if (entry instanceof ArrayList) {
-                getRepositoriesFromResources((ArrayList<Object>)entry, repositoryResourceList);
+                getRepositoriesFromResources((ArrayList<Object>)entry, repositoryResourceList, basePathExternal);
             }
         });
     }

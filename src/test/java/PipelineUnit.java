@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class PipelineUnit {
@@ -101,9 +100,11 @@ public class PipelineUnit {
             pipeline.skipStage("DeployStage");
 
             // Create a list with hooks and pass it to the startPipeline
+            // Note: The startPipeline has a dryRun = true setting, meaning that it does not start the pipeline in AzUre DevOps
+            // This is temporary, and only used for testing
             List<Hook> hookList = new ArrayList<>();
             hookList.add(new TestHook());
-            pipeline.startPipeline("myFeature", hookList);
+            pipeline.startPipeline("myFeature", hookList, true);
         }
         catch (IOException e) {
             e.printStackTrace();

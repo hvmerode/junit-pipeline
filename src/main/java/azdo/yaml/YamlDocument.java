@@ -65,6 +65,8 @@ public class YamlDocument {
     }
 
     // Get the template files and read them
+    // TODO: Add ArrayList<RepositoryResource> repositoryList as an argument in readTemplates(), to defined the location
+    // of the templates on the local file system
     void readTemplates(){
         logger.debug("==> Method: YamlDocument.readTemplates");
 
@@ -579,6 +581,65 @@ public class YamlDocument {
             }
             if (entry instanceof ArrayList) {
                 getTemplates((ArrayList<Object>)entry, basePath);
+            }
+        });
+    }
+
+    /* Repositories in the resources section of the yaml pipeline are made local, meaning that they
+       are all of type 'git', even if they were originally from GitHub. The junit-pipeline framework
+       copies there repositories to the Azure DeVOps test project.
+     */
+    public void makeResourcesLocal () {
+        logger.debug("==> Method: YamlDocumentEntryPoint.makeResourcesLocal");
+        makeResourcesLocal (yamlMap);
+    }
+    private void makeResourcesLocal (Map<String, Object> map) {
+        // Run through the YAML file and adjust the map
+        boolean found = false;
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            logger.debug("Key: {}", entry.getKey());
+            logger.debug("Value: {}", entry.getValue());
+
+            if ("repository".equals(entry.getKey())) {
+                logger.debug("Found a repository");
+                found = true;
+            } else {
+                // Go a level deeper
+                if (entry.getValue() instanceof Map) {
+                    makeResourcesLocal((Map<String, Object>) entry.getValue());
+                }
+                if (entry.getValue() instanceof ArrayList) {
+                    makeResourcesLocal((ArrayList<Object>) entry.getValue());
+                }
+            }
+
+            if (found) {
+                if ("type".equals(entry.getKey())) {
+                    entry.setValue("git"); // Make it always am Azure DeVOps Git project
+                }
+                if ("endpoint".equals(entry.getKey())) {
+                    map.remove(entry.getKey()); // Don't use this for local repositories
+                }
+                if ("ref".equals(entry.getKey())) {
+                    map.remove(entry.getKey()); // Always use the default, which is 'refs/heads/main'
+                }
+                if ("name".equals(entry.getKey())) {
+                    String name  = entry.getValue().toString();
+                    String[] parts = name.split("/");
+                    entry.setValue(parts[1]); // Only use the last part of the full name
+                }
+            }
+        }
+    }
+
+    private void makeResourcesLocal(ArrayList<Object> inner) {
+        inner.forEach(entry -> {
+            // If inner sections are found, go a level deeper
+            if (entry instanceof Map) {
+                makeResourcesLocal((Map<String, Object>)entry);
+            }
+            if (entry instanceof ArrayList) {
+                makeResourcesLocal((ArrayList<Object>)entry);
             }
         });
     }

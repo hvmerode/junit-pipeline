@@ -35,7 +35,9 @@ public class AzDoUtils {
     private enum HttpMethod {GET, PUT, POST, PATCH}
     private static boolean test = false;
 
-    // Perform Azure DevOps API call
+    /* Perform an Azure DevOps API call. This is a generic method to call an Azure DeVOps API. The endpoint,
+       HTTP method and body (json) must be provided.
+     */
     public static HttpResponse callApi (String azdoUser,
                                         String azdoPat,
                                         String http,
@@ -97,7 +99,8 @@ public class AzDoUtils {
         return null;
     }
 
-    // Create a new repo in Azure DevOps (if it not exists)
+    /* Create a new repo in Azure DevOps if it does not exist yet
+     */
     public static String createRepositoryIfNotExists (String azdoUser,
                                                       String azdoPat,
                                                       String targetPath,
@@ -177,7 +180,63 @@ public class AzDoUtils {
         return repositoryId;
     }
 
-    // Return the project-id
+    /* Create a new pipeline in Azure DevOps if it does not exist yet
+     */
+    public static String createPipelineIfNotExists (String azdoUser,
+                                                    String azdoPat,
+                                                    String pipelinePath,
+                                                    String pipelineName,
+                                                    String azdoEndpoint,
+                                                    String azdoPipelinesApi,
+                                                    String azdoPipelinesApiVersion,
+                                                    String repositoryId) {
+        logger.debug("==> Method: AzDoUtils.createPipelineIfNotExists");
+        logger.debug("pipelinePath: {}", pipelinePath);
+        logger.debug("pipelineName: {}", pipelineName);
+        logger.debug("azdoEndpoint: {}", azdoEndpoint);
+        logger.debug("azdoPipelinesApi: {}", azdoPipelinesApi);
+        logger.debug("azdoPipelinesApiVersion: {}", azdoPipelinesApiVersion);
+
+        String pipelineId = "";
+        try {
+            // Get the pipelineId of an existing pipeline
+            pipelineId = AzDoUtils.callGetPipelineApi (azdoUser,
+                    azdoPat,
+                    pipelineName,
+                    azdoEndpoint,
+                    azdoPipelinesApi,
+                    azdoPipelinesApiVersion);
+        }
+        catch (Exception e) {
+            logger.debug("Exception occurred; continue");
+        }
+
+        try {
+            logger.debug("Create a new pipeline if not existing");
+            // Create a new pipeline if not existing
+            if (pipelineId == null) {
+
+                // Create a pipeline
+                pipelineId = AzDoUtils.callCreatePipelineApi (azdoUser,
+                        azdoPat,
+                        pipelinePath,
+                        pipelineName,
+                        azdoEndpoint,
+                        azdoPipelinesApi,
+                        azdoPipelinesApiVersion,
+                        repositoryId);
+            }
+        }
+        catch (Exception e) {
+            logger.debug("Exception occurred. Cannot create a new pipeline");
+            e.printStackTrace();
+        }
+
+        return pipelineId;
+    }
+
+    /* Return the project-id of a project in a specific Azure DevOps organization
+     */
     public static String callGetProjectIdApi (String azdoUser,
                                               String azdoPat,
                                               String project,
@@ -211,7 +270,8 @@ public class AzDoUtils {
         return projectId;
     }
 
-    // Execute a pipeline
+    /* Execute a pipeline
+     */
     public static void callPipelineRunApi (String azdoUser,
                                            String azdoPat,
                                            String azdoEndpoint,
@@ -246,7 +306,22 @@ public class AzDoUtils {
         }
     }
 
-    // Wait until the build finished and return the result
+    /* Wait until the build is finished and return the result of the pipeline run.
+       Unfortunately, the amount of information that can be retrieved from Azure DevOps is limited to
+       the result:
+       - canceled
+       - failed
+       - succeeded
+       - partiallySucceeded
+
+       and the status:
+       - cancelling
+       - completed
+       - inProgress
+       - notStarted
+       - postponed
+       - timeout
+     */
     public static RunResult callRunResult (String azdoUser,
                                            String azdoPat,
                                            int pollFrequency,
@@ -328,7 +403,8 @@ public class AzDoUtils {
         return runResult;
     }
 
-    // Create a new pipeline
+    /* Create a new pipeline
+     */
     public static String callCreatePipelineApi (String azdoUser,
                                                 String azdoPat,
                                                 String path,
@@ -372,17 +448,17 @@ public class AzDoUtils {
         return pipelineId;
     }
 
-    // Check whether a pipeline  with a certain name already exists
-    // If available, the pipeline Id is returned
+    /* Check whether a pipeline  with a certain name already exists.
+       If available, the pipeline Id is returned.
+     */
     public static String callGetPipelineApi (String azdoUser,
                                              String azdoPat,
-                                             String repositoryName,
+                                             String pipelineName,
                                              String azdoEndpoint,
                                              String azdoPipelinesApi,
                                              String azdoPipelinesApiVersion) {
         logger.debug("==> Method: AzDoUtils.callGetPipelineApi");
 
-        String pipelineName = repositoryName;
         String pipelineId = null;
         String http = azdoEndpoint +
                 azdoPipelinesApi +
@@ -407,7 +483,8 @@ public class AzDoUtils {
         return pipelineId;
     }
 
-    // Create a new repository and return the Azure DevOps repository Id
+    /* Create a new repository and return the Azure DevOps repository-Id.
+     */
     public static String callCreateRepoApi (String azdoUser,
                                             String azdoPat,
                                             String azdoEndpoint,
@@ -445,7 +522,8 @@ public class AzDoUtils {
         return repositoryId;
     }
 
-    // Update a repository with a new default branch
+    /* Update a repository with a new default branch.
+     */
     public static String callUpdateRepoApi (String azdoUser,
                                             String azdoPat,
                                             String azdoEndpoint,
@@ -481,8 +559,9 @@ public class AzDoUtils {
         return repositoryId;
     }
 
-    // Check whether a Git repository with a certain name already exists
-    // If available, the repository Id is returned
+    /* Check whether a Git repository with a certain name already exists.
+       If available, the repository-Id is returned.
+     */
     public static String callGetRepositoryApi (String azdoUser,
                                                String azdoPat,
                                                String repositoryName,
@@ -517,7 +596,8 @@ public class AzDoUtils {
         return repositoryId;
     }
 
-    // Return the value of a certain key
+    /* Utility method that returns the value of a certain key in an array.
+     */
     public static String iterateYamlArrayListAndFindElement (ArrayList<Object> arr, String key, String compareKey, String val) {
         logger.debug("==> Method: AzDoUtils.iterateYamlArrayListAndFindElement");
 

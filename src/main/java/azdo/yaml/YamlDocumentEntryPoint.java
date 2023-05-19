@@ -38,6 +38,7 @@ public class YamlDocumentEntryPoint {
         }
 
         // Get all repositories containing external templates from the resources section
+        // TODO: Make repositoryList class-scoped
         ArrayList<RepositoryResource> repositoryList = getRepositoriesFromResources(yamlMap, properties.getTargetBasePathExternal());
 
         // Clone the repositories containing external templates from the remote (source) repository to
@@ -71,15 +72,6 @@ public class YamlDocumentEntryPoint {
         // Copy the files of the source (local copy of external repository files) to the local target
         copyAllSourceFiles(repositoryList, properties.getTargetExludeList());
 
-        // Read the templates
-        // TODO: For external templates the location from where they are read must be derived from repositoryList
-        //mainYamlDocument.readTemplates();
-
-        // Change the resources/repositories section in the main pipeline in such a way,
-        // that is points to the correct repository in the Azure DevOps test project. This may mean
-        // that the type changes from 'github' to 'git' and the ref is always master (even if it originally was another branch)
-        // TODO
-
         // Checkout/push all local repositories containing external templates to Azure DevOps
         commitAndPushAllCode (repositoryList, properties.getAzDoUser(), properties.getAzdoPat(), properties.getCommitPatternList());
     }
@@ -102,6 +94,7 @@ public class YamlDocumentEntryPoint {
 
         // Read the templates
         // TODO: For external templates the location from where they are read must be derived from repositoryList
+        // Add repositoryList as an argument in mainYamlDocument.readTemplates()
         mainYamlDocument.readTemplates();
 
         return yamlMap;
@@ -386,4 +379,11 @@ public class YamlDocumentEntryPoint {
                 keyValue,
                 continueSearching);
     }
+
+    public void makeResourcesLocal () {
+        mainYamlDocument.makeResourcesLocal();
+    }
 }
+
+
+

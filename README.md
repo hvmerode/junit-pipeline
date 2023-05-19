@@ -9,7 +9,7 @@ Development is still in an experimental phase and it may cause some issues when 
 
 ### How it works ###
 ***
-Assume that your application and pipeline code reside in a repository called "myrepo" in the Azure DevOps project "MyApp".
+Assume that your application and pipeline code reside in a repository called "__myrepo__" in the Azure DevOps project "__MyApp__".
 Development on the (Java) app is straightforward. With the ___junit-pipeline___ libray, it becomes also possible to test the
 pipeline code (in this case an Azure DevOps pipeline in YAML).
 Testing the pipeline code is performed by JUnit tests. In these tests, the original pipeline code is manipulated according to your needs.
@@ -24,12 +24,15 @@ To test the manipulated script, execute it like this:
 ```java
 pipeline.startPipeline();
 ```
-The ___junit-pipeline___ library connects with the Azure DevOps test project (for example project "UnitTest"), and pushes the code to your test 
-repository (which can be called "myrepo-test", for example). It then executes the pipeline. If the repository and/or the pipeline in project "UnitTest" 
+The ___junit-pipeline___ library connects with the Azure DevOps test project (in the figure below this is project "__UnitTest__"), and pushes the code to your test 
+repository ("__myrepo-test__", for example), after which the pipeline is executed. If the repository and/or the pipeline in the test project("__UnitTest__") 
 do not exists, they are automatically created for you. The illustration below shows how it works in concept.
 
 ![no picture](https://github.com/hvmerode/junit-pipeline/blob/main/junit_pipeline.png "how it works")
 
+In addition, all external repositories defined in the pipeline are cloned and also pushed to the Azure DevOps test project. External repositories are
+used to define pipeline templates that can be included in your pipeline. The ___junit-pipeline___ library takes care that the main pipeline refers to the 
+cloned copies of these repositories instead to the original ones, so external templated can also be manipulated. 
 <br>
 
 ### How to start

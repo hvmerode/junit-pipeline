@@ -16,7 +16,6 @@ import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +26,7 @@ public class AzDoPipeline implements Pipeline {
     private Git git = null;
     private CredentialsProvider credentialsProvider;
     String yamlFile;
+    Map<String, Object> yamlMap = null;
     String repositoryId = null;
     String pipelineId = null;
     RunResult runResult = new RunResult();
@@ -46,9 +46,9 @@ public class AzDoPipeline implements Pipeline {
         yamlDocumentEntryPoint = new YamlDocumentEntryPoint();
 
         // Read the main pipeline file
-        Map<String, Object> yamlMap = yamlDocumentEntryPoint.read(pipelineFile);
+        yamlMap = yamlDocumentEntryPoint.read(pipelineFile);
 
-        // Initialize some stuff needed for external resources; this must only be done only nce
+        // Initialize some stuff needed for external resources; this must only be done only once
         yamlDocumentEntryPoint.initExternalResources(yamlMap, properties);
 
         yamlFile = pipelineFile;
@@ -56,9 +56,7 @@ public class AzDoPipeline implements Pipeline {
                 properties.getAzDoUser(),
                 properties.getAzdoPat());
 
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // If no repository exists, create a new repo in Azure DevOps. Otherwise, make use of the existing repo //
-        //////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // If no repository exists, create a new repo in Azure DevOps. Otherwise, make use of the existing repository
         repositoryId = AzDoUtils.createRepositoryIfNotExists (properties.getAzDoUser(),
                 properties.getAzdoPat(),
                 properties.getTargetPath(),
@@ -73,41 +71,48 @@ public class AzDoPipeline implements Pipeline {
                 properties.getProjectApiVersion(),
                 properties.getGitApiRepositories());
 
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // If no pipeline exists, create a new pipeline in Azure DevOps. Otherwise, make use of the existing pipeline //
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        try {
-            // Get the pipelineId of the existing pipeline
-            pipelineId = AzDoUtils.callGetPipelineApi (properties.getAzDoUser(),
-                    properties.getAzdoPat(),
-                    properties.getRepositoryName(),
-                    properties.getAzdoEndpoint(),
-                    properties.getPipelinesApi(),
-                    properties.getPipelinesApiVersion());
-        }
-        catch (Exception e) {
-            logger.debug("Exception occurred; continue");
-        }
+        // Create a new pipeline is needed; the name of the pipeline is the same as the name of the target repository
+        pipelineId = AzDoUtils.createPipelineIfNotExists (properties.getAzDoUser(),
+                properties.getAzdoPat(),
+                properties.getPipelinePathRepository(),
+                properties.getRepositoryName(),
+                properties.getAzdoEndpoint(),
+                properties.getPipelinesApi(),
+                properties.getPipelinesApiVersion(),
+                repositoryId);
 
-        try {
-            logger.debug("Create a new pipeline if not existing");
-            // Create a new pipeline if not existing
-            if (pipelineId == null) {
-                // Create a pipeline; the name is equal to the name of the repository
-                pipelineId = AzDoUtils.callCreatePipelineApi (properties.getAzDoUser(),
-                        properties.getAzdoPat(),
-                        properties.getPipelinePathRepository(),
-                        properties.getRepositoryName(),
-                        properties.getAzdoEndpoint(),
-                        properties.getPipelinesApi(),
-                        properties.getPipelinesApiVersion(),
-                        repositoryId);
-            }
-        }
-        catch (Exception e) {
-            logger.debug("Exception occurred. Cannot create a new pipeline");
-            e.printStackTrace();
-        }
+//        try {
+//            // Get the pipelineId of the existing pipeline
+//            pipelineId = AzDoUtils.callGetPipelineApi (properties.getAzDoUser(),
+//                    properties.getAzdoPat(),
+//                    properties.getRepositoryName(),
+//                    properties.getAzdoEndpoint(),
+//                    properties.getPipelinesApi(),
+//                    properties.getPipelinesApiVersion());
+//        }
+//        catch (Exception e) {
+//            logger.debug("Exception occurred; continue");
+//        }
+//
+//        try {
+//            logger.debug("Create a new pipeline if not existing");
+//            // Create a new pipeline if not existing
+//            if (pipelineId == null) {
+//                // Create a pipeline; the name is equal to the name of the repository
+//                pipelineId = AzDoUtils.callCreatePipelineApi (properties.getAzDoUser(),
+//                        properties.getAzdoPat(),
+//                        properties.getPipelinePathRepository(),
+//                        properties.getRepositoryName(),
+//                        properties.getAzdoEndpoint(),
+//                        properties.getPipelinesApi(),
+//                        properties.getPipelinesApiVersion(),
+//                        repositoryId);
+//            }
+//        }
+//        catch (Exception e) {
+//            logger.debug("Exception occurred. Cannot create a new pipeline");
+//            e.printStackTrace();
+//        }
 
         logger.debug("");
         logger.debug("=================================================================");
@@ -116,13 +121,12 @@ public class AzDoPipeline implements Pipeline {
         logger.debug("");
     }
 
-    /* After the yaml file has been manipulated and can be used to perform the unittest, the
-       startPipeline method is called.
-       This method creates a new yaml file with the manipulated settings in the local target repository
-       used for the unittest. The local repository is committed and pushed to the remote repository.
-       After all files are pushed, the pipeline in Azure Devops (that makes use of the manipulated yaml file)
-       is called by means of an API.
+    /* After the yaml file has been manipulated and can be used to perform the unittest, the startPipeline method is called.
+       This method creates a new yaml file - used for the unittest and with the manipulated settings - in the local
+       target repository. The local repository is committed and pushed to the remote repository. After all files are pushed,
+       the pipeline in Azure Devops (that makes use of the manipulated yaml file) is called by means of an API.
        The last step is to reload the original yaml file, so it can be used for the next test.
+       This method has different flavors, that allow to pass hooks or perform a dryrun (not starting the pipeline).
      */
     public void startPipeline() throws IOException {
         startPipeline("master", null, false);
@@ -145,8 +149,13 @@ public class AzDoPipeline implements Pipeline {
         // Clone the repository to local if not done earlier
         // Keep the reference to the git object
         try {
-            //Utils.deleteDirectory(properties.getTargetPath());
-            git = gitClone();
+            // Clone the main repository to local and initialize
+            git = GitUtils.cloneAzdoToLocal(properties.getTargetPath(),
+                    properties.getRepositoryName(),
+                    properties.getAzDoUser(),
+                    properties.getAzdoPat(),
+                    properties.getTargetOrganization(),
+                    properties.getTargetProject());
         }
         catch (Exception e) {
             logger.debug("Exception occurred. Cannot clone repository to local");
@@ -158,8 +167,6 @@ public class AzDoPipeline implements Pipeline {
         if (git == null) {
             logger.debug("Recreate git object");
             git = GitUtils.createGit(properties.getTargetPath());
-            //File f = new File(properties.getTargetPath());
-            //git = Git.open(f);
         }
 
         // Check whether there is a remote branch
@@ -177,6 +184,12 @@ public class AzDoPipeline implements Pipeline {
             logger.debug("Exception occurred.Cannot copy local files to target");
             e.printStackTrace();
         }
+
+        // Repositories in the resources section of the yaml pipeline are copied to the Azure DevOps
+        // test project. This makes them git repositories, all with type = git (which means Azure DevOps),
+        // and all in the same Azure DevOps project. This is independent whether the repositories are
+        // originally from another Azure DeVOps project or from GithHub.
+        yamlDocumentEntryPoint.makeResourcesLocal();
 
         // Execute the commands in the bundle are executed
         commandBundle.execute(this);
@@ -223,34 +236,7 @@ public class AzDoPipeline implements Pipeline {
         }
 
         // Re-read the original pipeline for the next test (for a clean start of the next test)
-        yamlDocumentEntryPoint.read(yamlFile);
-    }
-
-    public void executeScript(String filePath) throws IOException{
-        logger.debug("==> Method: AzDoPipeline.executeScript: {}", filePath);
-        File file = new File(filePath);
-        if(!file.isFile()){
-            throw new IllegalArgumentException("The file " + filePath + " does not exist");
-        }
-        if(Utils.isLinux()){
-            logger.debug("Executing on Linux");
-            Runtime.getRuntime().exec(new String[] {"/bin/sh ", "-c", filePath}, null);
-        } else if(Utils.isWindows()){
-            logger.debug("Executing on Windows");
-            Runtime.getRuntime().exec("cmd /c call " + filePath);
-        }
-    }
-
-    // Clone the repo to local and initialize
-    private Git gitClone () {
-        logger.debug("==> Method: AzDoPipeline.gitClone");
-
-        return GitUtils.cloneAzdoToLocal(properties.getTargetPath(),
-                properties.getRepositoryName(),
-                properties.getAzDoUser(),
-                properties.getAzdoPat(),
-                properties.getTargetOrganization(),
-                properties.getTargetProject());
+        yamlMap = yamlDocumentEntryPoint.read(yamlFile);
     }
 
     /* Replace the value of a variable in the 'variables' section. Two constructions are possible:

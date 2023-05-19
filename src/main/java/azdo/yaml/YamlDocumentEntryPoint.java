@@ -44,7 +44,7 @@ public class YamlDocumentEntryPoint {
         // the local file system, and remove the .git directory
         // The .git directory must be removed to 'unmount' from the original repository; it is later pushed to
         // the Azure DevOps test repository.
-        // The directory must be copied to prevent that it is overwritten by the createRemoteRepositories command
+        // The directory must be copied to prevent it is overwritten by the createRemoteRepositories command
         // TODO: The cloneAndRenameExternalRepositories method does not take the ref into account; this needs to be fixed later
         cloneAndRenameExternalRepositories(repositoryList,
                 properties.getAzDoUser(),
@@ -86,7 +86,7 @@ public class YamlDocumentEntryPoint {
 
     /*
        Reads the original main pipeline file from the local file system and creates a main YAML map object.
-       This map is kept into memory. In addition, it creates YAML maps from template files.
+       This map is kept in memory. In addition, it creates YAML maps from template files.
      */
     @SuppressWarnings("java:S1192")
     public Map<String, Object> read (String mainPipelineFile) {
@@ -251,8 +251,8 @@ public class YamlDocumentEntryPoint {
 
             /*
                If the repo is cloned and copied, the .git directory should be deleted
-               Reason is that it is cloned from another repository, but the files must be pushed to the target Azure DevOps test project
-               The cloned repository still references to the original repository
+               The reason is, that it is cloned from another repository, but the files must be pushed to the target Azure DevOps test project
+               The cloned repository still references the original repository
              */
             if (deleteGitDirectory)
                 Utils.deleteDirectory(source + "/.git");

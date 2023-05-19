@@ -168,20 +168,6 @@ public class AzDoPipeline implements Pipeline {
         // Perform the checkout
         GitUtils.checkout(git, properties.getTargetPath(), branchName, !isRemote);
 
-
-//        if (git != null) {
-//            try {
-//                logger.debug("git.checkout");
-//                git.checkout()
-//                        .setCreateBranch(!isRemote)
-//                        .setName(branchName)
-//                        .call();
-//            } catch (Exception e) {
-//                logger.debug("Exception occurred. Cannot checkout; just continue");
-//                e.printStackTrace();
-//            }
-//        }
-
         // Copy local resources from main source to target directory
         try {
             // Copy all sources from the source local repo to the target local repo
@@ -254,28 +240,6 @@ public class AzDoPipeline implements Pipeline {
             Runtime.getRuntime().exec("cmd /c call " + filePath);
         }
     }
-
-    // TODO: Move to GitUtils
-//    private void gitCommitAndPush () throws GitAPIException {
-//        logger.debug ("==> Method: AzDoPipeline.gitCommitAndPush");
-//
-//        if (git != null) {
-//            logger.debug("git.commit");
-//            git.commit()
-//                    .setAll(true)
-//                    .setAuthor(properties.getAzDoUser(), "")
-//                    .setCommitter(properties.getAzDoUser(), "")
-//                    .setMessage("Init repo")
-//                    .call();
-//
-//            logger.debug("git.push");
-//            git.push()
-//                    .setPushAll()
-//                    .setCredentialsProvider(credentialsProvider)
-//                    .setForce(true)
-//                    .call();
-//        }
-//    }
 
     // Clone the repo to local and initialize
     private Git gitClone () {
@@ -567,23 +531,5 @@ public class AzDoPipeline implements Pipeline {
     public PropertyUtils getProperties() {
         return properties;
     }
-
-//    private boolean containsBranch(String name) {
-//        logger.debug("==> Method: AzDoPipeline.containsBranch");
-//        try {
-//            ListBranchCommand command = git.branchList();
-//            command.setListMode(ListBranchCommand.ListMode.ALL);
-//            List<Ref> branches = command.call();
-//            for (Ref ref : branches) {
-//                if (ref.getName().endsWith("/" + name)) {
-//                    return true;
-//                }
-//            }
-//        }
-//        catch (Exception e) {
-//            logger.debug("Cannot check whether the branch is remote");
-//        }
-//        return false;
-//    }
 }
 

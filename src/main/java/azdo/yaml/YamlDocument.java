@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 /*
-    A YamlDocument represents one (1) YAML file.
+    A YamlDocument represents one (1) YAML file; this is a pipeline file or a template file.
  */
 public class YamlDocument {
     private static Logger logger = LoggerFactory.getLogger(YamlDocument.class);
@@ -95,10 +95,12 @@ public class YamlDocument {
         for (index = 0; index < size; index++) {
             template = templateList.get(index);
             template.readYaml();
+
+            // Templates can contain other templates, so recursively read them
             template.readTemplates(targetPath,
                     sourceBasePathExternal,
                     targetBasePathExternal,
-                    repositoryList); // Templates can contain other templates, so recursively read them
+                    repositoryList);
         }
     }
 

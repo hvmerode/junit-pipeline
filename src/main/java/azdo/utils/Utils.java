@@ -9,6 +9,7 @@ import org.apache.commons.io.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -126,6 +127,26 @@ public class Utils {
         normalized = normalized.normalize();
         path = normalized.toString();
         return path;
+    }
+
+    /*
+       Validate whether a directory is empty
+     */
+    public static boolean pathIsEmptyOrNotExisting (String path) {
+        boolean res = false;
+        try {
+            // Check whether the directory is empty
+            // If res = true the directory is empty, which is enough to check
+            // If res = false the directory is not empty, which is also enough to check
+            File f = new File(path);
+            res = FileUtils.isEmptyDirectory(f);
+        }
+        catch (IOException e) {
+            logger.debug("Cannot validate whether the Path is empty or does not exist; assume it does not exists");
+            return true;
+        }
+
+        return res;
     }
 
     public static void wait(int ms)

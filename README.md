@@ -51,7 +51,9 @@ This file is located in src/main/resources. It contains the properties for your 
   It is only used for the __junit-pipeline__ framework to communicate with the Azure DevOps test project. Before you start, this directory must not exist.
 * __target.organization__ - The name of your organization as defined in Azure DevOps. This will be included in the Azure DevOps API calls.
 * __target.project__ - The name of the test project. In the example case it is called "UnitTest".
-* __target.base.path.external__ - The location (local directory) containing external Git repositories, defined in the __repositories__ section of the main pipeline YAML file.\ 
+* __source.base.path.external__ - The local directory of the external repositories on the workstation, defined in the __repositories__ section of the main pipeline YAML file.
+* __target.base.path.external__ - The location (local directory) containing external Git repositories; this location
+  is used communicate with the Azure DevOps test project.
 * __target.repository.name__ - The name of the repository used in the Git repository used for testing. Best is to keep the source and target repository names identical.
 * __azdo.user__ - User used in the Azure DevOps API calls. Can be the default name 'UserWithToken'.
 * __azdo.pat__ - The PAT (Personal Access Token) used in the Azure DevOps API calls.\
@@ -414,14 +416,20 @@ pipeline.getRunResult()
 ***
 * Tests cannot be executed in parallel. Because the target repository is updated for each test, the next
   test must wait before the previous one is completed.
-* Only YAML templates in the same repository are taken into account. Templates in other repositories (identified with a @ behind the template name) are ignored.\
-  TODO: Option to incorporate other resources (repositories) and manipulate the templates in these repos also.
+* Templates in external repositories (GitHub and other Azure DevOps projects) are taken into account, but:
+  * The _ref_ parameter is not (yet) implemented, so only the master branch of an external repository can be used.
+  * If an external repository is updated, the update is not automatically included in the test; first delete the corresponding
+    local directories to create a new clone of the external repository. For example, if an external repository is called 
+    'Templates', 2 local directories are created, 'Templates' and 'Templates-source'; delete them both.
 * If the pipeline makes use of a resource in the test project for the first time, it needs manual approval first; for example, a variable group or an Environment.
 * If unknown service connections are used or the updated pipeline code is not valid YAML anymore, the AzDo API returns an HTTP status code 400.
 * No methods yet to add, update or remove conditions in stages or jobs. Use the _overrideLiteral_ method, if possible.
-* At the start, the local target repository and the remote target repository (of the test project) can become out-of-sync. Delete both the local and the remote repo and start again.
+* No methods yet to replace a step with another step. 
 * There is no option (yet) to continue on error for all steps.
 
+
+* ~~Only YAML templates in the same repository are taken into account. Templates in other repositories (identified with a @ behind the template name) are ignored.\
+  TODO: Option to incorporate other resources (repositories) and manipulate the templates in these repos also.~~
 * ~~Copying files from the main local repo to the test local repo involves exclusion of files, using an exclusion list. This list is currently hardcoded\
   and contains "idea, target, .git and class". This should be made configurable in the _junit_pipeline.properties_ file.~~
 * ~~Sometimes you get the error "org.eclipse.jgit.api.errors.RefAlreadyExistsException: Ref myFeature already exists". This

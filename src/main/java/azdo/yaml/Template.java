@@ -11,7 +11,6 @@ import java.util.Map;
     A Template is a specific YamlDocument
     It can be invoked by the main pipeline or invoked by other templates in the same repository
     A template can also invoke templates in other repositories
-    TODO: Taking external repos into account needs be be added
  */
 public class Template extends YamlDocument{
     public enum InternalOrExternalTemplate {

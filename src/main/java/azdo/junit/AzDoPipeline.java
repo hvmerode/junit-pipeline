@@ -175,7 +175,7 @@ public class AzDoPipeline implements Pipeline {
             }
         }
 
-        // Push the local repo to remote
+        // Push the local (main) repo to remote
         GitUtils.commitAndPush(git,
                 properties.getAzDoUser(),
                 properties.getAzdoPat(),
@@ -183,6 +183,12 @@ public class AzDoPipeline implements Pipeline {
 
         if (git != null)
             git.close();
+
+        // Push all external repositories to remote.
+        // The repositoryList is maintained by the YamlDocumentEntryPoint, so delegate the commit- and push to YamlDocumentEntryPoint
+        yamlDocumentEntryPoint.commitAndPushTemplates (properties.getAzDoUser(),
+                properties.getAzdoPat(),
+                properties.getCommitPatternList());
 
         // Call Azure Devops API to start the pipeline and retrieve the result
         // If dryRun is true, do not start the pipeline
@@ -202,6 +208,9 @@ public class AzDoPipeline implements Pipeline {
                     properties.getBuildApi(),
                     properties.getBuildApiVersion(),
                     pipelineId);
+        }
+        else {
+            logger.debug("dryRun is true; skip executing the pipeline");
         }
 
         // Re-read the original pipeline for the next test (for a clean start of the next test)

@@ -1,0 +1,17 @@
+parameters:
+- name: aNiceParam
+  type: string
+  default: param_value
+stages:
+- stage: Stage_B
+  displayName: Stage B
+  jobs:
+  - job: Job_B
+    displayName: Job B
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - script: |
+        echo 'This is job: Job_B with parameter ${{ parameters.aNiceParam }}'
+      displayName: Step B
+  - template: ../jobs/template-jobs.yml

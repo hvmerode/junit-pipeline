@@ -43,7 +43,9 @@ public class AzDoPipeline implements Pipeline {
         logger.debug("=================================================================");
 
         properties = new PropertyUtils(propertyFile);
-        yamlDocumentEntryPoint = new YamlDocumentEntryPoint();
+        yamlDocumentEntryPoint = new YamlDocumentEntryPoint(properties.getTargetPath(),
+                properties.getSourceBasePathExternal(),
+                properties.getTargetBasePathExternal());
 
         // Read the main pipeline file
         yamlMap = yamlDocumentEntryPoint.read(pipelineFile);
@@ -80,39 +82,6 @@ public class AzDoPipeline implements Pipeline {
                 properties.getPipelinesApi(),
                 properties.getPipelinesApiVersion(),
                 repositoryId);
-
-//        try {
-//            // Get the pipelineId of the existing pipeline
-//            pipelineId = AzDoUtils.callGetPipelineApi (properties.getAzDoUser(),
-//                    properties.getAzdoPat(),
-//                    properties.getRepositoryName(),
-//                    properties.getAzdoEndpoint(),
-//                    properties.getPipelinesApi(),
-//                    properties.getPipelinesApiVersion());
-//        }
-//        catch (Exception e) {
-//            logger.debug("Exception occurred; continue");
-//        }
-//
-//        try {
-//            logger.debug("Create a new pipeline if not existing");
-//            // Create a new pipeline if not existing
-//            if (pipelineId == null) {
-//                // Create a pipeline; the name is equal to the name of the repository
-//                pipelineId = AzDoUtils.callCreatePipelineApi (properties.getAzDoUser(),
-//                        properties.getAzdoPat(),
-//                        properties.getPipelinePathRepository(),
-//                        properties.getRepositoryName(),
-//                        properties.getAzdoEndpoint(),
-//                        properties.getPipelinesApi(),
-//                        properties.getPipelinesApiVersion(),
-//                        repositoryId);
-//            }
-//        }
-//        catch (Exception e) {
-//            logger.debug("Exception occurred. Cannot create a new pipeline");
-//            e.printStackTrace();
-//        }
 
         logger.debug("");
         logger.debug("=================================================================");
@@ -195,7 +164,7 @@ public class AzDoPipeline implements Pipeline {
         commandBundle.execute(this);
 
         //  Save the manipulated main YAML (incl. template files) to the target location
-        yamlDocumentEntryPoint.dumpYaml(properties.getTargetPath());
+        yamlDocumentEntryPoint.dumpYaml();
 
         // Perform all (pre)hooks
         if (hooks != null) {

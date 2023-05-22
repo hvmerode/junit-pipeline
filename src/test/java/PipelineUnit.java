@@ -24,8 +24,8 @@ public class PipelineUnit {
         pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/pipeline_test.yml");
 
         // Add commands to the bundle. These commands are executed for every test, so you only have to do it once
-        // Always replace template-steps_1.yml with a mock template
-        pipeline.commandBundle.overrideLiteral("templates/steps/template-steps_1.yml", "templates/steps/template-mock.yml");
+        // Always replace template-steps.yml with a mock template
+        pipeline.commandBundle.overrideLiteral("templates/steps/template-steps.yml", "templates/steps/template-mock.yml");
     }
 
     @Test
@@ -37,7 +37,8 @@ public class PipelineUnit {
         logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
         pipeline.overrideTemplateParameter("aNiceParam", "aNiceValue");
-        pipeline.overrideLiteral("This is step 1 of file template-steps_1.yml with", "This is", true);
+        pipeline.overrideLiteral("This is step 1 of file template-steps.yml with", "This is", true);
+        pipeline.overrideLiteral("project <Templates>", "project <Templates> !!!!!!");
         pipeline.overrideParameterDefault("aNiceParam", "aNiceDefault");
         pipeline.overrideParameterDefault("param_1", "xxx");
         pipeline.overrideParameterDefault("sleep", "5");

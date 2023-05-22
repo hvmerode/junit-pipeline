@@ -10,3 +10,4 @@ parameters:
 steps:
   - script: |
       echo 'This is mock template file'
+    displayName: Step C

@@ -18,6 +18,7 @@ public class PropertyUtils {
     // Source
     private Properties properties;
     private String sourcePath;
+    private String sourceBasePathExternal;
 
     // Target
     private String targetPath;
@@ -74,6 +75,8 @@ public class PropertyUtils {
             // Source
             sourcePath = properties.getProperty("source.path");
             logger.debug("source.path: {}", sourcePath);
+            sourceBasePathExternal = properties.getProperty("source.base.path.external");
+            logger.debug("source.base.path.external: {}", sourceBasePathExternal);
 
             // Target
             targetOrganization = properties.getProperty("target.organization");
@@ -83,7 +86,7 @@ public class PropertyUtils {
             targetPath = properties.getProperty("target.path");
             logger.debug("target.path: {}", targetPath);
             targetBasePathExternal = properties.getProperty("target.base.path.external");
-            logger.debug("target.path: {}", targetBasePathExternal);
+            logger.debug("target.base.path.external: {}", targetBasePathExternal);
             repositoryName = properties.getProperty("target.repository.name");
             logger.debug("target.repository.name: {}", repositoryName);
             pipelinePathRepository = properties.getProperty("repository.pipeline.path");
@@ -178,6 +181,7 @@ public class PropertyUtils {
     public String getTargetOrganization() {
         return targetOrganization;
     }
+    public String getSourceBasePathExternal() { return sourceBasePathExternal; }
     public String getTargetPath() { return targetPath; }
     public String getTargetBasePathExternal() { return targetBasePathExternal; }
     public String getPipelinePathRepository() { return pipelinePathRepository; }

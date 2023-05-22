@@ -24,6 +24,18 @@ public class YamlDocumentEntryPoint {
 
     // Refers to the main pipeline file, which is the entrypoint of the pipeline
     private YamlDocument mainYamlDocument;
+    private String targetPath = "";
+    private String sourceBasePathExternal = "";
+    private String targetBasePathExternal = "";
+    ArrayList<RepositoryResource> repositoryList = null;
+
+    public YamlDocumentEntryPoint (String targetPath,
+                                   String sourceBasePathExternal,
+                                   String targetBasePathExternal) {
+        this.targetPath = targetPath;
+        this.sourceBasePathExternal = sourceBasePathExternal;
+        this.targetBasePathExternal = targetBasePathExternal;
+    }
 
     /*
         Parses the yaml map of the main pipeline file and initializes the resources (external repositories)
@@ -38,8 +50,7 @@ public class YamlDocumentEntryPoint {
         }
 
         // Get all repositories containing external templates from the resources section
-        // TODO: Make repositoryList class-scoped
-        ArrayList<RepositoryResource> repositoryList = getRepositoriesFromResources(yamlMap, properties.getTargetBasePathExternal());
+        repositoryList = getRepositoriesFromResources(yamlMap, properties.getTargetBasePathExternal());
 
         // Clone the repositories containing external templates from the remote (source) repository to
         // the local file system, and remove the .git directory
@@ -74,6 +85,13 @@ public class YamlDocumentEntryPoint {
 
         // Checkout/push all local repositories containing external templates to Azure DevOps
         commitAndPushAllCode (repositoryList, properties.getAzDoUser(), properties.getAzdoPat(), properties.getCommitPatternList());
+
+        // Read all templates
+        mainYamlDocument.readTemplates(
+                targetPath,
+                sourceBasePathExternal,
+                targetBasePathExternal,
+                repositoryList);
     }
 
     /*
@@ -89,39 +107,13 @@ public class YamlDocumentEntryPoint {
         Path mainPipelinePath = Paths.get(mainPipelineFile);
         mainPipelinePath = mainPipelinePath.normalize();
         mainPipelineFile = mainPipelinePath.toString();
-        mainYamlDocument = new YamlDocument(mainPipelineFile);
+        mainYamlDocument = new YamlDocument(mainPipelineFile, targetPath);
         Map<String, Object> yamlMap = mainYamlDocument.readYaml();
-
-        // Read the templates
-        // TODO: For external templates the location from where they are read must be derived from repositoryList
-        // Add repositoryList as an argument in mainYamlDocument.readTemplates()
-        mainYamlDocument.readTemplates();
 
         return yamlMap;
     }
 
-//    private void checkoutRepositories (ArrayList<RepositoryResource> repositoryResourceList,
-//                                       String targetBasePathExternal) {
-//        logger.debug("==> Method: YamlDocumentEntryPoint.checkoutRepositories");
-//
-//        repositoryResourceList.forEach(repository -> {
-//            try {
-//                File f = new File(targetBasePathExternal + "/" + repository.name);
-//                Git git = Git.open(f);
-//
-//                // Perform the checkout
-//                logger.debug("git.checkout");
-//                git.checkout()
-//                        .setName(repository.name)
-//                        .call();
-//            }
-//            catch (Exception e) {
-//                logger.debug("Exception occurred. Cannot checkout; just continue");
-//                e.printStackTrace();
-//            }
-//        });
-//    }
-
+    // Create remote - external - repositories in the Azure DevOps test project
     private void createRemoteRepositories(ArrayList<RepositoryResource> repositoryResourceList,
                                           String azdoUser,
                                           String azdoPat,
@@ -354,11 +346,12 @@ public class YamlDocumentEntryPoint {
        The manipulated yaml maps are saved onto the local file system. The location is a target location,
        other than the original location of the pipeline file.
      */
-    public void dumpYaml(String targetPath) throws IOException {
+    //public void dumpYaml(String targetPath) throws IOException {
+    public void dumpYaml() throws IOException {
         logger.debug("==> Method: YamlDocumentEntryPoint.dumpYaml");
 
         // Dump the updated YAML files to the target directory (with the same name as the original file in the source directory)
-        mainYamlDocument.dumpYaml(targetPath);
+        mainYamlDocument.dumpYaml();
     }
 
     public void executeCommand (ActionEnum actionEnum,

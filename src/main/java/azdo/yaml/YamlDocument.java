@@ -21,17 +21,21 @@ import java.util.regex.Pattern;
  */
 public class YamlDocument {
     private static Logger logger = LoggerFactory.getLogger(YamlDocument.class);
-    private Map<String, Object> yamlMap;
-    private ArrayList<Template> templateList; // Contains array with templates included in this YamlDocument
-    private String originalFileName; // The filename of this YamlDocument, including the path in the repository
+    private Map<String, Object> yamlMap; // Map of the pipeline/template yaml file.
+    private ArrayList<Template> templateList = new ArrayList<>();; // Contains an array with templates included in this YamlDocument.
+    protected String targetPath; // The path of the repository that contains the main yaml document.
+    protected String sourceInputFile; // The source yaml filename associated with this YamlDocument, including the path in the repository.
+    protected String targetOutputFile; // The target filename used to dump the manipulated yaml.
 
     // Default constructor
-    public YamlDocument() {
+    public YamlDocument() {}
 
-    }
-
-    public YamlDocument(String originalFileName) {
-        this.originalFileName = originalFileName;
+    // Constructor
+    public YamlDocument(String sourceInputFile, String targetPath) {
+        this.targetPath = targetPath;
+        this.sourceInputFile = sourceInputFile;
+        targetOutputFile = targetPath + "/" + sourceInputFile;
+        targetOutputFile = Utils.fixPath(targetOutputFile);
     }
 
     /*
@@ -42,73 +46,76 @@ public class YamlDocument {
     public Map<String, Object> readYaml() {
         logger.debug("");
         logger.debug("-----------------------------------------------------------------");
-        logger.debug("Start YamlDocument.readYaml: " + originalFileName);
+        logger.debug("Start YamlDocument.readYaml: " + sourceInputFile);
         logger.debug("-----------------------------------------------------------------");
 
         try {
             // Read the yaml file
             Yaml yaml = new Yaml();
-            File file = new File(originalFileName);
+            File file = new File(sourceInputFile);
             InputStream inputStream = new FileInputStream(file);
             yamlMap = yaml.load(inputStream);
             logger.debug("YamlMap: {}", yamlMap);
         } catch (Exception e) {
-            logger.debug("Cannot find file {}", originalFileName);
+            logger.debug("Cannot find file {}", sourceInputFile);
         }
 
         logger.debug("-----------------------------------------------------------------");
-        logger.debug("End YamlDocument.readYaml " + originalFileName);
+        logger.debug("End YamlDocument.readYaml " + sourceInputFile);
         logger.debug("-----------------------------------------------------------------");
         logger.debug("");
 
         return yamlMap;
     }
 
-    // Get the template files and read them
-    // TODO: Add ArrayList<RepositoryResource> repositoryList as an argument in readTemplates(), to defined the location
-    // of the templates on the local file system
-    void readTemplates(){
+    // For each template file found in this yaml, a Template object is created and added to the list.
+    // This means that each YamlDocument - which is associated with a yaml file - has its own list of Template objects.
+    public void readTemplates(String targetPath,
+                              String sourceBasePathExternal,
+                              String targetBasePathExternal,
+                              ArrayList<RepositoryResource> repositoryList){
         logger.debug("==> Method: YamlDocument.readTemplates");
+        logger.debug("targetPath: {}", targetPath);
+        logger.debug("sourceBasePathExternal: {}", sourceBasePathExternal);
+        logger.debug("targetBasePathExternal {}", targetBasePathExternal);
 
-        templateList = new ArrayList<>(); // Use a new, empty list
-        Path pathMain = Paths.get(originalFileName);
+        // The root represents the root path of the pipeline
+        Path pathMain = Paths.get(sourceInputFile);
+        String root = pathMain.getParent().toString() + "/";
 
-        // TODO: if this YamlDocument is an external template, the path is not the path of the main pipeline
-        // It not even a path in the same directory as in which the main pipeline resided, but a different repository
-        // If pathMain or pathMain.getParent() is null, return; the YamlDocument is an external template
-        // The read location of external templates must be fixed later
-        if (pathMain == null || pathMain.getParent() == null)
-            return;
-
-        logger.debug("Read the template YAML files");
-        getTemplates(yamlMap, pathMain.getParent().toString() + "/");
+        getTemplates(yamlMap,
+                root,
+                targetPath,
+                sourceBasePathExternal,
+                targetBasePathExternal,
+                repositoryList);
         int index = 0;
         int size = templateList.size();
         Template template;
         for (index = 0; index < size; index++) {
             template = templateList.get(index);
             template.readYaml();
-            template.readTemplates(); // Templates can contain other templates, so recursively  read them
+            template.readTemplates(targetPath,
+                    sourceBasePathExternal,
+                    targetBasePathExternal,
+                    repositoryList); // Templates can contain other templates, so recursively read them
         }
     }
 
     /*
        The manipulated yaml map is saved onto the local file system. The location is a target location,
        other than the original location of the pipeline file.
-       Note, that originalFileName is the base path of the file in the directory. The targetPath is the location
-       of the repository on the filesystem; appending both provides the exact location of the file on the filesystem
      */
-    public void dumpYaml(String targetPath) throws IOException {
+    public void dumpYaml() throws IOException {
         logger.debug("==> Method: YamlDocument.dumpYaml");
 
         // Dump the updated yaml to target directory (with the same name as the original file in the source directory)
-        String path = Utils.fixPath(targetPath + "/" + originalFileName);
-        logger.debug("Dump the yamlMap of {} to {}", originalFileName, path);
+        logger.debug("Dump the yamlMap of {} to {}", sourceInputFile, targetOutputFile);
         final DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         options.setPrettyFlow(true);
         final Yaml yaml = new Yaml(options);
-        FileWriter writer = new FileWriter(targetPath + "/" + originalFileName);
+        FileWriter writer = new FileWriter(targetOutputFile);
         yaml.dump(yamlMap, writer);
         Utils.wait(1000);
 
@@ -119,7 +126,7 @@ public class YamlDocument {
         Template template;
         for (index = 0; index < size; index++) {
             template = templateList.get(index);
-            template.dumpYaml(targetPath);
+            template.dumpYaml();
         }
     }
 
@@ -539,7 +546,12 @@ public class YamlDocument {
     /*
        Create a list of all templates.
      */
-    private void getTemplates(Map<String, Object> inner, String basePath) {
+    private void getTemplates(Map<String, Object> inner,
+                              String root,
+                              String targetPath,
+                              String sourceBasePathExternal,
+                              String targetBasePathExternal,
+                              ArrayList<RepositoryResource> repositoryList) {
         logger.debug("==> Method: YamlDocument.getTemplates");
 
         // Inner could be null
@@ -553,19 +565,29 @@ public class YamlDocument {
 
             // Add all template files to the list
             if ("template".equals(entry.getKey())) {
-                templateList.add(new Template((String) entry.getValue(), basePath));
+                templateList.add(new Template((String) entry.getValue(),
+                        root,
+                        targetPath,
+                        sourceBasePathExternal,
+                        targetBasePathExternal,
+                        repositoryList));
             }
 
             // Go a level deeper
             if (entry.getValue() instanceof Map) {
-                getTemplates((Map<String, Object>) entry.getValue(), basePath);
+                getTemplates((Map<String, Object>) entry.getValue(), root, targetPath, sourceBasePathExternal, targetBasePathExternal, repositoryList);
             }
             if (entry.getValue() instanceof ArrayList) {
-                getTemplates((ArrayList<Object>) entry.getValue(), basePath);
+                getTemplates((ArrayList<Object>) entry.getValue(), root, targetPath, sourceBasePathExternal, targetBasePathExternal, repositoryList);
             }
         }
     }
-    private void getTemplates(ArrayList<Object> inner, String basePath) {
+    private void getTemplates(ArrayList<Object> inner,
+                              String root,
+                              String targetPath,
+                              String sourceBasePathExternal,
+                              String targetBasePathExternal,
+                              ArrayList<RepositoryResource> repositoryList) {
         logger.debug("==> Method: YamlDocument.getTemplates");
 
         // Inner could be null
@@ -577,10 +599,10 @@ public class YamlDocument {
         inner.forEach(entry -> {
             // If inner sections are found, go a level deeper
             if (entry instanceof Map) {
-                getTemplates((Map<String, Object>)entry, basePath);
+                getTemplates((Map<String, Object>)entry, root, targetPath, sourceBasePathExternal, targetBasePathExternal, repositoryList);
             }
             if (entry instanceof ArrayList) {
-                getTemplates((ArrayList<Object>)entry, basePath);
+                getTemplates((ArrayList<Object>)entry, root, targetPath, sourceBasePathExternal, targetBasePathExternal, repositoryList);
             }
         });
     }

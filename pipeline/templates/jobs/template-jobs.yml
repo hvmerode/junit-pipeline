@@ -1,0 +1,13 @@
+parameters:
+- name: param_1
+  type: string
+  default: param_1_value
+jobs:
+- job: Job_A
+  displayName: Job A
+  pool:
+    vmImage: ubuntu-latest
+  steps:
+  - script: |
+      echo 'This is job: Job_A with parameter ${{ parameters.param_1 }}'
+  - template: ../steps/template-steps.yml

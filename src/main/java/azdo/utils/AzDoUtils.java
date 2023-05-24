@@ -174,8 +174,7 @@ public class AzDoUtils {
                     project);
         }
         catch (Exception e) {
-            logger.debug("Exception occurred. Cannot create a new repository");
-            e.printStackTrace();
+            logger.debug("Exception occurred. Cannot create a new repository: {}", e);
         }
 
         return repositoryId;
@@ -229,8 +228,7 @@ public class AzDoUtils {
             }
         }
         catch (Exception e) {
-            logger.debug("Exception occurred. Cannot create a new pipeline");
-            e.printStackTrace();
+            logger.debug("Exception occurred. Cannot create a new pipeline: {}", e);
         }
 
         return pipelineId;

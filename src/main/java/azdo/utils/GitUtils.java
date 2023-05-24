@@ -184,8 +184,7 @@ public class GitUtils {
         }
 
         catch (Exception e) {
-            logger.debug("Exception pushing to repo");
-            e.printStackTrace();
+            logger.debug("Exception pushing to repo: {}", e);
         }
     }
 
@@ -214,8 +213,7 @@ public class GitUtils {
                         .setName(branchName)
                         .call();
             } catch (Exception e) {
-                logger.debug("Exception occurred. Cannot checkout; just continue");
-                e.printStackTrace();
+                logger.debug("Exception occurred. Cannot checkout; just continue: {}", e);
             }
         }
 
@@ -234,8 +232,7 @@ public class GitUtils {
             git = Git.open(f);
         }
         catch (IOException e) {
-            logger.debug("Cannot create a Git object");
-            e.printStackTrace();
+            logger.debug("Cannot create a Git object: {}", e);
             return null;
         }
 

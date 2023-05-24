@@ -153,8 +153,7 @@ public class AzDoPipeline implements Pipeline {
                     properties.getTargetProject());
         }
         catch (Exception e) {
-            logger.debug("Exception occurred. Cannot clone repository to local");
-            e.printStackTrace();
+            logger.debug("Exception occurred. Cannot clone repository to local: {}", e);
             return;
         }
 
@@ -176,8 +175,7 @@ public class AzDoPipeline implements Pipeline {
             Utils.copyAll(properties.getSourcePath(), properties.getTargetPath(), properties.getTargetExludeList());
         }
         catch (Exception e) {
-            logger.debug("Exception occurred.Cannot copy local files to target");
-            e.printStackTrace();
+            logger.debug("Exception occurred.Cannot copy local files to target: {}", e);
         }
 
         // Repositories in the resources section of the yaml pipeline are copied to the Azure DevOps

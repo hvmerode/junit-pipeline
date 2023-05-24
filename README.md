@@ -407,7 +407,7 @@ The startPipeline method has a few representations:
 * _startPipeline(String branchName, List<Hook> hooks)_ - Starts the pipeline with a given branch but
   before the pipeline starts, the list with 'hooks' is executed.
 * _startPipeline(String branchName, List<Hook> hooks, boolean dryRun)_ - Performs all actions but does not start the 
-  pipeline in Azure DevOps; Use this boolean to minimize the exexution time (A free Azure DevOps account includes 
+  pipeline in Azure DevOps.  Use this boolean to minimize the exexution time (A free Azure DevOps account includes 
   1 Microsoft-hosted job with 1,800 minutes per month).
 
 The result of a pipeline run is retrieved using:

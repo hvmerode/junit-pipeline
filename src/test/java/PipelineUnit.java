@@ -55,7 +55,7 @@ public class PipelineUnit {
             pipeline.startPipeline();
         }
         catch (IOException e) {
-            e.printStackTrace();
+            logger.debug("Exception occurred after the pipeline was started: {}", e);
         }
         Assertions.assertEquals (RunResult.Result.succeeded, pipeline.getRunResult().result);
     }
@@ -76,7 +76,7 @@ public class PipelineUnit {
             pipeline.startPipeline("myFeature");
         }
         catch (IOException e) {
-            e.printStackTrace();
+            logger.debug("Exception occurred: {}", e);
         }
         Assertions.assertEquals (RunResult.Result.succeeded, pipeline.getRunResult().result);
     }
@@ -108,7 +108,7 @@ public class PipelineUnit {
             pipeline.startPipeline("myFeature", hookList, true);
         }
         catch (IOException e) {
-            e.printStackTrace();
+            logger.debug("Exception occurred: {}", e);
         }
         Assertions.assertEquals (RunResult.Result.succeeded, pipeline.getRunResult().result);
     }

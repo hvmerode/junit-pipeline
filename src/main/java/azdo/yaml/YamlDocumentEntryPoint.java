@@ -220,7 +220,6 @@ public class YamlDocumentEntryPoint {
         }
         catch (IOException e) {
             logger.debug("Exception occurred while copying files from {}", source);
-            e.printStackTrace();
         }
     }
 
@@ -265,7 +264,6 @@ public class YamlDocumentEntryPoint {
                 Utils.copyAll(temp, source, "");
             } catch (Exception e) {
                 logger.debug("Cannot copy temp {} to source {}", temp, source);
-                e.printStackTrace();
             }
 
             // If the repo is cloned and copied, the .git directory should be deleted.

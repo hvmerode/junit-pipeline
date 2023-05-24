@@ -73,6 +73,7 @@ stages:
           vmImage: 'ubuntu-latest'
         steps:
           - template: test-template.yml@external
+          - template: test-template.yml@external2
           - script: |
               echo 'Job_2.Task_3: Sleep some seconds'
               sleep ${{ parameters.sleep }};

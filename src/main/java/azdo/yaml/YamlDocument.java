@@ -17,7 +17,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 /*
-    A YamlDocument represents one (1) YAML file; this is a pipeline file or a template file.
+    A YamlDocument represents one YAML file; this is a pipeline file or a template file.
+    In the case of a template file, the specialized Template class is used.
  */
 public class YamlDocument {
     private static Logger logger = LoggerFactory.getLogger(YamlDocument.class);
@@ -112,7 +113,11 @@ public class YamlDocument {
         logger.debug("==> Method: YamlDocument.dumpYaml");
 
         // Dump the updated yaml to target directory (with the same name as the original file in the source directory)
+        logger.debug("");
+        logger.debug("=================================================================");
         logger.debug("Dump the yamlMap of {} to {}", sourceInputFile, targetOutputFile);
+        logger.debug("=================================================================");
+
         final DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         options.setPrettyFlow(true);
@@ -122,7 +127,6 @@ public class YamlDocument {
         Utils.wait(1000);
 
         // Dump the templates
-        logger.debug("Dump the yamlMap of the templates");
         int index = 0;
         int size = templateList.size();
         Template template;
@@ -143,7 +147,6 @@ public class YamlDocument {
                                 String keyName,
                                 String keyValue,
                                 boolean continueSearching) {
-
         logger.debug("==> Method: YamlDocument.executeCommand");
 
         if (actionEnum == ActionEnum.replaceLiteral) {
@@ -185,6 +188,8 @@ public class YamlDocument {
                                          String keyName,
                                          String keyValue,
                                          boolean continueSearching) {
+        logger.debug("==> Method: YamlDocument.executeCommandTemplates");
+
         // Execute the command in the template files
         int index = 0;
         int size = templateList.size();
@@ -222,6 +227,16 @@ public class YamlDocument {
                                              boolean continueSearching) {
 
         logger.debug("==> Method: YamlDocument.findSectionAndExecuteCommand: ");
+        logger.debug("actionEnum: {}", actionEnum);
+        logger.debug("sectionName: {}", sectionName);
+        logger.debug("sectionValue: {}", sectionValue);
+        logger.debug("identifierName: {}", identifierName);
+        logger.debug("identifierValue: {}", identifierValue);
+        logger.debug("keyName: {}", keyName);
+        logger.debug("sectionFound: {}", sectionFound);
+        logger.debug("keyValue: {}", keyValue);
+        logger.debug("continueSearching: {}", continueSearching);
+
         if (section == null)
             return;
 
@@ -312,8 +327,17 @@ public class YamlDocument {
                                                   String keyValue,
                                                   boolean sectionFound,
                                                   boolean continueSearching) {
-
         logger.debug("==> Method: YamlDocument.findInnerSectionAndExecuteCommand: ");
+        logger.debug("actionEnum: {}", actionEnum);
+        logger.debug("sectionName: {}", sectionName);
+        logger.debug("sectionValue: {}", sectionValue);
+        logger.debug("identifierName: {}", identifierName);
+        logger.debug("identifierValue: {}", identifierValue);
+        logger.debug("keyName: {}", keyName);
+        logger.debug("sectionFound: {}", sectionFound);
+        logger.debug("keyValue: {}", keyValue);
+        logger.debug("continueSearching: {}", continueSearching);
+
         if (section == null)
             return;
 
@@ -351,6 +375,10 @@ public class YamlDocument {
      */
     public void replaceLiteral(String findLiteral, String replaceLiteral, boolean continueSearching) {
         logger.debug("==> Method: YamlDocument.replaceLiteral");
+        logger.debug("findLiteral: {}", findLiteral);
+        logger.debug("replaceLiteral: {}", replaceLiteral);
+        logger.debug("continueSearching: {}", continueSearching);
+
         Yaml yaml = new Yaml();
         String s = yaml.dump(yamlMap);
         if (continueSearching)
@@ -366,7 +394,6 @@ public class YamlDocument {
     private void replaceValue(Map.Entry<String, Object> section,
                               String keyName,
                               String keyValue) {
-
         logger.debug("==> Method: YamlDocument.replaceValue");
         logger.debug("keyName: {}", keyName);
         logger.debug("keyValue: {}", keyValue);
@@ -473,7 +500,6 @@ public class YamlDocument {
        It does not disable the stage, job, or step but completely removes it from the modified pipeline.
      */
     private void skipSection (Map.Entry<String, Object> section, String keyName, String value) {
-
         logger.debug("==> Method: YamlDocument.skipSection");
         logger.debug("key: {}", keyName);
         logger.debug("value: {}", value);
@@ -555,6 +581,10 @@ public class YamlDocument {
                               String targetBasePathExternal,
                               ArrayList<RepositoryResource> repositoryList) {
         logger.debug("==> Method: YamlDocument.getTemplates");
+        logger.debug("root: {}", root);
+        logger.debug("targetPath: {}", targetPath);
+        logger.debug("sourceBasePathExternal: {}", sourceBasePathExternal);
+        logger.debug("targetBasePathExternal: {}", targetBasePathExternal);
 
         // Inner could be null
         if (inner == null){
@@ -591,6 +621,10 @@ public class YamlDocument {
                               String targetBasePathExternal,
                               ArrayList<RepositoryResource> repositoryList) {
         logger.debug("==> Method: YamlDocument.getTemplates");
+        logger.debug("root: {}", root);
+        logger.debug("targetPath: {}", targetPath);
+        logger.debug("sourceBasePathExternal: {}", sourceBasePathExternal);
+        logger.debug("targetBasePathExternal: {}", targetBasePathExternal);
 
         // Inner could be null
         if (inner == null){

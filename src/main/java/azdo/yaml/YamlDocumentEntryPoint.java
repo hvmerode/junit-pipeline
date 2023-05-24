@@ -17,18 +17,30 @@ import java.util.ArrayList;
 import java.util.Map;
 
 /*
-   A YamlDocumentEntryPoint is the entry point of the main pipeline file.
+   A YamlDocumentEntryPoint is the entry point of the main pipeline YAML file.
+   YamlDocumentEntryPoint forms the point of contact between the pipeline - as represented by the AzDoPipeline class -
+   and the YamlDocument class that represents the main YAML pipeline file.
 */
 public class YamlDocumentEntryPoint {
     private static Logger logger = LoggerFactory.getLogger(YamlDocumentEntryPoint.class);
 
-    // Refers to the main pipeline file, which is the entrypoint of the pipeline
+    // Refers to the main pipeline file, which is the entrypoint of the pipeline.
     private YamlDocument mainYamlDocument;
+
+    // The location of the main repository - containing the main pipeline file - on the local filesystem.
+    // This location contains the manipulated pipeline and template files (from the same main repository).
     private String targetPath = "";
+
+    // the sourceBasePathExternal and targetBasePathExternal refer to the local filesystem, containing the
+    // source files of external repositories (defined in the resources section of the main pipeline file)
+    // and the target files (to which the manipulated template files are written).
     private String sourceBasePathExternal = "";
     private String targetBasePathExternal = "";
+
+    // List of repositories, defined in the resources section in the main pipeline file.
     ArrayList<RepositoryResource> repositoryList = null;
 
+    // Constructor
     public YamlDocumentEntryPoint (String targetPath,
                                    String sourceBasePathExternal,
                                    String targetBasePathExternal) {
@@ -38,7 +50,7 @@ public class YamlDocumentEntryPoint {
     }
 
     /*
-        Parses the yaml map of the main pipeline file and initializes the resources (external repositories)
+       Parses the yaml map of the main pipeline file and initializes the resources (external repositories)
      */
     @SuppressWarnings("java:S1192")
     public void initExternalResources (Map<String, Object> yamlMap, PropertyUtils properties) {
@@ -107,9 +119,9 @@ public class YamlDocumentEntryPoint {
     @SuppressWarnings("java:S1192")
     public Map<String, Object> read (String mainPipelineFile) {
         logger.debug("==> Method: YamlDocumentEntryPoint.read");
+        logger.debug("mainPipelineFile: {}", mainPipelineFile);
 
         // First read the main YAML file
-        logger.debug("Read the main YAML file " + mainPipelineFile);
         Path mainPipelinePath = Paths.get(mainPipelineFile);
         mainPipelinePath = mainPipelinePath.normalize();
         mainPipelineFile = mainPipelinePath.toString();
@@ -133,6 +145,8 @@ public class YamlDocumentEntryPoint {
                                           String azdoProjectApiVersion,
                                           String azdoGitApiRepositories) {
         logger.debug("==> Method: YamlDocumentEntryPoint.createRemoteRepositories");
+        logger.debug("organization: {}", organization);
+        logger.debug("project: {}", project);
 
         // Create the repository in the test project
         String path = repository.localBase + "/" + repository.name;
@@ -158,6 +172,7 @@ public class YamlDocumentEntryPoint {
         GitUtils.checkout(git, path, "master", !isRemote);
     }
 
+    // Commit and push the repository with the manipulated template files to the Azure DevOps test project.
     public void commitAndPushTemplates (String azdoUser, String azdoPat, ArrayList<String> commitPatternList) {
         logger.debug("==> Method: YamlDocumentEntryPoint.commitAndPushTemplates");
 
@@ -191,6 +206,8 @@ public class YamlDocumentEntryPoint {
         });
     }
 
+    // Copy all files in the external repositories (containing template files) from the source location to the target location.
+    // The source location has the same name as the repository,but with a "-source" prefix.
     private void copyAllSourceFiles (RepositoryResource repository, String excludeList) {
         logger.debug("==> Method: YamlDocumentEntryPoint.copyAllSourceFiles");
 
@@ -207,6 +224,9 @@ public class YamlDocumentEntryPoint {
         }
     }
 
+    // Clone the external repositories from their original remotes and copy them to a safe location on the filesystem.
+    // this - source - location forms is used to re-read the template files again. The relation with the original
+    // remote is gone (unmounted), by removing the .git directory
     private void cloneAndRenameExternalRepositories (RepositoryResource repository,
                                                      String azdoUser,
                                                      String azdoPat,
@@ -248,21 +268,18 @@ public class YamlDocumentEntryPoint {
                 e.printStackTrace();
             }
 
-            /*
-               If the repo is cloned and copied, the .git directory should be deleted
-               The reason is, that it is cloned from another repository, but the files must be pushed to the target Azure DevOps test project
-               The cloned repository still references the original repository
-             */
+            // If the repo is cloned and copied, the .git directory should be deleted.
             if (deleteGitDirectory)
                 Utils.deleteDirectory(source + "/.git");
 
-            // Delete the original local repository, because it is re-used by the createRemoteRepositories method
+            // Delete the original local repository, because it is re-used by the createRemoteRepositories method.
             Utils.deleteDirectory(temp);
     }
 
     // Get the repositories in the resources section from the main .yml file
     private ArrayList<RepositoryResource> getRepositoriesFromResources(Map<String, Object> map, String basePathExternal) {
         logger.debug("==> Method: YamlDocumentEntryPoint.getRepositoriesFromResources (first method signature)");
+        logger.debug("basePathExternal: {}", basePathExternal);
 
         ArrayList<RepositoryResource> repositoryResourceList = new ArrayList<>();
         getRepositoriesFromResources (map, repositoryResourceList, basePathExternal);
@@ -274,6 +291,7 @@ public class YamlDocumentEntryPoint {
                                                ArrayList<RepositoryResource> repositoryResourceList,
                                                String basePathExternal) {
         logger.debug("==> Method: YamlDocumentEntryPoint.getRepositoriesFromResources (second method signature)");
+        logger.debug("basePathExternal: {}", basePathExternal);
 
         RepositoryResource repositoryResource = new RepositoryResource();
 
@@ -343,6 +361,7 @@ public class YamlDocumentEntryPoint {
                                               ArrayList<RepositoryResource> repositoryResourceList,
                                               String basePathExternal) {
         logger.debug("==> Method: YamlDocumentEntryPoint.getRepositoriesFromResources (third method signature)");
+        logger.debug("basePathExternal: {}", basePathExternal);
 
         inner.forEach(entry -> {
             // If inner sections are found, go a level deeper
@@ -356,10 +375,8 @@ public class YamlDocumentEntryPoint {
     }
 
     /*
-       The manipulated yaml maps are saved onto the local file system. The location is a target location,
-       other than the original location of the pipeline file.
+       The manipulated yaml maps are saved onto the local file system. The location is a target location.
      */
-    //public void dumpYaml(String targetPath) throws IOException {
     public void dumpYaml() throws IOException {
         logger.debug("==> Method: YamlDocumentEntryPoint.dumpYaml");
 
@@ -376,6 +393,15 @@ public class YamlDocumentEntryPoint {
                                 String keyValue,
                                 boolean continueSearching) {
         logger.debug("==> Method: YamlDocumentEntryPoint.executeCommand");
+        logger.debug("actionEnum: {}", actionEnum);
+        logger.debug("sectionName: {}", sectionName);
+        logger.debug("sectionValue: {}", sectionValue);
+        logger.debug("identifierName: {}", identifierName);
+        logger.debug("identifierValue: {}", identifierValue);
+        logger.debug("keyName: {}", keyName);
+        logger.debug("keyValue: {}", keyValue);
+        logger.debug("continueSearching: {}", continueSearching);
+
         mainYamlDocument.executeCommand(actionEnum,
                 sectionName,
                 sectionValue,

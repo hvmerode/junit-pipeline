@@ -20,8 +20,14 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+/*
+   AzDoPipeline is used in JUnit tests; it acts as a Java representation of an Azure DeVOps pipeline.
+   It encapsulates classes that represents the Azure DevOps pipeline and template files (YAML).
+   All AzDoPipeline methods used by the JUnit tests are forwarded to the encapsulated objects.
+*/
 public class AzDoPipeline implements Pipeline {
     private static Logger logger = LoggerFactory.getLogger(AzDoPipeline.class);
+    private static String DEMARCATION = "==============================================================================";
     private PropertyUtils properties;
     private Git git = null;
     private CredentialsProvider credentialsProvider;
@@ -37,20 +43,29 @@ public class AzDoPipeline implements Pipeline {
     @SuppressWarnings("java:S1192")
     public AzDoPipeline(String propertyFile, String pipelineFile) {
         logger.debug("==> Object: AzDoPipeline");
-        logger.debug("");
-        logger.debug("=================================================================");
-        logger.debug("Start AzDoPipeline: Initializing repository and pipeline");
-        logger.debug("=================================================================");
+        logger.debug("propertyFile {}:", propertyFile);
+        logger.debug("pipelineFile {}:", pipelineFile);
 
+        logger.debug("");
+        logger.debug(DEMARCATION);
+        logger.debug("Start AzDoPipeline: Initializing repository and pipeline");
+        logger.debug(DEMARCATION);
+
+        // Read the properties file and create the entry point
         properties = new PropertyUtils(propertyFile);
         yamlDocumentEntryPoint = new YamlDocumentEntryPoint(properties.getTargetPath(),
                 properties.getSourceBasePathExternal(),
                 properties.getTargetBasePathExternal());
 
-        // Read the main pipeline file
+        // Read the main pipeline file; this is the YAML file used in the Azure DevOps pipeline (in the Azure DeVOps test project)
         yamlMap = yamlDocumentEntryPoint.read(pipelineFile);
 
-        // Initialize some stuff needed for external resources; this must only be done only once
+        // The external resources section in the main YAML file is parsed and a list of repositories are stored in
+        // the yamlDocumentEntryPoint. These repositories contain template YAML files, referred to in the pipeline.
+        // In addition, these repositories are cloned and the source files are stored locally
+        // (on the filesystem of the workstation). Because these repositories are also used in the Azure DevOps
+        // test project, they are pushed to to this project. Any link in the pipeline YAML file with the original
+        // repository location is removed.
         yamlDocumentEntryPoint.initExternalResources(yamlMap, properties);
 
         yamlFile = pipelineFile;
@@ -59,6 +74,9 @@ public class AzDoPipeline implements Pipeline {
                 properties.getAzdoPat());
 
         // If no repository exists, create a new repo in Azure DevOps. Otherwise, make use of the existing repository
+        // This concerns the repository containing the main YAML pipeline file.
+        // Similar to the repositories defined in the resources section of the main pipeline file, this repository
+        // is cloned from its original location and pushed to the Azure DevOps test project.
         repositoryId = AzDoUtils.createRepositoryIfNotExists (properties.getAzDoUser(),
                 properties.getAzdoPat(),
                 properties.getTargetPath(),
@@ -84,18 +102,19 @@ public class AzDoPipeline implements Pipeline {
                 repositoryId);
 
         logger.debug("");
-        logger.debug("=================================================================");
+        logger.debug(DEMARCATION);
         logger.debug("End AzDoPipeline: Initializing repository and pipeline");
-        logger.debug("=================================================================");
+        logger.debug(DEMARCATION);
         logger.debug("");
     }
 
-    /* After the yaml file has been manipulated and can be used to perform the unittest, the startPipeline method is called.
-       This method creates a new yaml file - used for the unittest and with the manipulated settings - in the local
-       target repository. The local repository is committed and pushed to the remote repository. After all files are pushed,
-       the pipeline in Azure Devops (that makes use of the manipulated yaml file) is called by means of an API.
+    /* After the YAML files have been manipulated in the JUnit tests, the startPipeline method is called.
+       This method creates a new (target) YAML file, containing the manipulated settings in the local
+       target repository (associated with the Azure DeVOps test project).
+       The local repositories are committed and pushed to the remote repositories in the Azure DeVOps test project.
+       After all files are pushed, the pipeline in Azure Devops is called by means of an API.
        The last step is to reload the original yaml file, so it can be used for the next test.
-       This method has different flavors, that allow to pass hooks or perform a dryrun (not starting the pipeline).
+       The startPipeline() method has different flavors, that allow to pass hooks or perform a dryrun (not starting the pipeline).
      */
     public void startPipeline() throws IOException {
         startPipeline("master", null, false);
@@ -114,6 +133,13 @@ public class AzDoPipeline implements Pipeline {
     }
     public void startPipeline(String branchName, List<Hook> hooks, boolean dryRun) throws IOException {
         logger.debug("==> Method: AzDoPipeline.startPipeline");
+        logger.debug("branchName {}:", branchName);
+        logger.debug("dryRun {}:", dryRun);
+
+        logger.debug("");
+        logger.debug(DEMARCATION);
+        logger.debug("Start pipeline {} for branch {}", properties.getRepositoryName(), branchName);
+        logger.debug(DEMARCATION);
 
         // Clone the repository to local if not done earlier
         // Keep the reference to the git object
@@ -132,13 +158,13 @@ public class AzDoPipeline implements Pipeline {
             return;
         }
 
-        // If git object is invalid after the clone (for some reason), recreate it again
+        // If git object is invalid after the clone or if the repository was not cloned, recreate the git object again
         if (git == null) {
             logger.debug("Recreate git object");
             git = GitUtils.createGit(properties.getTargetPath());
         }
 
-        // Check whether there is a remote branch
+        // Check whether there is a remote branch; pipelines can be started using files from any branch
         boolean isRemote = GitUtils.containsBranch(git, branchName);
 
         // Perform the checkout
@@ -163,7 +189,10 @@ public class AzDoPipeline implements Pipeline {
         // Execute the commands in the bundle are executed
         commandBundle.execute(this);
 
-        //  Save the manipulated main YAML (incl. template files) to the target location
+        // Save the manipulated main YAML (incl. template files) to the target location.
+        // The manipulated YAML files are stored in memory (in a YamlDocument or Template object). The target
+        // location is a local repository, with a remote repository residing in the Azure DevOps test project.
+        // Manipulation is performed in JUnit tests by calling the pipeline actions (overrideVariable, overrideLiteral. etc...)
         yamlDocumentEntryPoint.dumpYaml();
 
         // Perform all (pre)hooks
@@ -175,7 +204,7 @@ public class AzDoPipeline implements Pipeline {
             }
         }
 
-        // Push the local (main) repo to remote
+        // Push the local (main) repo to remote; this is the repository containing the main pipeline YAML file.
         GitUtils.commitAndPush(git,
                 properties.getAzDoUser(),
                 properties.getAzdoPat(),
@@ -184,14 +213,15 @@ public class AzDoPipeline implements Pipeline {
         if (git != null)
             git.close();
 
-        // Push all external repositories to remote.
-        // The repositoryList is maintained by the YamlDocumentEntryPoint, so delegate the commit- and push to YamlDocumentEntryPoint
+        // Commit and Push all external repositories to remote.
+        // The repositoryList is maintained by the YamlDocumentEntryPoint, so delegate to the YamlDocumentEntryPoint.
+        // This results in pushing all manipulated template files to the remote repositories in the Azure DevOps test project.
         yamlDocumentEntryPoint.commitAndPushTemplates (properties.getAzDoUser(),
                 properties.getAzdoPat(),
                 properties.getCommitPatternList());
 
-        // Call Azure Devops API to start the pipeline and retrieve the result
-        // If dryRun is true, do not start the pipeline
+        // Call Azure Devops API to start the pipeline and retrieve the result.
+        // If dryRun is true, the pipeline does not start.
         if (!dryRun) {
             AzDoUtils.callPipelineRunApi (properties.getAzDoUser(),
                     properties.getAzdoPat(),
@@ -214,7 +244,13 @@ public class AzDoPipeline implements Pipeline {
         }
 
         // Re-read the original pipeline for the next test (for a clean start of the next test)
+        // The manipulated, in-memory stored YAML files are refreshed with the content of the original (source) files.
         yamlMap = yamlDocumentEntryPoint.read(yamlFile);
+
+        logger.debug("");
+        logger.debug(DEMARCATION);
+        logger.debug("End pipeline {} for branch {}", properties.getRepositoryName(), branchName);
+        logger.debug(DEMARCATION);
     }
 
     /* Replace the value of a variable in the 'variables' section. Two constructions are possible:
@@ -241,7 +277,6 @@ public class AzDoPipeline implements Pipeline {
        This method does not replace variables defined in a Library.
      */
     public void overrideVariable(String variableName, String value) {
-
         logger.debug("==> Method: AzDoPipeline.overrideVariable: " + variableName + " with " + value);
 
         // Replace according to construction 1

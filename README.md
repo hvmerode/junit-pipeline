@@ -1,17 +1,16 @@
 # junit-pipeline
-Perform unit/integration testing for pipelines (Azure DevOps)
+Perform unit/integration test for pipelines (Azure DevOps)
 
 ## Overview ##
 This library is used to perform unit- and integration tests on (YAML) pipelines. At the moment, only Azure DevOps pipelines are supported.
-Development is still in an experimental phase and it may cause some issues when used but in general, it works.
 
 <br>
 
 ### How it works ###
 ***
 Assume that your application and pipeline code reside in a repository called "__myrepo__" in the Azure DevOps project "__MyApp__".
-Development on the (Java) app is straightforward. With the ___junit-pipeline___ libray, it becomes also possible to test the
-pipeline code (in this case an Azure DevOps pipeline in YAML).
+Development on the (Java) app is straightforward. \
+With the ___junit-pipeline___ libray, it becomes possible to test the YAML pipeline code.
 Testing the pipeline code is performed by JUnit tests. In these tests, the original pipeline code is manipulated according to your needs.
 Assume, you want to mock your deployment task to prevent something to be deployed to your AWS account. With a few lines, the "AWSShellScript@1"
 task is replaced by a script. Example code:
@@ -24,37 +23,40 @@ To test the manipulated script, execute it like this:
 ```java
 pipeline.startPipeline();
 ```
-The ___junit-pipeline___ library connects with the Azure DevOps test project (in the figure below this is project "__UnitTest__"), and pushes the code to your test 
-repository ("__myrepo-test__", for example), after which the pipeline is executed. If the repository and/or the pipeline in the test project("__UnitTest__") 
+The ___junit-pipeline___ library connects with the Azure DevOps test project (in the figure below, represented by "__UnitTest__"), and pushes the code to your test 
+repository ("__myrepo-test__", in this example), after which the pipeline is executed. If the repository and/or the pipeline in the test project
 do not exists, they are automatically created for you. The illustration below shows how it works in concept.
 
 ![no picture](https://github.com/hvmerode/junit-pipeline/blob/main/junit_pipeline.png "how it works")
 
 In addition, all external repositories defined in the pipeline are cloned and also pushed to the Azure DevOps test project. External repositories are
-used to define pipeline templates that can be included in your pipeline. The ___junit-pipeline___ library takes care that the main pipeline refers to the 
-cloned copies of these repositories instead to the original ones, so external templated can also be manipulated. 
+used to define pipeline templates that are included in your pipeline, but reside in a different repository than the pipeline itself.
+The ___junit-pipeline___ library takes care that the main pipeline refers to the 
+cloned copies of these repositories instead to the original ones, so external templates can also be manipulated. 
 <br>
 
 ### How to start
 ***
 #### Create Azure DevOps test project ####
-Unfortunately, testing a pipeline within the IDE is not possible. You need an Azure DevOps unit test project for this. Create a project
+Unfortunately, testing a pipeline within the IDE is not possible. You need an Azure DevOps unit test project for this. Create a test project
 using this link: [Create a project in Azure DevOps](https://learn.microsoft.com/en-us/azure/devops/organizations/projects/create-project)
 
 <br>
 
 #### Configure junit_pipeline.properties ####
-This file is located in src/main/resources. It contains the properties for your project. Some important properties:
-* __source.path__ - Contains the location (directory) of the main local Git repository on your computer. This is the repository in which you develop your 
-  app and the associated pipeline. In the example case, this repository is called "myrepo".
-* __target.path__ - Contains the location (directory) of the local Git repository used to test the pipeline. You are not actively working in this repo.\
+The properties file is located in src/main/resources. It contains the properties for your project. Some important properties:
+* __source.path__ - Contains the location (directory) of the main Git repository on your computer. This is the repository in which you develop your 
+  app and the associated pipeline. In the example case, this repository is called "__myrepo__".
+* __target.path__ - Contains the location (directory) of the Git repository used to test the pipeline. You are not actively working in this repo.
   It is only used for the __junit-pipeline__ framework to communicate with the Azure DevOps test project. Before you start, this directory must not exist.
 * __target.organization__ - The name of your organization as defined in Azure DevOps. This will be included in the Azure DevOps API calls.
-* __target.project__ - The name of the test project. In the example case it is called "UnitTest".
-* __source.base.path.external__ - The local directory of the external repositories on the workstation, defined in the __repositories__ section of the main pipeline YAML file.
+* __target.project__ - The name of the test project. In the example case it is called "__UnitTest__".
+* __source.base.path.external__ - The local directory of the external repositories on the workstation, defined in the "__repositories__" section of the main pipeline YAML file.
+  You are not actively working in this repo.
 * __target.base.path.external__ - The location (local directory) containing external Git repositories; this location
   is used communicate with the Azure DevOps test project.
-* __target.repository.name__ - The name of the repository used in the Git repository used for testing. Best is to keep the source and target repository names identical.
+* __target.repository.name__ - The name of the repository used in the Git repository used for testing. Example: If a repository is used 
+  with the name "__myrepo__", the __target.repository.name__ used for testing the pipeline can be called "__myrepo-test__".
 * __azdo.user__ - User used in the Azure DevOps API calls. Can be the default name 'UserWithToken'.
 * __azdo.pat__ - The PAT (Personal Access Token) used in the Azure DevOps API calls.\
   See [Use personal access tokens](https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops&tabs=Windows) how to create a PAT.\
@@ -92,7 +94,7 @@ Example:
 
 ### How to use it ##
 ***
-This repository already contains a sample unittest file called _PipelineUnit_. We take this file as an example.  
+This repository already contains a sample unit test file called _PipelineUnit.java_. We take this file as an example.  
 
 <br>
 
@@ -125,7 +127,7 @@ pipeline.commandBundle.overrideLiteral("templates/steps/template-steps_1.yml", "
 
 #### Hooks ####
 Before the pipeline code is pushed to the Azure DevOps unit test project, and started, it is possible to execute
-custom code. This code is provided as a list of 'hooks'. The unit test file _PipelineUnit.java_ shows an example, _test 3_.\
+custom code. This code is provided as a list of 'hooks'. The unit test file _PipelineUnit.java_ shows an example; _test 3_.\
 This repository also contains a few custom hooks:
 * _DeleteJUnitPipelineDependency_ - Deletes the __junit-pipeline__ dependency from the _pom.xml_, before it is pushed to the
 Azure DevOps unit test project.
@@ -404,7 +406,10 @@ The startPipeline method has a few representations:
 * _startPipeline(String branchName)_ - Starts the pipeline with a given branch, for example a _feature_ branch.
 * _startPipeline(String branchName, List<Hook> hooks)_ - Starts the pipeline with a given branch but
   before the pipeline starts, the list with 'hooks' is executed.
-  
+* _startPipeline(String branchName, List<Hook> hooks, boolean dryRun)_ - Performs all actions but does not start the 
+  pipeline in Azure DevOps; Use this boolean to minimize the exexution time (A free Azure DevOps account includes 
+  1 Microsoft-hosted job with 1,800 minutes per month).
+
 The result of a pipeline run is retrieved using:
 ```java
 pipeline.getRunResult()
@@ -416,17 +421,23 @@ pipeline.getRunResult()
 ***
 * Tests cannot be executed in parallel. Because the target repository is updated for each test, the next
   test must wait before the previous one is completed.
-* Templates in external repositories (GitHub and other Azure DevOps projects) are taken into account, but:
+* Templates residing in external repositories (GitHub and other Azure DevOps projects) are taken into account, but:
   * The _ref_ parameter is not (yet) implemented, so only the master branch of an external repository can be used.
-  * If an external repository is updated, the update is not automatically included in the test; first delete the corresponding
-    local directories to create a new clone of the external repository. For example, if an external repository is called 
-    'Templates', 2 local directories are created, 'Templates' and 'Templates-source'; delete them both.
-* If the pipeline makes use of a resource in the test project for the first time, it needs manual approval first; for example, a variable group or an Environment.
-* If unknown service connections are used or the updated pipeline code is not valid YAML anymore, the AzDo API returns an HTTP status code 400.
+  * If a remote external repository is updated, the update is not automatically included in the test; first delete the 
+    corresponding local directory to create a new clone of the external repository. For example, 
+    if an external repository is called 'Templates', 2 local directories are created, 'Templates' and 'Templates-source'; 
+    delete them both.
+* If the pipeline makes use of a resource in the test project for the first time, it needs manual approval first; for example, 
+  a variable group or an Environment.
+* If unknown service connections are used or the updated pipeline code is not valid YAML anymore, the AzDo API returns an 
+  HTTP status code 400. TODO: Check whether the outputed pipeline is valid yaml.
+* The junit-pipeline code itself does not have any unit tests yet. 
 * No methods yet to add, update or remove conditions in stages or jobs. Use the _overrideLiteral_ method, if possible.
 * No methods yet to replace a step with another step. 
 * There is no option (yet) to continue on error for all steps.
 
+### Known bugs ##
+* Probably there are some, but they need to be detected first.
 
 * ~~Only YAML templates in the same repository are taken into account. Templates in other repositories (identified with a @ behind the template name) are ignored.\
   TODO: Option to incorporate other resources (repositories) and manipulate the templates in these repos also.~~

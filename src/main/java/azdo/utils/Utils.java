@@ -30,6 +30,7 @@ public class Utils {
     public static void makeDirectory (String directoryName) {
         // Create the target path if not existing
         logger.debug("==> Method: Utils.makeDirectory");
+        logger.debug("directoryName: {}", directoryName);
 
         try {
             if (isLinux()) {
@@ -48,6 +49,7 @@ public class Utils {
 
     public static boolean deleteDirectory(String directoryName) {
         logger.debug("==> Method: Utils.deleteDirectory");
+        logger.debug("directoryName: {}", directoryName);
 
         String dir = fixPath(directoryName);
 
@@ -69,6 +71,7 @@ public class Utils {
 
     public static boolean createDirectory(String directoryName) {
         logger.debug("==> Method: Utils.createDirectory");
+        logger.debug("directoryName: {}", directoryName);
 
         String dir = fixPath(directoryName);
         try {
@@ -96,6 +99,9 @@ public class Utils {
                                String target,
                                String excludeList) throws IOException{
         logger.debug("==> Method: AzDoUtils.copyAll");
+        logger.debug("source: {}", source);
+        logger.debug("target: {}", target);
+        logger.debug("excludeList: {}", excludeList);
 
         source = fixPath(source);
         target = fixPath(target);

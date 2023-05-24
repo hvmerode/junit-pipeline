@@ -8,9 +8,8 @@ import java.util.ArrayList;
 import java.util.Map;
 
 /*
-    A Template is a specific YamlDocument
-    It can be invoked by the main pipeline or invoked by other templates in the same repository
-    A template can also invoke templates in other repositories
+    A Template is a specific YamlDocument and represents a template YAML file.
+    A template can be invoked by the main pipeline or invoked by other templates in the same or in other repositories.
  */
 public class Template extends YamlDocument{
     public enum InternalOrExternalTemplate {
@@ -71,6 +70,7 @@ public class Template extends YamlDocument{
 
     private RepositoryResource findRepositoryResourceByAlias (ArrayList<RepositoryResource> repositoryList, String alias) {
         logger.debug("==> Method: Template.findRepositoryResourceByAlias");
+        logger.debug("alias: {}", alias);
 
         if (repositoryList == null) {
             logger.debug("repositoryList is null. Cannot find an alias");

@@ -109,6 +109,8 @@ public class GitUtils {
     public static boolean containsBranch (Git git,
                                           String branchName) {
         logger.debug("==> Method: GitUtils.containsBranch");
+        logger.debug("branchName: {}", branchName);
+
         if (git == null) {
             logger.debug("Cannot continue; git is null");
             return false;
@@ -192,6 +194,9 @@ public class GitUtils {
                                 String branchName,
                                 boolean createRemoteBranch) {
         logger.debug("==> Method: GitUtils.checkout");
+        logger.debug("targetPath: {}", targetPath);
+        logger.debug("branchName: {}", branchName);
+        logger.debug("createRemoteBranch: {}", createRemoteBranch);
 
         // If git object is invalid recreate it again
         if (git == null) {
@@ -219,6 +224,7 @@ public class GitUtils {
 
     public static Git createGit (String targetPath) {
         logger.debug("==> Method: GitUtils.createGit");
+        logger.debug("targetPath: {}", targetPath);
 
         // If git object is invalid recreate it again
         try {

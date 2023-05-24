@@ -48,8 +48,9 @@ public class AzDoUtils {
 
         try {
             logger.debug("==> Method: AzDoUtils.callApi");
-            logger.debug("HTTP Endpoint: {}", http);
-            logger.debug("JSON: {}", json);
+            logger.debug("http: {}", http);
+            logger.debug("httpMethod: {}", httpMethod);
+            logger.debug("json: {}", json);
 
             String encodedString = Base64.getEncoder().encodeToString((azdoUser + ":" + azdoPat).getBytes());
             HttpClient client = HttpClient.newHttpClient();
@@ -280,6 +281,8 @@ public class AzDoUtils {
                                            String pipelineId,
                                            String branchName) {
         logger.debug("==> Method: AzDoUtils.callPipelineRunApi");
+        logger.debug("pipelineId: {}", pipelineId);
+        logger.debug("branchName: {}", branchName);
 
         if (pipelineId == null)
         {
@@ -331,6 +334,9 @@ public class AzDoUtils {
                                            String azdoBuildApiVersion,
                                            String pipelineId) {
         logger.debug("==> Method: AzDoUtils.callRunResult");
+        logger.debug("pollFrequency: {}", pollFrequency);
+        logger.debug("timeout: {}", timeout);
+        logger.debug("pipelineId: {}", pipelineId);
 
         RunResult runResult = new RunResult();
         Instant start = Instant.now();
@@ -414,6 +420,9 @@ public class AzDoUtils {
                                                 String azdoPipelinesApiVersion,
                                                 String repositoryId) {
         logger.debug("==> Method: AzDoUtils.callCreatePipelineApi");
+        logger.debug("path: {}", path);
+        logger.debug("repositoryName: {}", repositoryName);
+        logger.debug("repositoryId: {}", repositoryId);
 
         String pipelineId = null;
         String http = azdoEndpoint +
@@ -458,6 +467,7 @@ public class AzDoUtils {
                                              String azdoPipelinesApi,
                                              String azdoPipelinesApiVersion) {
         logger.debug("==> Method: AzDoUtils.callGetPipelineApi");
+        logger.debug("pipelineName: {}", pipelineName);
 
         String pipelineId = null;
         String http = azdoEndpoint +
@@ -494,6 +504,8 @@ public class AzDoUtils {
                                             String repositoryName,
                                             String projectId) {
         logger.debug("==> Method: AzDoUtils.callCreateRepoApi");
+        logger.debug("repositoryName: {}", repositoryName);
+        logger.debug("projectId: {}", projectId);
 
         String repositoryId = null;
         String http = azdoEndpoint +
@@ -533,6 +545,8 @@ public class AzDoUtils {
                                             String repositoryId,
                                             String branchName) {
         logger.debug("==> Method: AzDoUtils.callUpdateRepoApi");
+        logger.debug("repositoryId: {}", repositoryId);
+        logger.debug("branchName: {}", branchName);
 
         String http = azdoEndpoint +
                 azdoGitApi +
@@ -570,6 +584,7 @@ public class AzDoUtils {
                                                String azdoGitApiVersion,
                                                String azdoGitApiRepositories) {
         logger.debug("==> Method: AzDoUtils.callGetRepositoryApi");
+        logger.debug("repositoryName: {}", repositoryName);
 
         String repositoryId = null;
         String http = azdoEndpoint +
@@ -600,6 +615,9 @@ public class AzDoUtils {
      */
     public static String iterateYamlArrayListAndFindElement (ArrayList<Object> arr, String key, String compareKey, String val) {
         logger.debug("==> Method: AzDoUtils.iterateYamlArrayListAndFindElement");
+        logger.debug("key: {}", key);
+        logger.debug("compareKey: {}", compareKey);
+        logger.debug("val: {}", val);
 
         String compareValue = null;
         if (arr != null) {

@@ -3,6 +3,11 @@
 
 package azdo.junit;
 
+/*
+   The Pipeline interface defines the actions on a pipeline. These actions are called by JUnit tests. In principle,
+   multiple implementations of a pipeline are possible (Azure DeVOps or GitHub pipelines), but currently only
+   Azure DevOps pipelines are supported.
+*/
 public interface Pipeline {
     void overrideVariable(String variableName, String value);
     void overrideParameterDefault(String parameterName, String value);

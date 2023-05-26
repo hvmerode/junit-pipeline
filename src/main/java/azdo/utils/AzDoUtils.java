@@ -287,8 +287,8 @@ public class AzDoUtils {
             logger.debug("Nothing to run; the pipelineId is null");
         } else {
             String sourceBranch = branchName;
-            if (branchName == null || branchName.equals("main") || branchName.equals("master") || branchName.equals(""))
-                sourceBranch = "master";
+            if (branchName == null || branchName.equals("main") || branchName.equals(GitUtils.BRANCH_MASTER) || branchName.equals(""))
+                sourceBranch = GitUtils.BRANCH_MASTER;
 
             String http = azdoEndpoint +
                     azdoBuildApi +

@@ -246,17 +246,7 @@ public class YamlDocument {
             logger.debug("Key = {}, Value = {}, Class = {}", entry.getKey(), entry.getValue(), entry.getValue().getClass());
 
             // Check whether the section is found. If true, the next actions are performed on this section
-            if (sectionName.equals(entry.getKey())) {
-                if (sectionValue == null || sectionValue.isEmpty()) {
-                    logger.debug("Found section <{}>", sectionName);
-                    sectionFound = true;
-                } else {
-                    if (sectionValue.equals(entry.getValue())) {
-                        logger.debug("Found section <{}>", sectionValue);
-                        sectionFound = true;
-                    }
-                }
-            }
+            sectionFound = isSectionFound (entry, sectionName, sectionValue);
 
             // If section is found, try to execute the actionEnum
             if (sectionFound) {
@@ -311,6 +301,26 @@ public class YamlDocument {
                         continueSearching);
             }
         }
+    }
+
+    /*
+       Check whether a section is present in a map entry
+     */
+    private boolean isSectionFound (Map.Entry<String, Object> entry,
+                                    String sectionName,
+                                    String sectionValue) {
+        if (sectionName.equals(entry.getKey())) {
+            if (sectionValue == null || sectionValue.isEmpty()) {
+                logger.debug("Found section <{}>", sectionName);
+                return true;
+            } else {
+                if (sectionValue.equals(entry.getValue())) {
+                    logger.debug("Found section <{}>", sectionValue);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /*

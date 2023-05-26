@@ -413,6 +413,8 @@ pipeline.getRunResult()
 
 ### Known limitations ##
 ***
+* Not tested on Linux; some filesystem methods in Utils may not work properly
+* Output variables of a step cannot be checked/asserted; TODO: Add option to validate output variables of a certain step
 * Tests cannot be executed in parallel. Because the target repository is updated for each test, the next
   test must wait before the previous one is completed.
 * Templates residing in external repositories (GitHub and other Azure DevOps projects) are taken into account, but:

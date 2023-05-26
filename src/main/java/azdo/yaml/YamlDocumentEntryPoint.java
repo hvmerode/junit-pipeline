@@ -168,8 +168,8 @@ public class YamlDocumentEntryPoint {
 
         // Checkout main branch
         Git git = GitUtils.createGit (path);
-        boolean isRemote = GitUtils.containsBranch(git, "master");
-        GitUtils.checkout(git, path, "master", !isRemote);
+        boolean isRemote = GitUtils.containsBranch(git, GitUtils.BRANCH_MASTER);
+        GitUtils.checkout(git, path, GitUtils.BRANCH_MASTER, !isRemote);
     }
 
     // Commit and push the repository with the manipulated template files to the Azure DevOps test project.

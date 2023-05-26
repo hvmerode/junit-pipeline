@@ -16,6 +16,7 @@ import java.util.List;
 public class GitUtils {
     private static Logger logger = LoggerFactory.getLogger(GitUtils.class);
     private static Git git = null;
+    public static final String BRANCH_MASTER = "master";
 
     // Clone an Azure DevOps repo to local and initialize
     public static Git cloneAzdoToLocal (String targetPath,

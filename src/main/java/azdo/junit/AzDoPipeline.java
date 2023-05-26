@@ -27,7 +27,18 @@ import java.util.Map;
 */
 public class AzDoPipeline implements Pipeline {
     private static Logger logger = LoggerFactory.getLogger(AzDoPipeline.class);
-    private static String DEMARCATION = "==============================================================================";
+    private static final String SECTION_PARAMETERS = "parameters";
+    private static final String SECTION_STAGE = "stage";
+    private static final String SECTION_STAGES = "stages";
+    private static final String SECTION_JOB = "job";
+    private static final String SECTION_JOBS = "jobs";
+    private static final String SECTION_STEP = "step";
+    private static final String SECTION_TASK = "task";
+    private static final String SECTION_SCRIPT = "script";
+    private static final String SECTION_STEPS = "steps";
+    private static final String IDENTIFIER_NAME = "name";
+
+    private static final String DEMARCATION = "==============================================================================";
     private PropertyUtils properties;
     private Git git = null;
     private CredentialsProvider credentialsProvider;
@@ -117,10 +128,10 @@ public class AzDoPipeline implements Pipeline {
        The startPipeline() method has different flavors, that allow to pass hooks or perform a dryrun (not starting the pipeline).
      */
     public void startPipeline() throws IOException {
-        startPipeline("master", null, false);
+        startPipeline(GitUtils.BRANCH_MASTER, null, false);
     }
     public void startPipeline(boolean dryRun) throws IOException {
-        startPipeline("master", null, dryRun);
+        startPipeline(GitUtils.BRANCH_MASTER, null, dryRun);
     }
     public void startPipeline(String branchName) throws IOException {
         startPipeline(branchName, null, false);
@@ -291,7 +302,7 @@ public class AzDoPipeline implements Pipeline {
         yamlDocumentEntryPoint.executeCommand(ActionEnum.replaceValue,
                 "variables",
                 "",
-                "name",
+                IDENTIFIER_NAME,
                 variableName,
                 "value",
                 value,
@@ -323,9 +334,9 @@ public class AzDoPipeline implements Pipeline {
     public void overrideParameterDefault(String parameterName, String value) {
         logger.debug("==> Method: AzDoPipeline.overrideParameterDefault {} with {}", parameterName, value);
         yamlDocumentEntryPoint.executeCommand(ActionEnum.replaceValue,
-                "parameters",
+                SECTION_PARAMETERS,
                 "",
-                "name",
+                IDENTIFIER_NAME,
                 parameterName,
                 "default",
                 value,
@@ -425,11 +436,11 @@ public class AzDoPipeline implements Pipeline {
     public void skipStage(String stageName) {
         logger.debug("==> Method: AzDoPipeline.skipStage: {}", stageName);
         yamlDocumentEntryPoint.executeCommand(ActionEnum.delete,
-                "stages",
+                SECTION_STAGES,
                 "",
                 "",
                 "",
-                "stage",
+                SECTION_STAGE,
                 stageName,
                 false);
     }
@@ -449,11 +460,11 @@ public class AzDoPipeline implements Pipeline {
     public void skipJob(String jobName) {
         logger.debug("==> Method: AzDoPipeline.skipJob: {}", jobName);
         yamlDocumentEntryPoint.executeCommand(ActionEnum.delete,
-                "jobs",
+                SECTION_JOBS,
                 "",
                 "",
                 "",
-                "job",
+                SECTION_JOB,
                 jobName,
                 false);
     }
@@ -485,19 +496,19 @@ public class AzDoPipeline implements Pipeline {
     public void skipStep(String stepName) {
         logger.debug("==> Method: AzDoPipeline.skipStep: {}", stepName);
         yamlDocumentEntryPoint.executeCommand(ActionEnum.delete,
-                "steps",
+                SECTION_STEPS,
                 "",
                 "",
                 "",
-                "step",
+                SECTION_STEP,
                 stepName,
                 false);
         yamlDocumentEntryPoint.executeCommand(ActionEnum.delete,
-                "steps",
+                SECTION_STEPS,
                 "",
                 "",
                 "",
-                "task",
+                SECTION_TASK,
                 stepName,
                 false);
     }
@@ -508,7 +519,7 @@ public class AzDoPipeline implements Pipeline {
     public void mockStep(String stepValue, String inlineScript){
         logger.debug("==> Method: AzDoPipeline.mockStep: {}", stepValue);
         yamlDocumentEntryPoint.executeCommand(ActionEnum.mock,
-                "steps",
+                SECTION_STEPS,
                 "",
                 "",
                 "",

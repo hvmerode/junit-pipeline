@@ -3,8 +3,7 @@ Perform unit/integration test for pipelines (Azure DevOps)
 
 ## Overview ##
 This library is used to perform unit- and integration tests on (YAML) pipelines. At the moment, only Azure DevOps pipelines are supported.
-
-<br>
+<br></br>
 
 ### How it works ###
 ***
@@ -32,16 +31,15 @@ do not exists, they are automatically created for you. The illustration below sh
 In addition, all external repositories defined in the pipeline are cloned and also pushed to the Azure DevOps test project. External repositories are
 used to define pipeline templates that are included in your pipeline, but reside in a different repository than the pipeline itself.
 The ___junit-pipeline___ library takes care that the main pipeline refers to the 
-cloned copies of these repositories instead to the original ones, so external templates can also be manipulated. 
-<br>
+cloned copies of these repositories instead to the original ones, so external templates can also be manipulated.
+<br></br>
 
 ### How to start
 ***
 #### Create Azure DevOps test project ####
 Unfortunately, testing a pipeline within the IDE is not possible. You need an Azure DevOps unit test project for this. Create a test project
 using this link: [Create a project in Azure DevOps](https://learn.microsoft.com/en-us/azure/devops/organizations/projects/create-project)
-
-<br>
+<br></br>
 
 #### Configure junit_pipeline.properties ####
 The properties file is located in src/main/resources. It contains the properties for your project. Some important properties:
@@ -78,8 +76,7 @@ The properties file is located in src/main/resources. It contains the properties
 * __project.api.version__ - Version of the Azure DevOps Project API; only change if it is really needed (e.g., if a new version of the API is released).
 > The property file is stored in the _resources_ folder.
 
-<br>
-
+<br></br>
 #### Update pom.xml ####
 After the properties file has been created, the __junit-pipeline__ library must be added to the _pom.xml_ of your project.
 Example:
@@ -90,13 +87,12 @@ Example:
   <version>1.0.0</version>
 </dependency>
 ```
-<br>
 
+<br></br>
 ### How to use it ##
 ***
 This repository already contains a sample unit test file called _PipelineUnit.java_. We take this file as an example.  
-
-<br>
+<br></br>
 
 #### Create  ___AzDoPipeline___ object ####
 Pipeline unit tests are defined in a unit test Java class. Before tests are executed, a new ___AzDoPipeline___ Java object must
@@ -111,8 +107,7 @@ in the repository. The __junit-pipeline__ frameworks takes these templates into 
 > Note, that templates in other repositories (identified with an @ behind the template name) are used just as-is. 
 > The __junit-pipeline__ framework leaves these templates untouched.
 
-<br>
-
+<br></br>
 #### Define a command bundle ####
 It is perfectly possible to repeat a certain command in every unit test, but if you, for example, want to
 execute a certain task in all tests, it is also possible to add it to a command bundle. You only define it
@@ -123,8 +118,7 @@ _template-mock.yml_ for every unit test.
 pipeline.commandBundle.overrideLiteral("templates/steps/template-steps_1.yml", "templates/steps/template-mock.yml");
 ```
 
-<br>
-
+<br></br>
 #### Hooks ####
 Before the pipeline code is pushed to the Azure DevOps unit test project, and started, it is possible to execute
 custom code. This code is provided as a list of 'hooks'. The unit test file _PipelineUnit.java_ shows an example; _test 3_.\
@@ -133,14 +127,12 @@ This repository also contains a few custom hooks:
 Azure DevOps unit test project.
 * _DeleteTargetFile_ - Deletes a single file before it is pushed to the Azure DevOps unit test project. It can be used to
 remove the file that includes the pipeline unit tests, if you don't want it to run it in the test project.
-
-<br>
+<br></br>
 
 #### Define unit test ####
 The __junit-pipeline__ library contains a set of commands - used in unit tests - to manipulate the pipeline. Let's 
 go over them:
-
-<br>
+<br></br>
 
 ```java
 public void mockStep(String stepValue, String inlineScript)
@@ -185,6 +177,7 @@ results in:
 </pre>
 
 </i>
+<br>
 <br>
 
 ***
@@ -300,6 +293,7 @@ This results in:
 </pre>
 </i>
 <br>
+<br>
 
 ***
 ```java
@@ -334,6 +328,7 @@ results in:
   - 4
 </pre>
 </i>
+<br>
 <br>
 
 ***
@@ -414,8 +409,7 @@ The result of a pipeline run is retrieved using:
 ```java
 pipeline.getRunResult()
 ```
-<br>
-
+<br></br>
 
 ### Known limitations ##
 ***
@@ -435,10 +429,15 @@ pipeline.getRunResult()
 * No methods yet to add, update or remove conditions in stages or jobs. Use the _overrideLiteral_ method, if possible.
 * No methods yet to replace a step with another step. 
 * There is no option (yet) to continue on error for all steps.
+<br></br>
 
 ### Known bugs ##
+***
 * Probably there are some, but they need to be detected first.
+<br></br>
 
+### Solved ##
+***
 * ~~Only YAML templates in the same repository are taken into account. Templates in other repositories (identified with a @ behind the template name) are ignored.\
   TODO: Option to incorporate other resources (repositories) and manipulate the templates in these repos also.~~
 * ~~Copying files from the main local repo to the test local repo involves exclusion of files, using an exclusion list. This list is currently hardcoded\
@@ -450,5 +449,6 @@ because cloning/checkout is not possible somehow~~
 * ~~The updated pipeline code is pushed to the _default branch_ in the test project (master); pushing to other branches is not possible.~~
 * ~~The project id of the Azure DevOps test project must be configured manually and is not (yet) derived automatically.~~
 
+<br></br>
 Copyright (c) Henry van Merode.\
 Licensed under the MIT License.

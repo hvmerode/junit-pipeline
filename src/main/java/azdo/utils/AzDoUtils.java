@@ -27,8 +27,8 @@ public class AzDoUtils {
     private static final String TWO_TAB = "\t\t";
     private static final String THREE_TAB = "\t\t\t";
     private static final String APPLICATION_JSON = "application/json";
-    private static final String RESPONSE_IS = "Response is: ";
-    private static final String REPOSITORY_ID_IS = "Repository id is: ";
+    private static final String RESPONSE_IS = "Response is: {}";
+    private static final String REPOSITORY_ID_IS = "Repository id is: {}";
     private static final String JSON_ELEMENT_VALUE = "value";
     private static final String JSON_ELEMENT_NAME = "name";
     private static final String JSON_ELEMENT_ID = "id";
@@ -38,11 +38,11 @@ public class AzDoUtils {
     /* Perform an Azure DevOps API call. This is a generic method to call an Azure DeVOps API. The endpoint,
        HTTP method and body (json) must be provided.
      */
-    public static HttpResponse callApi (String azdoUser,
-                                        String azdoPat,
-                                        String http,
-                                        AzDoUtils.HttpMethod httpMethod,
-                                        String json) {
+    public static HttpResponse<String> callApi (String azdoUser,
+                                                String azdoPat,
+                                                String http,
+                                                AzDoUtils.HttpMethod httpMethod,
+                                                String json) {
         if (test)
             return null;
 
@@ -73,12 +73,12 @@ public class AzDoUtils {
                         .build();
             }
 
-            HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             if (response == null) {
                 logger.debug("Response is null");
             }
             else {
-                logger.debug("AzDo API response: {}", response.toString());
+                logger.debug("AzDo API response: {}", response);
 
                 // check whether the HTTP status code is valid
                 if (response.statusCode() > 299) {
@@ -251,14 +251,14 @@ public class AzDoUtils {
                 "?" +
                 azdoProjectApiVersion;
 
-        HttpResponse response = callApi(azdoUser, azdoPat, http, AzDoUtils.HttpMethod.GET, null);
+        HttpResponse<String> response = callApi(azdoUser, azdoPat, http, AzDoUtils.HttpMethod.GET, null);
 
         // Get the project id from the response
         Yaml yaml = new Yaml();
         String name = null;
         if (response != null) {
             Map<String, Object> yamlMap = yaml.load(response.body().toString());
-            logger.debug(RESPONSE_IS + yamlMap.toString());
+            logger.debug(RESPONSE_IS, yamlMap.toString());
             if (yamlMap.get(JSON_ELEMENT_VALUE) instanceof ArrayList) {
                 ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get(JSON_ELEMENT_VALUE);
                 projectId = iterateYamlArrayListAndFindElement (arr, JSON_ELEMENT_NAME, project, JSON_ELEMENT_ID);
@@ -301,9 +301,9 @@ public class AzDoUtils {
                     TAB + DOUBLE_QUOTE + "sourceBranch" + DOUBLE_QUOTE + ": " + DOUBLE_QUOTE + sourceBranch + DOUBLE_QUOTE + NEXTLINE +
                     BRACKET_CLOSE;
 
-            HttpResponse response = callApi(azdoUser, azdoPat, http, AzDoUtils.HttpMethod.POST, json);
+            HttpResponse<String> response = callApi(azdoUser, azdoPat, http, AzDoUtils.HttpMethod.POST, json);
             if (response != null)
-                logger.debug(RESPONSE_IS + response.toString());
+                logger.debug(RESPONSE_IS, response);
         }
     }
 
@@ -338,7 +338,7 @@ public class AzDoUtils {
 
         RunResult runResult = new RunResult();
         Instant start = Instant.now();
-        HttpResponse response;
+        HttpResponse<String> response;
         Yaml yaml;
         String status = null;
         String result = null;
@@ -367,7 +367,7 @@ public class AzDoUtils {
             yaml = new Yaml();
             if (response != null) {
                 Map<String, Object> yamlMap = yaml.load(response.body().toString());
-                logger.debug(RESPONSE_IS + yamlMap.toString());
+                logger.debug(RESPONSE_IS, yamlMap.toString());
                 if (yamlMap.get(JSON_ELEMENT_VALUE) instanceof ArrayList) {
                     ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get(JSON_ELEMENT_VALUE);
                     if (arr != null) {
@@ -439,13 +439,13 @@ public class AzDoUtils {
                 TWO_TAB + BRACKET_CLOSE + NEXTLINE +
                 TAB + BRACKET_CLOSE + NEXTLINE +
                 BRACKET_CLOSE;
-        HttpResponse response = callApi(azdoUser, azdoPat, http, AzDoUtils.HttpMethod.POST, json);
+        HttpResponse<String> response = callApi(azdoUser, azdoPat, http, AzDoUtils.HttpMethod.POST, json);
 
         // Get the pipeline id from the response
         Yaml yaml = new Yaml();
         if (response != null) {
             Map<String, Object> yamlMap = yaml.load(response.body().toString());
-            logger.debug(RESPONSE_IS + yamlMap.toString());
+            logger.debug(RESPONSE_IS, yamlMap.toString());
             if (yamlMap.get(JSON_ELEMENT_ID) != null) {
                 pipelineId = yamlMap.get(JSON_ELEMENT_ID).toString();
                 logger.debug("Pipeline id is: {}", pipelineId);
@@ -473,14 +473,14 @@ public class AzDoUtils {
                 "?" +
                 azdoPipelinesApiVersion;
 
-        HttpResponse response = callApi(azdoUser, azdoPat, http, AzDoUtils.HttpMethod.GET, null);
+        HttpResponse<String> response = callApi(azdoUser, azdoPat, http, AzDoUtils.HttpMethod.GET, null);
 
         // Get the pipeline id from the response
         Yaml yaml = new Yaml();
         String name = null;
         if (response != null) {
             Map<String, Object> yamlMap = yaml.load(response.body().toString());
-            logger.debug(RESPONSE_IS + yamlMap.toString());
+            logger.debug(RESPONSE_IS, yamlMap.toString());
             if (yamlMap.get(JSON_ELEMENT_VALUE) instanceof ArrayList) {
                 ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get(JSON_ELEMENT_VALUE);
                 pipelineId = iterateYamlArrayListAndFindElement (arr, JSON_ELEMENT_NAME, pipelineName, JSON_ELEMENT_ID);
@@ -517,7 +517,7 @@ public class AzDoUtils {
                 TWO_TAB + DOUBLE_QUOTE + JSON_ELEMENT_ID + DQUOTE_SCOL_DQUOTE + projectId + DOUBLE_QUOTE + NEXTLINE +
                 TAB + BRACKET_CLOSE + NEXTLINE +
                 BRACKET_CLOSE;
-        HttpResponse response = callApi(azdoUser, azdoPat, http, HttpMethod.POST, json);
+        HttpResponse<String> response = callApi(azdoUser, azdoPat, http, HttpMethod.POST, json);
 
         if (response != null) {
             logger.debug("AzDo API response body: {}", response.body().toString());
@@ -526,7 +526,7 @@ public class AzDoUtils {
             Yaml yaml = new Yaml();
             Map<String, Object> yamlMap = yaml.load(response.body().toString());
             repositoryId = yamlMap.get(JSON_ELEMENT_ID).toString();
-            logger.debug(REPOSITORY_ID_IS + repositoryId);
+            logger.debug(REPOSITORY_ID_IS, repositoryId);
         }
 
         return repositoryId;
@@ -556,7 +556,7 @@ public class AzDoUtils {
         String json = BRACKET_OPEN_NEXTLINE +
                 TAB + DOUBLE_QUOTE + "defaultBranch" + DQUOTE_SCOL_DQUOTE + branchName + DOUBLE_QUOTE + NEXTLINE +
                 BRACKET_CLOSE;
-        HttpResponse response = callApi(azdoUser, azdoPat, http, HttpMethod.PATCH, json);
+        HttpResponse<String> response = callApi(azdoUser, azdoPat, http, HttpMethod.PATCH, json);
 
         if (response != null) {
             logger.debug("AzDo API response body: {}", response.body().toString());
@@ -565,7 +565,7 @@ public class AzDoUtils {
             Yaml yaml = new Yaml();
             Map<String, Object> yamlMap = yaml.load(response.body().toString());
             repositoryId = yamlMap.get(JSON_ELEMENT_ID).toString();
-            logger.debug(REPOSITORY_ID_IS + repositoryId);
+            logger.debug(REPOSITORY_ID_IS, repositoryId);
         }
 
         return repositoryId;
@@ -591,19 +591,19 @@ public class AzDoUtils {
                 "?" +
                 azdoGitApiVersion;
 
-        HttpResponse response = callApi(azdoUser, azdoPat, http, AzDoUtils.HttpMethod.GET, null);
+        HttpResponse<String> response = callApi(azdoUser, azdoPat, http, AzDoUtils.HttpMethod.GET, null);
 
         // Get the repository id from the response
         Yaml yaml = new Yaml();
         String name;
         if (response != null) {
             Map<String, Object> yamlMap = yaml.load(response.body().toString());
-            logger.debug(RESPONSE_IS + yamlMap.toString());
+            logger.debug(RESPONSE_IS, yamlMap.toString());
             if (yamlMap.get(JSON_ELEMENT_VALUE) instanceof ArrayList) {
                 ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get(JSON_ELEMENT_VALUE);
                 repositoryId = iterateYamlArrayListAndFindElement (arr, JSON_ELEMENT_NAME, repositoryName, JSON_ELEMENT_ID);
             }
-            logger.debug(REPOSITORY_ID_IS + repositoryId);
+            logger.debug(REPOSITORY_ID_IS, repositoryId);
         }
 
         return repositoryId;

@@ -69,6 +69,28 @@ public class Utils {
         return true;
     }
 
+    public static boolean deleteFile(String fileName) {
+        logger.debug("==> Method: Utils.deleteFile");
+        logger.debug("fileName: {}", fileName);
+
+        String dir = fixPath(fileName);
+
+        // This method makes use of Apache FileUtils, which can be used both on Linux and Windows
+        try {
+            logger.debug("Executing...");
+            FileUtils.delete(new File(fileName));
+            logger.debug("Deleted file: {}", fileName);
+            wait(1000);
+        }
+        catch (IOException e)
+        {
+            logger.debug("Cannot delete file {}; does it exist?", fileName);
+            return false;
+        }
+
+        return true;
+    }
+
     public static boolean createDirectory(String directoryName) {
         logger.debug("==> Method: Utils.createDirectory");
         logger.debug("directoryName: {}", directoryName);

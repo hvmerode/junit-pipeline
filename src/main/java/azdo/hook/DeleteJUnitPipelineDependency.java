@@ -5,6 +5,7 @@ package azdo.hook;
 
 import azdo.junit.AzDoPipeline;
 import azdo.utils.PomUtils;
+import azdo.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +21,8 @@ public class DeleteJUnitPipelineDependency extends Hook {
     private static Logger logger = LoggerFactory.getLogger(AzDoPipeline.class);
     public DeleteJUnitPipelineDependency (String pom, String groupId, String artifactId) {
         logger.debug("==> Class: DeleteJUnitPipelineDependency");
-        this.pom = pom;
+
+        this.pom = Utils.fixPath(pom);
         this.groupId = groupId;
         this.artifactId = artifactId;
     }

@@ -47,7 +47,7 @@ public class YamlDocument {
     public Map<String, Object> readYaml() {
         logger.debug("");
         logger.debug("-----------------------------------------------------------------");
-        logger.debug("Start YamlDocument.readYaml: " + sourceInputFile);
+        logger.debug("Start YamlDocument.readYaml: {}", sourceInputFile);
         logger.debug("-----------------------------------------------------------------");
 
         try {
@@ -62,7 +62,7 @@ public class YamlDocument {
         }
 
         logger.debug("-----------------------------------------------------------------");
-        logger.debug("End YamlDocument.readYaml " + sourceInputFile);
+        logger.debug("End YamlDocument.readYaml {}", sourceInputFile);
         logger.debug("-----------------------------------------------------------------");
         logger.debug("");
 
@@ -260,7 +260,6 @@ public class YamlDocument {
                 // Variable 'entry' contains the section segment
                 switch (actionEnum) {
                     case replaceValue:
-                        //logger.debug("Replace <" + keyName + "> with value <" + keyValue + ">");
                         if (identifierName.isEmpty() && identifierValue.isEmpty())
                             replaceValue(entry, keyName, keyValue);
                         else

@@ -286,7 +286,7 @@ public class AzDoPipeline implements Pipeline {
        This method does not replace variables defined in a Library.
      */
     public void overrideVariable(String variableName, String value) {
-        logger.debug("==> Method: AzDoPipeline.overrideVariable: " + variableName + " with " + value);
+        logger.debug("==> Method: AzDoPipeline.overrideVariable {} with {}", variableName, value);
 
         // Replace according to construction 1
         yamlDocumentEntryPoint.executeCommand(ActionEnum.replaceValue,

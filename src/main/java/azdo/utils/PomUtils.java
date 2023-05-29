@@ -79,6 +79,9 @@ public class PomUtils {
                                         String groupID,
                                         String artifactId) throws IOException, XmlPullParserException {
         logger.debug("==> Method: PomUtils.deleteDependency");
+        logger.debug("pomFile: {}", pomFile);
+        logger.debug("groupID: {}", groupID);
+        logger.debug("artifactId: {}", artifactId);
 
         // Create a MavenXpp3Reader to read the existing pom.xml file
         MavenXpp3Reader reader = new MavenXpp3Reader();
@@ -93,12 +96,14 @@ public class PomUtils {
         while (iterator.hasNext()) {
             dependency = iterator.next();
             if (artifactId.equals(dependency.getArtifactId()) && groupID.equals(dependency.getGroupId())) {
+                logger.debug("Found dependency; remove");
                 iterator.remove();
-                break;
             }
         }
 
         // Write the modified model to the pom.xml file
+        model.setDependencies(list);
+        logger.debug("Found dependency; remove");
         MavenXpp3Writer writer = new MavenXpp3Writer();
         writer.write(new java.io.FileWriter(pomFile), model);
     }

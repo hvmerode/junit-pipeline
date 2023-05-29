@@ -82,6 +82,33 @@ stages:
               testResultsFiles: '**/TEST-*.xml'
               publishJUnitResults: true
 
+          - script: |
+              cd ${SYSTEM_DEFAULTWORKINGDIRECTORY}
+              #ls -R
+              # Create jar file with sources
+              jar cf ./junit-pipeline-$(releaseVersion)-sources.jar ./*
+
+              # Create Java doc
+              mvn javadoc:jar
+
+              # Create md5 and sha1 hashes of library
+              md5=($(md5sum ./target/junit-pipeline-$(releaseVersion).jar))
+              echo $md5 > junit-pipeline-$(releaseVersion).jar.md5
+              sha1=($(sha1sum ./target/junit-pipeline-$(releaseVersion).jar))
+              echo $sha1 > junit-pipeline-$(releaseVersion).jar.sha1
+
+              # Create md5 and sha1 hashes of sources
+              md5=($(md5sum ./target/junit-pipeline-$(releaseVersion)-sources.jar))
+              echo $md5 > junit-pipeline-$(releaseVersion)-sources.jar.md5
+              sha1=($(sha1sum ./target/junit-pipeline-$(releaseVersion)-sources.jar))
+              echo $sha1 > junit-pipeline-$(releaseVersion)-sources.jar.sha1
+
+              # Create md5 and sha1 hashes of javadoc  
+              md5=($(md5sum ./target/junit-pipeline-$(releaseVersion)-javadoc.jar))
+              echo $md5 > junit-pipeline-$(releaseVersion)-javadoc.jar.md5
+              sha1=($(sha1sum ./target/junit-pipeline-$(releaseVersion)-javadoc.jar))
+              echo $sha1 > junit-pipeline-$(releaseVersion)-javadoc.jar.sha1
+
             # Tag the pipeline if a release artifact is build
           - script: |
               echo "##vso[build.addbuildtag]$(releaseVersion)"
@@ -92,7 +119,22 @@ stages:
           - task: CopyFiles@2
             displayName: 'Copy artifacts to the staging directory'
             inputs:
-              contents: '**/target/*.jar'
+              sourceFolder: $(System.DefaultWorkingDirectory)
+              contents: '/**/*.jar'
+              targetFolder: $(Build.ArtifactStagingDirectory)
+              flattenFolders: true
+          - task: CopyFiles@2
+            displayName: 'Copy artifacts to the staging directory'
+            inputs:
+              sourceFolder: $(System.DefaultWorkingDirectory)
+              contents: '/**/*.md5'
+              targetFolder: $(Build.ArtifactStagingDirectory)
+              flattenFolders: true
+          - task: CopyFiles@2
+            displayName: 'Copy artifacts to the staging directory'
+            inputs:
+              sourceFolder: $(System.DefaultWorkingDirectory)
+              contents: '/**/*.sha1'
               targetFolder: $(Build.ArtifactStagingDirectory)
               flattenFolders: true
           - task: PublishBuildArtifacts@1

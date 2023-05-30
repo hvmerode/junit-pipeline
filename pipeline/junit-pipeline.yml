@@ -105,11 +105,14 @@ stages:
               gpg --output private.pgp --armor --export-secret-key hvmerode@io.github.com
               keyIds=`gpg --list-packets public.pgp | awk '/keyid:/{ print $2 }'`
               firstKeyId=${keyIds%$'\n'*}
-              echo "Key-id: $firstKeyId"
+              echo "First key-id: $firstKeyId"
+              secondKeyId=${keyIds##*$'\n'}
+              echo "Second key-id: $secondKeyId"
 
-              echo "Export to keyserver"
+              echo "Export keyId and sub-KeyId to keyserver"
               gpg --export-secret-keys -o hvmerode@io.github.com
               gpg --send-keys --keyserver keyserver.ubuntu.com "$firstKeyId"
+              gpg --send-keys --keyserver keyserver.ubuntu.com "$secondKeyId"
 
               # Create jar file with sources
               jar cf junit-pipeline-$(version)-sources.jar ./*

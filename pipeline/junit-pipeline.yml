@@ -68,10 +68,9 @@ stages:
               key: 'maven | "$(Agent.OS)" | **/pom.xml'
               path: $(MAVEN_CACHE_FOLDER)
 
-            # Perform Maven 'feature build' if branch is not main
+            # Perform Maven build
           - task: Maven@3
-            condition: ne(variables['releaseBuild'], 'true')
-            displayName: 'Build artifacts (feature branch)'
+            displayName: 'Build artifacts'
             inputs:
               goals: 'clean package -U'
               javaHomeOption: 'JDKVersion'
@@ -83,10 +82,22 @@ stages:
               publishJUnitResults: true
 
           - script: |
+              # Create a keypair to sign the jars
+              sudo apt-get --assume-yes install gnupg
+              gpg --full-gen-key --batch <(echo "Key-Type: 1"; \
+                             echo "Key-Length: 4096"; \
+                             echo "Subkey-Type: 1"; \
+                             echo "Subkey-Length: 4096"; \
+                             echo "Expire-Date: 0"; \
+                             echo "Name-Real: Root Superuser"; \
+                             echo "Name-Email: hvmerode@io.github.com"; \
+                             echo "%no-protection"; )
+              gpg --list-secret-keys
+
               cd ${SYSTEM_DEFAULTWORKINGDIRECTORY}
-              #ls -R
+
               # Create jar file with sources
-              jar cf ./junit-pipeline-$(releaseVersion)-sources.jar ./*
+              jar cf ./target/junit-pipeline-$(releaseVersion)-sources.jar ./*
 
               # Create Java doc
               mvn javadoc:jar
@@ -108,6 +119,20 @@ stages:
               echo $md5 > junit-pipeline-$(releaseVersion)-javadoc.jar.md5
               sha1=($(sha1sum ./target/junit-pipeline-$(releaseVersion)-javadoc.jar))
               echo $sha1 > junit-pipeline-$(releaseVersion)-javadoc.jar.sha1
+              
+              # Create GnuPG signature
+              gpg -ab --no-tty ./target/junit-pipeline-$(releaseVersion).jar
+              gpg -ab --no-tty ./target/junit-pipeline-$(releaseVersion)-sources.jar
+              gpg -ab --no-tty ./target/junit-pipeline-$(releaseVersion)-javadoc.jar
+
+              # Create a java bundle
+              jar -cvf junit-pipeline-$(releaseVersion)-bundle.jar ./target/junit-pipeline-$(releaseVersion).jar \
+              ./target/junit-pipeline-$(releaseVersion).jar.asc \
+              ./target/junit-pipeline-$(releaseVersion)-sources.jar \
+              ./target/junit-pipeline-$(releaseVersion)-sources.jar.asc \
+              ./target/junit-pipeline-$(releaseVersion)-javadoc.jar \
+              ./target/junit-pipeline-$(releaseVersion)-javadoc.jar.asc
+            displayName: 'Generate artifacts needed for Maven central'
 
             # Tag the pipeline if a release artifact is build
           - script: |
@@ -137,11 +162,18 @@ stages:
               contents: '/**/*.sha1'
               targetFolder: $(Build.ArtifactStagingDirectory)
               flattenFolders: true
+          - task: CopyFiles@2
+            displayName: 'Copy artifacts to the staging directory'
+            inputs:
+              sourceFolder: $(System.DefaultWorkingDirectory)
+              contents: '/**/*.asc'
+              targetFolder: $(Build.ArtifactStagingDirectory)
+              flattenFolders: true
           - task: PublishBuildArtifacts@1
             displayName: 'Publish build artifacts'
             inputs:
               pathToPublish: $(Build.ArtifactStagingDirectory)
-              artifactName: myapp-artifacts
+              artifactName: artifacts
 
     #################################################################################################################
     # STAGE: Analyze code

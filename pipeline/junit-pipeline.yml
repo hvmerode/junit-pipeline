@@ -37,12 +37,6 @@ stages:
             displayName: 'Exit if the releaseBuild variable is not configured'
             condition: eq(variables['releaseBuild'], '')
 
-          - script: |
-              echo 'Variable releaseVersion is not configured'
-              exit 1
-            displayName: 'Exit if the releaseVersion variable is not configured'
-            condition: eq(variables['releaseVersion'], '')
-
     #################################################################################################################
     # STAGE: Execute build + Package artifact + Publish artifact
     # Performs Maven snapshot- and release build
@@ -82,6 +76,16 @@ stages:
               publishJUnitResults: true
 
           - script: |
+              cd ${SYSTEM_DEFAULTWORKINGDIRECTORY}
+
+              # Retrieve version from pom.xml
+              sudo apt-get install -y libxml2-utils
+              v=`xmllint --xpath '/*[local-name()="project"]/*[local-name()="version"]/text()' ./pom.xml`
+              echo "Version from pom.xml: $v"
+              echo "##vso[task.setvariable variable=version;]$v"
+            displayName: 'Derive version from pom.xml'
+
+          - script: |
               # Create a keypair to sign the jars
               sudo apt-get --assume-yes install gnupg
               gpg --full-gen-key --batch <(echo "Key-Type: 1"; \
@@ -97,46 +101,46 @@ stages:
               cd ${SYSTEM_DEFAULTWORKINGDIRECTORY}
 
               # Create jar file with sources
-              jar cf ./target/junit-pipeline-$(releaseVersion)-sources.jar ./*
+              jar cf ./target/junit-pipeline-$(version)-sources.jar ./*
 
               # Create Java doc
               mvn javadoc:jar
 
               # Create md5 and sha1 hashes of library
-              md5=($(md5sum ./target/junit-pipeline-$(releaseVersion).jar))
-              echo $md5 > junit-pipeline-$(releaseVersion).jar.md5
-              sha1=($(sha1sum ./target/junit-pipeline-$(releaseVersion).jar))
-              echo $sha1 > junit-pipeline-$(releaseVersion).jar.sha1
+              md5=($(md5sum ./target/junit-pipeline-$(version).jar))
+              echo $md5 > junit-pipeline-$(version).jar.md5
+              sha1=($(sha1sum ./target/junit-pipeline-$(version).jar))
+              echo $sha1 > junit-pipeline-$(version).jar.sha1
 
               # Create md5 and sha1 hashes of sources
-              md5=($(md5sum ./target/junit-pipeline-$(releaseVersion)-sources.jar))
-              echo $md5 > junit-pipeline-$(releaseVersion)-sources.jar.md5
-              sha1=($(sha1sum ./target/junit-pipeline-$(releaseVersion)-sources.jar))
-              echo $sha1 > junit-pipeline-$(releaseVersion)-sources.jar.sha1
+              md5=($(md5sum ./target/junit-pipeline-$(version)-sources.jar))
+              echo $md5 > junit-pipeline-$(version)-sources.jar.md5
+              sha1=($(sha1sum ./target/junit-pipeline-$(version)-sources.jar))
+              echo $sha1 > junit-pipeline-$(version)-sources.jar.sha1
 
               # Create md5 and sha1 hashes of javadoc  
-              md5=($(md5sum ./target/junit-pipeline-$(releaseVersion)-javadoc.jar))
-              echo $md5 > junit-pipeline-$(releaseVersion)-javadoc.jar.md5
-              sha1=($(sha1sum ./target/junit-pipeline-$(releaseVersion)-javadoc.jar))
-              echo $sha1 > junit-pipeline-$(releaseVersion)-javadoc.jar.sha1
+              md5=($(md5sum ./target/junit-pipeline-$(version)-javadoc.jar))
+              echo $md5 > junit-pipeline-$(version)-javadoc.jar.md5
+              sha1=($(sha1sum ./target/junit-pipeline-$(version)-javadoc.jar))
+              echo $sha1 > junit-pipeline-$(version)-javadoc.jar.sha1
               
               # Create GnuPG signature
-              gpg -ab --no-tty ./target/junit-pipeline-$(releaseVersion).jar
-              gpg -ab --no-tty ./target/junit-pipeline-$(releaseVersion)-sources.jar
-              gpg -ab --no-tty ./target/junit-pipeline-$(releaseVersion)-javadoc.jar
+              gpg -ab --no-tty ./target/junit-pipeline-$(version).jar
+              gpg -ab --no-tty ./target/junit-pipeline-$(version)-sources.jar
+              gpg -ab --no-tty ./target/junit-pipeline-$(version)-javadoc.jar
 
               # Create a java bundle
-              jar -cvf junit-pipeline-$(releaseVersion)-bundle.jar ./target/junit-pipeline-$(releaseVersion).jar \
-              ./target/junit-pipeline-$(releaseVersion).jar.asc \
-              ./target/junit-pipeline-$(releaseVersion)-sources.jar \
-              ./target/junit-pipeline-$(releaseVersion)-sources.jar.asc \
-              ./target/junit-pipeline-$(releaseVersion)-javadoc.jar \
-              ./target/junit-pipeline-$(releaseVersion)-javadoc.jar.asc
+              jar -cvf junit-pipeline-$(version)-bundle.jar ./target/junit-pipeline-$(version).jar \
+              ./target/junit-pipeline-$(version).jar.asc \
+              ./target/junit-pipeline-$(version)-sources.jar \
+              ./target/junit-pipeline-$(version)-sources.jar.asc \
+              ./target/junit-pipeline-$(version)-javadoc.jar \
+              ./target/junit-pipeline-$(version)-javadoc.jar.asc
             displayName: 'Generate artifacts needed for Maven central'
 
             # Tag the pipeline if a release artifact is build
           - script: |
-              echo "##vso[build.addbuildtag]$(releaseVersion)"
+              echo "##vso[build.addbuildtag]$(version)"
             condition: and(succeeded(), eq(variables['releaseBuild'], 'true'))
             displayName: 'Tag the pipeline with a version'
 
@@ -220,7 +224,7 @@ stages:
 
             # Perform Sonar Cloud check
           - task: Maven@3
-#            condition: ne(variables['Build.SourceBranchName'], 'main')
+            #            condition: ne(variables['Build.SourceBranchName'], 'main')
             displayName: 'Sonar Cloud build'
             inputs:
               goals: 'clean verify -U sonar:sonar -DskipTests'

@@ -106,7 +106,6 @@ stages:
 
               # Create jar file with sources
               jar cf junit-pipeline-$(version)-sources.jar ./*
-              mv ./target/junit-pipeline-$(version)-sources.jar junit-pipeline-$(version)-sources.jar
 
               # Create .pom file and copy other files to root
               cp ./pom.xml ./junit-pipeline-$(version).pom

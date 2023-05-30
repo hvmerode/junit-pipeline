@@ -100,6 +100,10 @@ stages:
 
               cd ${SYSTEM_DEFAULTWORKINGDIRECTORY}
 
+              # Export keys
+              gpg --output public.pgp --armor --export hvmerode@io.github.com
+              gpg --output private.pgp --armor --export-secret-key hvmerode@io.github.com
+
               # Create jar file with sources
               jar cf ./target/junit-pipeline-$(version)-sources.jar ./*
 
@@ -171,6 +175,13 @@ stages:
             inputs:
               sourceFolder: $(System.DefaultWorkingDirectory)
               contents: '/**/*.asc'
+              targetFolder: $(Build.ArtifactStagingDirectory)
+              flattenFolders: true
+          - task: CopyFiles@2
+            displayName: 'Copy artifacts to the staging directory'
+            inputs:
+              sourceFolder: $(System.DefaultWorkingDirectory)
+              contents: '/**/*.pgp'
               targetFolder: $(Build.ArtifactStagingDirectory)
               flattenFolders: true
           - task: PublishBuildArtifacts@1

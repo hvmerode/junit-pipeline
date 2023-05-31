@@ -103,43 +103,76 @@ stages:
               # Export keys
               gpg --output public.pgp --armor --export hvmerode@io.github.com
               gpg --output private.pgp --armor --export-secret-key hvmerode@io.github.com
+              keyIds=`gpg --list-packets public.pgp | awk '/keyid:/{ print $2 }'`
+              firstKeyId=${keyIds%$'\n'*}
+              echo "First key-id: $firstKeyId"
+              secondKeyId=${keyIds##*$'\n'}
+              echo "Second key-id: $secondKeyId"
+
+              echo "Export keyId and sub-KeyId to keyserver"
+              gpg --export-secret-keys -o hvmerode@io.github.com
+              gpg --send-keys --keyserver keyserver.ubuntu.com "$firstKeyId"
+              gpg --send-keys --keyserver keyserver.ubuntu.com "$secondKeyId"
 
               # Create jar file with sources
-              jar cf ./target/junit-pipeline-$(version)-sources.jar ./*
+              jar cf junit-pipeline-$(version)-sources.jar ./*
+
+              # Create .pom file and copy other files to root
+              cp ./pom.xml ./junit-pipeline-$(version).pom
+              mv ./target/junit-pipeline-$(version).jar junit-pipeline-$(version).jar
 
               # Create Java doc
               mvn javadoc:jar
+              mv ./target/junit-pipeline-$(version)-javadoc.jar junit-pipeline-$(version)-javadoc.jar
+
+              # Create md5 and sha1 hashes of pom file
+              md5=($(md5sum junit-pipeline-$(version).pom))
+              echo $md5 > junit-pipeline-$(version).pom.md5
+              sha1=($(sha1sum junit-pipeline-$(version).pom))
+              echo $sha1 > junit-pipeline-$(version).pom.sha1
 
               # Create md5 and sha1 hashes of library
-              md5=($(md5sum ./target/junit-pipeline-$(version).jar))
+              md5=($(md5sum junit-pipeline-$(version).jar))
               echo $md5 > junit-pipeline-$(version).jar.md5
-              sha1=($(sha1sum ./target/junit-pipeline-$(version).jar))
+              sha1=($(sha1sum junit-pipeline-$(version).jar))
               echo $sha1 > junit-pipeline-$(version).jar.sha1
 
               # Create md5 and sha1 hashes of sources
-              md5=($(md5sum ./target/junit-pipeline-$(version)-sources.jar))
+              md5=($(md5sum junit-pipeline-$(version)-sources.jar))
               echo $md5 > junit-pipeline-$(version)-sources.jar.md5
-              sha1=($(sha1sum ./target/junit-pipeline-$(version)-sources.jar))
+              sha1=($(sha1sum junit-pipeline-$(version)-sources.jar))
               echo $sha1 > junit-pipeline-$(version)-sources.jar.sha1
 
               # Create md5 and sha1 hashes of javadoc  
-              md5=($(md5sum ./target/junit-pipeline-$(version)-javadoc.jar))
+              md5=($(md5sum junit-pipeline-$(version)-javadoc.jar))
               echo $md5 > junit-pipeline-$(version)-javadoc.jar.md5
-              sha1=($(sha1sum ./target/junit-pipeline-$(version)-javadoc.jar))
+              sha1=($(sha1sum junit-pipeline-$(version)-javadoc.jar))
               echo $sha1 > junit-pipeline-$(version)-javadoc.jar.sha1
               
               # Create GnuPG signature
-              gpg -ab --no-tty ./target/junit-pipeline-$(version).jar
-              gpg -ab --no-tty ./target/junit-pipeline-$(version)-sources.jar
-              gpg -ab --no-tty ./target/junit-pipeline-$(version)-javadoc.jar
+              gpg -ab --no-tty junit-pipeline-$(version).pom
+              gpg -ab --no-tty junit-pipeline-$(version).jar
+              gpg -ab --no-tty junit-pipeline-$(version)-sources.jar
+              gpg -ab --no-tty junit-pipeline-$(version)-javadoc.jar
 
               # Create a java bundle
-              jar -cvf junit-pipeline-$(version)-bundle.jar ./target/junit-pipeline-$(version).jar \
-              ./target/junit-pipeline-$(version).jar.asc \
-              ./target/junit-pipeline-$(version)-sources.jar \
-              ./target/junit-pipeline-$(version)-sources.jar.asc \
-              ./target/junit-pipeline-$(version)-javadoc.jar \
-              ./target/junit-pipeline-$(version)-javadoc.jar.asc
+              jar -cvf junit-pipeline-$(version)-bundle.jar \
+              junit-pipeline-$(version).pom \
+              junit-pipeline-$(version).pom.md5 \
+              junit-pipeline-$(version).pom.sha1 \
+              junit-pipeline-$(version).pom.asc \
+              junit-pipeline-$(version).jar \
+              junit-pipeline-$(version).jar.md5 \
+              junit-pipeline-$(version).jar.sha1 \
+              junit-pipeline-$(version).jar.asc \
+              junit-pipeline-$(version)-sources.jar \
+              junit-pipeline-$(version)-sources.jar.md5 \
+              junit-pipeline-$(version)-sources.jar.sha1 \
+              junit-pipeline-$(version)-sources.jar.asc \
+              junit-pipeline-$(version)-javadoc.jar \
+              junit-pipeline-$(version)-javadoc.jar.md5 \
+              junit-pipeline-$(version)-javadoc.jar.sha1 \
+              junit-pipeline-$(version)-javadoc.jar.asc
             displayName: 'Generate artifacts needed for Maven central'
 
             # Tag the pipeline if a release artifact is build
@@ -153,35 +186,35 @@ stages:
             displayName: 'Copy artifacts to the staging directory'
             inputs:
               sourceFolder: $(System.DefaultWorkingDirectory)
-              contents: '/**/*.jar'
+              contents: '**/*.jar'
               targetFolder: $(Build.ArtifactStagingDirectory)
               flattenFolders: true
           - task: CopyFiles@2
             displayName: 'Copy artifacts to the staging directory'
             inputs:
               sourceFolder: $(System.DefaultWorkingDirectory)
-              contents: '/**/*.md5'
+              contents: '**/*.md5'
               targetFolder: $(Build.ArtifactStagingDirectory)
               flattenFolders: true
           - task: CopyFiles@2
             displayName: 'Copy artifacts to the staging directory'
             inputs:
               sourceFolder: $(System.DefaultWorkingDirectory)
-              contents: '/**/*.sha1'
+              contents: '**/*.sha1'
               targetFolder: $(Build.ArtifactStagingDirectory)
               flattenFolders: true
           - task: CopyFiles@2
             displayName: 'Copy artifacts to the staging directory'
             inputs:
               sourceFolder: $(System.DefaultWorkingDirectory)
-              contents: '/**/*.asc'
+              contents: '**/*.asc'
               targetFolder: $(Build.ArtifactStagingDirectory)
               flattenFolders: true
           - task: CopyFiles@2
             displayName: 'Copy artifacts to the staging directory'
             inputs:
               sourceFolder: $(System.DefaultWorkingDirectory)
-              contents: '/**/*.pgp'
+              contents: '**/*.pgp'
               targetFolder: $(Build.ArtifactStagingDirectory)
               flattenFolders: true
           - task: PublishBuildArtifacts@1

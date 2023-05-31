@@ -4,6 +4,32 @@
     <artifactId>junit-pipeline</artifactId>
     <version>1.0.0</version>
 
+    <name>junit-pipeline</name>
+    <description>Perform unit- and integration tests with Azure DevOps pipelines.</description>
+    <url>http://github.com/hvmerode/junit-pipeline</url>
+
+    <licenses>
+        <license>
+            <name>The MIT License</name>
+            <url>https://opensource.org/license/mit/</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Henry van Merode</name>
+            <email>a@b</email>
+            <organization>Amazon</organization>
+            <organizationUrl>https://www.amazon.com/Continuous-Integration-Delivery-Practical-Developing/dp/1484292278</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/hvmerode/junit-pipeline.git</connection>
+        <developerConnection>scm:git:ssh://github.com:hvmerode/junit-pipeline.git</developerConnection>
+        <url>http://github.com/hvmerode/junit-pipeline</url>
+    </scm>
+
     <build>
         <defaultGoal>install</defaultGoal>
         <plugins>

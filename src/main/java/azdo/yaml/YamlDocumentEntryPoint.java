@@ -215,12 +215,8 @@ public class YamlDocumentEntryPoint {
         String target = repository.localBase + "/" + repository.name;
         logger.debug("source: {}", source);
         logger.debug("target: {}", target);
-        try {
-            Utils.copyAll(source, target, excludeList);
-        }
-        catch (IOException e) {
-            logger.debug("Exception occurred while copying files from {}", source);
-        }
+
+        Utils.copyAll(source, target, excludeList);
     }
 
     // Clone the external repositories from their original remotes and copy them to a safe location on the filesystem.
@@ -260,11 +256,7 @@ public class YamlDocumentEntryPoint {
             }
 
             // Keep the cloned repository. It acts as a local source
-            try {
-                Utils.copyAll(temp, source, "");
-            } catch (Exception e) {
-                logger.debug("Cannot copy temp {} to source {}", temp, source);
-            }
+            Utils.copyAll(temp, source, "");
 
             // If the repo is cloned and copied, the .git directory should be deleted.
             if (deleteGitDirectory)

@@ -6,12 +6,14 @@ package azdo.utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.commons.io.*;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Utils {
     private static Logger logger = LoggerFactory.getLogger(Utils.class);
@@ -117,32 +119,55 @@ public class Utils {
         return true;
     }
 
-    public static void copyAll(String source,
-                               String target,
-                               String excludeList) throws IOException{
-        logger.debug("==> Method: AzDoUtils.copyAll");
+    public static void copyAll(String sourceDirectory, String destinationDirectory, String exclusionPattern)
+    {
+        try {
+            copy(new File(sourceDirectory), new File(destinationDirectory), exclusionPattern);
+            System.out.println("Directory copied successfully!");
+        } catch (IOException e) {
+            System.out.println("Failed to copy directory: " + e.getMessage());
+        }
+    }
+
+    private static void copy(File source, File target, String exclusionPattern) throws IOException {
+        logger.debug("==> Method: Utils.copyAll");
         logger.debug("source: {}", source);
         logger.debug("target: {}", target);
-        logger.debug("excludeList: {}", excludeList);
+        logger.debug("exclusionPattern: {}", exclusionPattern);
 
-        source = fixPath(source);
-        target = fixPath(target);
-        if(Utils.isLinux()){
-            logger.debug("Executing on Linux: cp {} {}", source, target);
-            // TODO: Exclude certain file types and directories
-            Runtime.getRuntime().exec("/bin/sh -c cp " + source + " " + target);
-        } else if(Utils.isWindows()) {
-            if (excludeList == null || excludeList.isEmpty()) {
-                logger.debug("Executing on Windows: xcopy {} {}  /E /H /C /I /Y ", source, target);
-                Runtime.getRuntime().exec("cmd.exe /c xcopy " + source + " " + target + " /E /H /C /I /Y ");
-            }
-            else {
-                logger.debug("Executing on Windows: xcopy {} {}  /E /H /C /I /Y /exclude:{}", source, target, target + EXCLUDEFILESLIST);
-                Runtime.getRuntime().exec("cmd.exe /c " + excludeList + " > " + target + EXCLUDEFILESLIST);
-                Runtime.getRuntime().exec("cmd.exe /c xcopy " + source + " " + target + " /E /H /C /I /Y /exclude:" + target + EXCLUDEFILESLIST);
-            }
-            Utils.wait(3000); // Time needed to unlock files in Windows
+        if (!source.isDirectory()) {
+            throw new IllegalArgumentException("Source must be a directory");
         }
+
+        if (!target.exists()) {
+            target.mkdirs();
+        }
+
+        File[] files = source.listFiles();
+        if (files == null) {
+            return;
+        }
+
+        Pattern pattern = Pattern.compile(exclusionPattern);
+        Matcher matcher;
+        for (File file : files) {
+            matcher = pattern.matcher(file.getName());
+            matcher.find();
+            if (matcher.matches()) {
+                continue; // Exclude directories matching the pattern
+            }
+
+            Path sourcePath = file.toPath();
+            Path destinationPath = new File(target, file.getName()).toPath();
+
+            if (file.isDirectory()) {
+                copy(file, new File(target, file.getName()), exclusionPattern);
+            } else {
+                Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
+            }
+        }
+        Utils.wait(200); // Time needed to unlock files in Windows
+        logger.debug("Copied source {} to target {}", source, target);
     }
 
     /*

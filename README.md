@@ -84,7 +84,7 @@ Example:
 <dependency>
   <groupId>io.github.hvmerode</groupId>
   <artifactId>junit-pipeline</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
 </dependency>
 ```
 
@@ -429,7 +429,8 @@ pipeline.getRunResult()
   HTTP status code 400. TODO: Check whether the outputed pipeline is valid yaml.
 * The junit-pipeline code itself does not have any unit tests yet. 
 * No methods yet to add, update or remove conditions in stages or jobs. Use the _overrideLiteral_ method, if possible.
-* No methods yet to replace a step with another step. 
+* No methods yet to replace a step with another step.
+* No method to replace a step with a template file (the template file could serve as a mock file)
 * There is no option (yet) to continue on error for all steps.
 <br></br>
 

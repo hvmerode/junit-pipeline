@@ -95,20 +95,7 @@ public class PropertyUtils {
             logger.debug("azdo.user: {}", azdoUser);
             azdoPat = properties.getProperty("azdo.pat");
             logger.debug("azdo.pat: {}", azdoPat);
-
-            // Run trough the target exclude list
-            targetExludeList = "(";
-            String excludeString = properties.getProperty("target.excludelist");
-            var excludes = excludeString.split(",");
-            int length = excludes.length;
-            for (int i = 0; i < length; i++)
-            {
-                targetExludeList += "echo ";
-                targetExludeList += excludes[i].trim();
-                if (i < length - 1)
-                    targetExludeList += "& ";
-            }
-            targetExludeList += ")";
+            targetExludeList = properties.getProperty("target.excludelist");
             logger.debug("target.excludelist: {}", targetExludeList);
 
             // Run trough the commit pattern and create a List

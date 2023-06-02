@@ -11,8 +11,6 @@ import org.eclipse.jgit.api.Git;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -28,6 +26,11 @@ public class YamlDocumentEntryPoint {
     private YamlDocument mainYamlDocument;
 
     // The location of the main repository - containing the main pipeline file - on the local filesystem.
+    // This location contains the original (source) pipeline and template files (from the same main repository).
+    private String sourcePath = "";
+
+
+    // The location of the main repository - containing the main pipeline file - on the local filesystem.
     // This location contains the manipulated pipeline and template files (from the same main repository).
     private String targetPath = "";
 
@@ -41,9 +44,11 @@ public class YamlDocumentEntryPoint {
     ArrayList<RepositoryResource> repositoryList = null;
 
     // Constructor
-    public YamlDocumentEntryPoint (String targetPath,
+    public YamlDocumentEntryPoint (String sourcePath,
+                                   String targetPath,
                                    String sourceBasePathExternal,
                                    String targetBasePathExternal) {
+        this.sourcePath = sourcePath;
         this.targetPath = targetPath;
         this.sourceBasePathExternal = sourceBasePathExternal;
         this.targetBasePathExternal = targetBasePathExternal;
@@ -106,6 +111,7 @@ public class YamlDocumentEntryPoint {
 
         // Read all templates
         mainYamlDocument.readTemplates(
+                sourcePath,
                 targetPath,
                 sourceBasePathExternal,
                 targetBasePathExternal,
@@ -122,10 +128,10 @@ public class YamlDocumentEntryPoint {
         logger.debug("mainPipelineFile: {}", mainPipelineFile);
 
         // First read the main YAML file
-        Path mainPipelinePath = Paths.get(mainPipelineFile);
-        mainPipelinePath = mainPipelinePath.normalize();
-        mainPipelineFile = mainPipelinePath.toString();
-        mainYamlDocument = new YamlDocument(mainPipelineFile, targetPath);
+        //Path mainPipelinePath = Paths.get(mainPipelineFile);
+        //mainPipelinePath = mainPipelinePath.normalize();
+        //mainPipelineFile = mainPipelinePath.toString();
+        mainYamlDocument = new YamlDocument(mainPipelineFile, sourcePath, targetPath);
         Map<String, Object> yamlMap = mainYamlDocument.readYaml();
 
         return yamlMap;
@@ -271,6 +277,11 @@ public class YamlDocumentEntryPoint {
         logger.debug("==> Method: YamlDocumentEntryPoint.getRepositoriesFromResources (first method signature)");
         logger.debug("basePathExternal: {}", basePathExternal);
 
+        if (map == null) {
+            logger.debug("map is null");
+            return null;
+        }
+
         ArrayList<RepositoryResource> repositoryResourceList = new ArrayList<>();
         getRepositoriesFromResources (map, repositoryResourceList, basePathExternal);
         return repositoryResourceList;
@@ -317,10 +328,13 @@ public class YamlDocumentEntryPoint {
                     repositoryResource.type = entry.getValue().toString();
                 }
                 if ("name".equals(entry.getKey())) {
-                    String name  = entry.getValue().toString();
-                    String[] parts = name.split("/");
-                    String project = parts[0];
-                    name = parts[1];
+                    String name = entry.getValue().toString();
+                    String project = "";
+                    if (name.contains("/")) {
+                        String[] parts = name.split("/");
+                        project = parts[0];
+                        name = parts[1];
+                    }
 
                     repositoryResource.name = name;
                     repositoryResource.project = project;
@@ -353,7 +367,17 @@ public class YamlDocumentEntryPoint {
         logger.debug("==> Method: YamlDocumentEntryPoint.getRepositoriesFromResources (third method signature)");
         logger.debug("basePathExternal: {}", basePathExternal);
 
+        if (inner == null) {
+            logger.debug("inner is null");
+            return;
+        }
+
         inner.forEach(entry -> {
+            if (entry == null) {
+                logger.debug("entry is null");
+                return;
+            }
+
             // If inner sections are found, go a level deeper
             if (entry instanceof Map) {
                 getRepositoriesFromResources((Map<String, Object>)entry, repositoryResourceList, basePathExternal);

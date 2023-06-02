@@ -38,7 +38,7 @@ public class GitUtils {
         //Utils.deleteDirectory(targetPath);
 
         // Create the target path if not existing
-        Utils.makeDirectory(targetPath);
+        Utils.createDirectory(targetPath);
 
         // Create the credentials provider
         CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(azdoUser, azdoPat);
@@ -82,7 +82,7 @@ public class GitUtils {
         //Utils.deleteDirectory(targetPath);
 
         // Create the target path if not existing
-        Utils.makeDirectory(targetPath);
+        Utils.createDirectory(targetPath);
 
         // Create the uri
         String baseUrl = "https://github.com";
@@ -185,7 +185,7 @@ public class GitUtils {
         }
 
         catch (Exception e) {
-            logger.debug("Exception pushing to repo: {}", e);
+            logger.debug("Exception pushing to repo: {}", e.getMessage());
         }
     }
 
@@ -214,7 +214,7 @@ public class GitUtils {
                         .setName(branchName)
                         .call();
             } catch (Exception e) {
-                logger.debug("Exception occurred. Cannot checkout; just continue: {}", e);
+                logger.debug("Exception occurred. Cannot checkout; just continue: {}", e.getMessage());
             }
         }
 
@@ -233,7 +233,7 @@ public class GitUtils {
             git = Git.open(f);
         }
         catch (IOException e) {
-            logger.debug("Cannot create a Git object: {}", e);
+            logger.debug("Cannot create a Git object: {}", e.getMessage());
             return null;
         }
 

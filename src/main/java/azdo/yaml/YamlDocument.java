@@ -23,20 +23,37 @@ import java.util.regex.Pattern;
 public class YamlDocument {
     private static Logger logger = LoggerFactory.getLogger(YamlDocument.class);
     private Map<String, Object> yamlMap; // Map of the pipeline/template yaml file.
-    private ArrayList<Template> templateList = new ArrayList<>();; // Contains an array with templates included in this YamlDocument.
+    private ArrayList<Template> templateList = new ArrayList<>(); // Contains an array with templates referred in the yaml file associated with this YamlDocument.
+    protected String rootInputFile; // The main yaml document, including the root path within the repository
+    protected String sourcePath; // The path of the repository that contains the original main yaml document.
     protected String targetPath; // The path of the repository that contains the main yaml document.
     protected String sourceInputFile; // The source yaml filename associated with this YamlDocument, including the path in the repository.
     protected String targetOutputFile; // The target filename used to dump the manipulated yaml.
+
+    // If this YamlDocument is a template, it may be associated with an alias; this is the name defined in the resources > repositories
+    // section of the pipeline
+    protected String repositoryAlias = "";
+
 
     // Default constructor
     public YamlDocument() {}
 
     // Constructor
-    public YamlDocument(String sourceInputFile, String targetPath) {
+    public YamlDocument(String rootInputFile,
+                        String sourcePath,
+                        String targetPath) {
+        logger.debug("==> Class YamlDocument");
+        logger.debug("rootInputFile: {}", rootInputFile);
+        logger.debug("sourcePath: {}", sourcePath);
+        logger.debug("targetPath: {}", targetPath);
+
+        this.rootInputFile = rootInputFile;
         this.targetPath = targetPath;
-        this.sourceInputFile = sourceInputFile;
-        targetOutputFile = targetPath + "/" + sourceInputFile;
+        sourceInputFile = sourcePath + "/" + rootInputFile;
+        sourceInputFile = Utils.fixPath(sourceInputFile);
+        targetOutputFile = targetPath + "/" + rootInputFile;
         targetOutputFile = Utils.fixPath(targetOutputFile);
+        logger.debug("targetOutputFile: {}", targetOutputFile);
     }
 
     /*
@@ -71,21 +88,31 @@ public class YamlDocument {
 
     // For each template file found in this yaml, a Template object is created and added to the list.
     // This means that each YamlDocument - which is associated with a yaml file - has its own list of Template objects.
-    public void readTemplates(String targetPath,
+    public void readTemplates(String sourcePath,
+                              String targetPath,
                               String sourceBasePathExternal,
                               String targetBasePathExternal,
                               ArrayList<RepositoryResource> repositoryList){
         logger.debug("==> Method: YamlDocument.readTemplates");
+        logger.debug("sourcePath: {}", sourcePath);
         logger.debug("targetPath: {}", targetPath);
         logger.debug("sourceBasePathExternal: {}", sourceBasePathExternal);
-        logger.debug("targetBasePathExternal {}", targetBasePathExternal);
+        logger.debug("targetBasePathExternal: {}", targetBasePathExternal);
+        logger.debug("rootInputFile: {}", rootInputFile);
 
         // The root represents the root path of the pipeline
-        Path pathMain = Paths.get(sourceInputFile);
-        String root = pathMain.getParent().toString() + "/";
+        Path pathMain = Paths.get(rootInputFile);
+        Path pathRoot = pathMain.getParent();
+        String root = "";
+        if (pathRoot != null) {
+            // Get the root of the rootInputFile
+            root = pathRoot.toString() + "/";
+        }
+        logger.debug("root: {}", root);
 
         getTemplates(yamlMap,
                 root,
+                sourcePath,
                 targetPath,
                 sourceBasePathExternal,
                 targetBasePathExternal,
@@ -98,7 +125,8 @@ public class YamlDocument {
             template.readYaml();
 
             // Templates can contain other templates, so recursively read them
-            template.readTemplates(targetPath,
+            template.readTemplates(sourcePath,
+                    targetPath,
                     sourceBasePathExternal,
                     targetBasePathExternal,
                     repositoryList);
@@ -113,10 +141,10 @@ public class YamlDocument {
         logger.debug("==> Method: YamlDocument.dumpYaml");
 
         // Dump the updated yaml to target directory (with the same name as the original file in the source directory)
-        logger.debug("");
         logger.debug("=================================================================");
         logger.debug("Dump the yamlMap of {} to {}", sourceInputFile, targetOutputFile);
         logger.debug("=================================================================");
+        logger.debug("");
 
         final DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
@@ -585,12 +613,14 @@ public class YamlDocument {
      */
     private void getTemplates(Map<String, Object> inner,
                               String root,
+                              String sourcePath,
                               String targetPath,
                               String sourceBasePathExternal,
                               String targetBasePathExternal,
                               ArrayList<RepositoryResource> repositoryList) {
         logger.debug("==> Method: YamlDocument.getTemplates");
         logger.debug("root: {}", root);
+        logger.debug("sourcePath: {}", sourcePath);
         logger.debug("targetPath: {}", targetPath);
         logger.debug("sourceBasePathExternal: {}", sourceBasePathExternal);
         logger.debug("targetBasePathExternal: {}", targetBasePathExternal);
@@ -607,30 +637,34 @@ public class YamlDocument {
             // Add all template files to the list
             if ("template".equals(entry.getKey())) {
                 templateList.add(new Template((String) entry.getValue(),
-                        root,
+                        sourcePath,
                         targetPath,
                         sourceBasePathExternal,
                         targetBasePathExternal,
+                        repositoryAlias,
                         repositoryList));
+                logger.debug("Found template {}; add it to the templateList", entry.getValue());
             }
 
             // Go a level deeper
             if (entry.getValue() instanceof Map) {
-                getTemplates((Map<String, Object>) entry.getValue(), root, targetPath, sourceBasePathExternal, targetBasePathExternal, repositoryList);
+                getTemplates((Map<String, Object>) entry.getValue(), root, sourcePath, targetPath, sourceBasePathExternal, targetBasePathExternal, repositoryList);
             }
             if (entry.getValue() instanceof ArrayList) {
-                getTemplates((ArrayList<Object>) entry.getValue(), root, targetPath, sourceBasePathExternal, targetBasePathExternal, repositoryList);
+                getTemplates((ArrayList<Object>) entry.getValue(), root, sourcePath, targetPath, sourceBasePathExternal, targetBasePathExternal, repositoryList);
             }
         }
     }
     private void getTemplates(ArrayList<Object> inner,
                               String root,
+                              String sourcePath,
                               String targetPath,
                               String sourceBasePathExternal,
                               String targetBasePathExternal,
                               ArrayList<RepositoryResource> repositoryList) {
         logger.debug("==> Method: YamlDocument.getTemplates");
         logger.debug("root: {}", root);
+        logger.debug("sourcePath: {}", sourcePath);
         logger.debug("targetPath: {}", targetPath);
         logger.debug("sourceBasePathExternal: {}", sourceBasePathExternal);
         logger.debug("targetBasePathExternal: {}", targetBasePathExternal);
@@ -642,12 +676,16 @@ public class YamlDocument {
         }
 
         inner.forEach(entry -> {
+            if (entry == null) {
+                logger.debug("entry is null");
+                return;
+            }
             // If inner sections are found, go a level deeper
             if (entry instanceof Map) {
-                getTemplates((Map<String, Object>)entry, root, targetPath, sourceBasePathExternal, targetBasePathExternal, repositoryList);
+                getTemplates((Map<String, Object>)entry, root, sourcePath, targetPath, sourceBasePathExternal, targetBasePathExternal, repositoryList);
             }
             if (entry instanceof ArrayList) {
-                getTemplates((ArrayList<Object>)entry, root, targetPath, sourceBasePathExternal, targetBasePathExternal, repositoryList);
+                getTemplates((ArrayList<Object>)entry, root, sourcePath, targetPath, sourceBasePathExternal, targetBasePathExternal, repositoryList);
             }
         });
     }
@@ -661,6 +699,11 @@ public class YamlDocument {
         makeResourcesLocal (yamlMap);
     }
     private void makeResourcesLocal (Map<String, Object> map) {
+        if (map == null) {
+            logger.debug("map is null");
+            return;
+        }
+
         // Run through the YAML file and adjust the map
         boolean found = false;
         for (Map.Entry<String, Object> entry : map.entrySet()) {
@@ -692,15 +735,32 @@ public class YamlDocument {
                 }
                 if ("name".equals(entry.getKey())) {
                     String name  = entry.getValue().toString();
-                    String[] parts = name.split("/");
-                    entry.setValue(parts[1]); // Only use the last part of the full name
+                    if (name.contains("/")) {
+                        // The name consist of a project, a slash (/) and a name
+                        String[] parts = name.split("/");
+                        entry.setValue(parts[1]); // Only use the last part of the full name
+                    }
+                    else {
+                        // Use the full name
+                        entry.setValue(name);
+                    }
                 }
             }
         }
     }
 
     private void makeResourcesLocal(ArrayList<Object> inner) {
+        if (inner == null) {
+            logger.debug("inner is null");
+            return;
+        }
+
         inner.forEach(entry -> {
+            if (entry == null) {
+                logger.debug("entry is null");
+                return;
+            }
+
             // If inner sections are found, go a level deeper
             if (entry instanceof Map) {
                 makeResourcesLocal((Map<String, Object>)entry);

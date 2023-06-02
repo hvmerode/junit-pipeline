@@ -64,7 +64,8 @@ public class AzDoPipeline implements Pipeline {
 
         // Read the properties file and create the entry point
         properties = new PropertyUtils(propertyFile);
-        yamlDocumentEntryPoint = new YamlDocumentEntryPoint(properties.getTargetPath(),
+        yamlDocumentEntryPoint = new YamlDocumentEntryPoint(properties.getSourcePath(),
+                properties.getTargetPath(),
                 properties.getSourceBasePathExternal(),
                 properties.getTargetBasePathExternal());
 
@@ -164,7 +165,7 @@ public class AzDoPipeline implements Pipeline {
                     properties.getTargetProject());
         }
         catch (Exception e) {
-            logger.debug("Exception occurred. Cannot clone repository to local: {}", e);
+            logger.debug("Exception occurred. Cannot clone repository to local: {}", e.getMessage());
             return;
         }
 
@@ -186,7 +187,7 @@ public class AzDoPipeline implements Pipeline {
             Utils.copyAll(properties.getSourcePath(), properties.getTargetPath(), properties.getTargetExludeList());
         }
         catch (Exception e) {
-            logger.debug("Exception occurred.Cannot copy local files to target: {}", e);
+            logger.debug("Exception occurred.Cannot copy local files to target: {}", e.getMessage());
         }
 
         // Repositories in the resources section of the yaml pipeline are copied to the Azure DevOps

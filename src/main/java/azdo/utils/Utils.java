@@ -7,13 +7,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.commons.io.*;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.codehaus.plexus.util.FileUtils.getFileNames;
 
 public class Utils {
     private static Logger logger = LoggerFactory.getLogger(Utils.class);
@@ -27,26 +27,6 @@ public class Utils {
     public static boolean isWindows(){
         String os = System.getProperty("os.name");
         return os.toLowerCase().indexOf("windows") >= 0;
-    }
-
-    public static void makeDirectory (String directoryName) {
-        // Create the target path if not existing
-        logger.debug("==> Method: Utils.makeDirectory");
-        logger.debug("directoryName: {}", directoryName);
-
-        try {
-            if (isLinux()) {
-                logger.debug("Executing on Linux");
-                Runtime.getRuntime().exec("/bin/sh -c mkdir " + directoryName);
-            } else if (isWindows()) {
-                logger.debug("Executing on Windows");
-                Runtime.getRuntime().exec("cmd /c mkdir " + directoryName);
-            }
-            logger.debug("Directory {} created", directoryName);
-        }
-        catch (IOException e) {
-            logger.debug("Cannot create the target directory {}; it may already exist. Just continue", directoryName);
-        }
     }
 
     public static boolean deleteDirectory(String directoryName) {
@@ -93,39 +73,22 @@ public class Utils {
         return true;
     }
 
-    public static boolean createDirectory(String directoryName) {
+    public static void createDirectory(String directoryName) {
         logger.debug("==> Method: Utils.createDirectory");
         logger.debug("directoryName: {}", directoryName);
-
-        String dir = fixPath(directoryName);
-        try {
-            if (Utils.isLinux()) {
-                logger.debug("Executing on Linux");
-                Runtime.getRuntime().exec("/bin/sh -c mkdir " + dir);
-            }
-            else if (Utils.isWindows()) {
-                logger.debug("Executing on Windows");
-                Runtime.getRuntime().exec("cmd /c mkdir " + dir);
-                wait(1000);
-            }
-            logger.debug("Created directory: {}", dir);
-        }
-        catch (IOException e)
-        {
-            logger.debug("Cannot create directory; it probably exists already?");
-            return false;
-        }
-
-        return true;
+        directoryName = fixPath(directoryName);
+        File dir = new File (directoryName);
+        dir.mkdirs();
+        wait(1000);
     }
 
     public static void copyAll(String sourceDirectory, String destinationDirectory, String exclusionPattern)
     {
         try {
             copy(new File(sourceDirectory), new File(destinationDirectory), exclusionPattern);
-            System.out.println("Directory copied successfully!");
+            logger.debug("Directory copied successfully!");
         } catch (IOException e) {
-            System.out.println("Failed to copy directory: " + e.getMessage());
+            logger.debug("Failed to copy directory: {}", e.getMessage());
         }
     }
 
@@ -166,7 +129,7 @@ public class Utils {
                 Files.copy(sourcePath, destinationPath, StandardCopyOption.REPLACE_EXISTING);
             }
         }
-        Utils.wait(200); // Time needed to unlock files in Windows
+        wait(200); // Time needed to unlock files in Windows
         logger.debug("Copied source {} to target {}", source, target);
     }
 
@@ -175,7 +138,14 @@ public class Utils {
        Fortunately, Windows also accepts forward slashes
      */
     public static String fixPath (String path){
-        path=path.replaceAll("\\\\","/");
+        if (path == null)
+            return path;
+
+        path = path.replace("../", ""); // Remove ../
+        path = path.replace("..\\", ""); // Remove ..\
+        path = path.replace("./", ""); // Remove ./
+        path = path.replace(".\\", ""); // Remove .\
+        path = path.replaceAll("\\\\","/");
         Path normalized = Paths.get(path);
         normalized = normalized.normalize();
         path = normalized.toString();
@@ -200,6 +170,61 @@ public class Utils {
         }
 
         return res;
+    }
+
+    /*
+       TODO
+     */
+    public static String findFullQualifiedFileNameInDirectory (String directory, String fileName) {
+        //logger.debug("==> Method: Utils.findFullQualifiedFileNameInDirectory");
+
+        if (directory.isEmpty()) {
+            logger.debug("No directory provided; just return the fileName");
+            return fileName;
+        }
+
+        if (fileName.isEmpty()) {
+            logger.debug("No fileName provided; just return an empty string");
+            return fileName;
+        }
+
+        Path dir = Path.of(directory);
+        Path f = Path.of(fileName);
+        if (f != null) {
+            f = f.normalize();
+            fileName = f.toString();
+        }
+        fileName = Utils.fixPath(fileName); // Remove .. in front of the filename, because the full name is searched on the filesystem anyway
+        //fileName = fileName.replace("..", ""); // Remove .. in front of the filename, because the full name is searched on the filesystem anyway
+        String fqn = null;
+        String compare = null;
+        //logger.debug("directory: {}", directory);
+        //logger.debug("fileName: {}", fileName);
+
+        try(DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
+            for (Path path : stream) {
+                File pathToFile = path.toFile();
+                if (pathToFile.isDirectory()) {
+                    // It is a directory; search recursively
+                    //logger.debug("Directory: {}", pathToFile.getAbsoluteFile());
+                    fqn = findFullQualifiedFileNameInDirectory(pathToFile.toString(), fileName);
+                    if (fqn != null)
+                        return fqn;
+                }
+                else {
+                    // It is a file
+                    //logger.debug("File: {}", pathToFile.getAbsoluteFile());
+                    compare = pathToFile.getAbsoluteFile().toString();
+                    if (compare.contains(fileName)) {
+                        logger.debug("Match: Compared {} with {}", fileName, compare);
+                        return compare;
+                    }
+                }
+            }
+        }
+        catch(IOException e) {}
+
+        return null;
     }
 
     public static void wait(int ms)

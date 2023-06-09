@@ -78,7 +78,6 @@ public class YamlDocumentEntryPoint {
                 // the local file system, and remove the .git directory. The .git directory must be removed to
                 // 'unmount' from the original repository; it is later pushed to the Azure DevOps test repository.
                 // The directory must be copied to prevent it is overwritten by the createRemoteRepositories command.
-                // TODO: The cloneAndRenameExternalRepositories method does not take the ref into account; this needs to be fixed later
                 cloneAndRenameExternalRepositories(repository,
                         properties.getAzDoUser(),
                         properties.getAzdoPat(),
@@ -173,6 +172,8 @@ public class YamlDocumentEntryPoint {
                 azdoGitApiRepositories);
 
         // Checkout main branch
+        // Note, that in the Azure Devops test project, external repositories only contain a "master" branch, although
+        // the pipeline may point to another branch (using 'ref').
         Git git = GitUtils.createGit (path);
         boolean isRemote = GitUtils.containsBranch(git, GitUtils.BRANCH_MASTER);
         GitUtils.checkout(git, path, GitUtils.BRANCH_MASTER, !isRemote);
@@ -183,6 +184,17 @@ public class YamlDocumentEntryPoint {
         logger.debug("==> Method: YamlDocumentEntryPoint.commitAndPushTemplates");
 
         commitAndPushAllCode (repositoryList, azdoUser, azdoPat, commitPatternList);
+    }
+
+    private void commitAndPushAllCode (ArrayList<RepositoryResource> repositoryResourceList,
+                                       String azdoUser,
+                                       String azdoPat,
+                                       ArrayList<String> commitPatternList) {
+        logger.debug("==> Method: YamlDocumentEntryPoint.commitAndPushAllCode (second method signature)");
+
+        repositoryResourceList.forEach(repository -> {
+            commitAndPushAllCode (repository, azdoUser, azdoPat, commitPatternList);
+        });
     }
 
     private void commitAndPushAllCode (RepositoryResource repository,
@@ -201,21 +213,18 @@ public class YamlDocumentEntryPoint {
         }
     }
 
-    private void commitAndPushAllCode (ArrayList<RepositoryResource> repositoryResourceList,
-                                       String azdoUser,
-                                       String azdoPat,
-                                       ArrayList<String> commitPatternList) {
-        logger.debug("==> Method: YamlDocumentEntryPoint.commitAndPushAllCode (second method signature)");
+    public void copyAllSourceFiles (String excludeList) {
+        logger.debug("==> Method: YamlDocumentEntryPoint.copyAllSourceFiles (first method signature)");
 
-        repositoryResourceList.forEach(repository -> {
-            commitAndPushAllCode (repository, azdoUser, azdoPat, commitPatternList);
+        repositoryList.forEach(repository -> {
+            copyAllSourceFiles (repository, excludeList);
         });
     }
 
     // Copy all files in the external repositories (containing template files) from the source location to the target location.
     // The source location has the same name as the repository,but with a "-source" prefix.
     private void copyAllSourceFiles (RepositoryResource repository, String excludeList) {
-        logger.debug("==> Method: YamlDocumentEntryPoint.copyAllSourceFiles");
+        logger.debug("==> Method: YamlDocumentEntryPoint.copyAllSourceFiles (second method signature)");
 
         String source = repository.localBase + "/" + repository.name + RepositoryResource.LOCAL_SOURCE_POSTFIX;
         String target = repository.localBase + "/" + repository.name;
@@ -252,6 +261,15 @@ public class YamlDocumentEntryPoint {
                     git = GitUtils.cloneGitHubToLocal(temp,
                             repository.name,
                             repository.project);
+                }
+
+                // Checkout the remote branch
+                if (repository.ref != null) {
+                    String branchName = GitUtils.resolveBranchNameFromRef (repository.ref);
+                    git = GitUtils.checkout(git,
+                            temp,
+                            "origin/" + branchName,
+                            false);
                 }
 
                 // Git must be closed, otherwise the .git directory cannot be deleted

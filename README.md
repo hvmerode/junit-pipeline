@@ -414,19 +414,20 @@ pipeline.getRunResult()
 ### Known limitations ##
 ***
 * Not tested on Linux; some filesystem methods in Utils may not work properly
-* Output variables of a step cannot be checked/asserted; TODO: Add option to validate output variables of a certain step
 * Tests cannot be executed in parallel. Because the target repository is updated for each test, the next
   test must wait before the previous one is completed.
 * Templates residing in external repositories (GitHub and other Azure DevOps projects) are taken into account, but:
-  * The _ref_ parameter is not (yet) implemented, so only the master branch of an external repository can be used.
+  * The _ref_ parameter is not (yet) fully implemented. Only the format "refs/heads/branch" is supported; the pattern 
+  "refs/tags/tag" is not yet supported 
   * If a remote external repository is updated, the update is not automatically included in the test; first delete the 
-    corresponding local directory to create a new clone of the external repository. For example, 
+    corresponding local directory; this enables the creation of q new clone of the external repository. For example, 
     if an external repository is called 'Templates', 2 local directories are created, 'Templates' and 'Templates-source'; 
     delete them both.
+* Output variables of a step cannot be checked/asserted; TODO: Add option to validate output variables of a certain step
 * If the pipeline makes use of a resource in the test project for the first time, it needs manual approval first; for example, 
-  a variable group or an Environment.
-* If unknown service connections are used or the updated pipeline code is not valid YAML anymore, the AzDo API returns an 
-  HTTP status code 400. TODO: Check whether the outputed pipeline is valid yaml.
+  a variable group or an Environment. The Azure DevOps API returns an HTTP status 400. 
+* If unknown service connections are used, the updated pipeline code is not valid YAML anymore, or a manual approval on a resource
+is required, the AzDo API returns an HTTP status code 400. TODO: Check whether the outputed pipeline is valid yaml.
 * The junit-pipeline code itself does not have any unit tests yet. 
 * No methods yet to add, update or remove conditions in stages or jobs. Use the _overrideLiteral_ method, if possible.
 * No methods yet to replace a step with another step.

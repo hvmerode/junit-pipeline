@@ -1,7 +1,7 @@
 parameters:
 - name: aNiceParam
   type: string
-  default: param_value
+  default: aNiceDefault
 stages:
 - stage: Stage_B
   displayName: Stage B

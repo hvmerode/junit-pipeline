@@ -1,7 +1,7 @@
 parameters:
 - name: param_1
   type: string
-  default: param_1_value
+  default: xxx
 jobs:
 - job: Job_A
   displayName: Job A

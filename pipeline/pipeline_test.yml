@@ -13,6 +13,7 @@ resources:
     - repository: external
       name: Templates/Templates
       type: git
+      ref: refs/heads/develop
     - repository: external2
       name: hvmerode/azdo-templates
       type: github

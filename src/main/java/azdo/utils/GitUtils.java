@@ -187,6 +187,8 @@ public class GitUtils {
         catch (Exception e) {
             logger.debug("Exception pushing to repo: {}", e.getMessage());
         }
+
+        Utils.wait(1000);
     }
 
     public static Git checkout (Git git,
@@ -204,6 +206,12 @@ public class GitUtils {
             git = createGit(targetPath);
         }
 
+        // TEST
+        // If the remote branch already exist, checkout the remote branch
+        if (!createRemoteBranch)
+            branchName = "origin/" + branchName;
+        // TEST
+
         // Perform a checkout
         if (git != null) {
             try {
@@ -218,6 +226,7 @@ public class GitUtils {
             }
         }
 
+        Utils.wait(1000);
         return git;
     }
 
@@ -238,5 +247,16 @@ public class GitUtils {
         }
 
         return git;
+    }
+
+    // TODO: Refs can also contain tags and remotes
+    public static String resolveBranchNameFromRef (String ref) {
+        logger.debug("==> Method: GitUtils.resolveBranchFromRef");
+        logger.debug("ref: {}", ref);
+        String branchName = "";
+        if (ref.contains("heads"))
+            branchName = ref.substring(ref.lastIndexOf('/') + 1);
+
+        return branchName;
     }
 }

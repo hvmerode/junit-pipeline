@@ -153,6 +153,10 @@ public class AzDoPipeline implements Pipeline {
         logger.debug("Start pipeline {} for branch {}", properties.getRepositoryName(), branchName);
         logger.debug(DEMARCATION);
 
+        /*******************************************************************************************
+                                  Doing stuff for the main repository
+         *******************************************************************************************/
+
         // Clone the repository to local if not done earlier
         // Keep the reference to the git object
         try {
@@ -178,7 +182,8 @@ public class AzDoPipeline implements Pipeline {
         // Check whether there is a remote branch; pipelines can be started using files from any branch
         boolean isRemote = GitUtils.containsBranch(git, branchName);
 
-        // Perform the checkout
+        // Perform the checkout. This may fail, but that's not a problem. The main concern is that
+        // the remote branch is created in the repository in the Azure DevOps test project
         GitUtils.checkout(git, properties.getTargetPath(), branchName, !isRemote);
 
         // Copy local resources from main source to target directory
@@ -190,11 +195,24 @@ public class AzDoPipeline implements Pipeline {
             logger.debug("Exception occurred.Cannot copy local files to target: {}", e.getMessage());
         }
 
+        /*******************************************************************************************
+                              Doing stuff for the external repositories
+         *******************************************************************************************/
+
+        // Copy all resources from a local version of the external repositories.
+        // This cleans up the local 'external resources' repositories after it was poluted by the previous testrun
+        yamlDocumentEntryPoint.copyAllSourceFiles(properties.getTargetExludeList());
+
         // Repositories in the resources section of the yaml pipeline are copied to the Azure DevOps
         // test project. This makes them git repositories, all with type = git (which means Azure DevOps),
         // and all in the same Azure DevOps project. This is independent whether the repositories are
         // originally from another Azure DeVOps project or from GithHub.
         yamlDocumentEntryPoint.makeResourcesLocal();
+
+
+        /*******************************************************************************************
+                             Prepare for takeoff... of the pipeline .. and run it
+         *******************************************************************************************/
 
         // Execute the commands in the bundle are executed
         commandBundle.execute(this);

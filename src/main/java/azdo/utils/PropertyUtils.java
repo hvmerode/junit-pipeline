@@ -34,24 +34,24 @@ public class PropertyUtils {
     // Pipeline
     private String azdoBaseUrl;
     private String azdoEndpoint;
-    private String pipelinesApi;
-    private String pipelinesApiRuns;
-    private String pipelinesApiVersion;
+    private String pipelinesApi = "/pipelines";
+    private String pipelinesApiRuns = "/runs";
+    private String pipelinesApiVersion = "api-version=7.0";
 
     // Azure DevOps API: Git
-    private String gitApi;
-    private String gitApiRepositories;
-    private String gitApiVersion;
+    private String gitApi = "/git";
+    private String gitApiRepositories = "/repositories";
+    private String gitApiVersion = "api-version=7.0";
 
     // Azure DevOps API: Build
-    private String buildApi;
-    private int buildApiPollFrequency;
-    private int buildApiPollTimeout;
-    private String buildApiVersion;
+    private String buildApi = "/build/builds";
+    private int buildApiPollFrequency = 10;
+    private int buildApiPollTimeout = 180;
+    private String buildApiVersion = "api-version=7.0";
 
     // Azure DevOps API: Project
-    private String projectApi;
-    private String projectApiVersion;
+    private String projectApi = "/projects";
+    private String projectApiVersion = "api-version=7.0";
 
     // Miscellanious
     private String commitPattern;

@@ -3,7 +3,6 @@
 
 package azdo.command;
 
-import azdo.junit.AzDoPipeline;
 import azdo.junit.Pipeline;
 
 public class CommandSkipStep implements Command {

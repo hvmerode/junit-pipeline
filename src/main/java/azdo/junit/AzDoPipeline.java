@@ -211,7 +211,7 @@ public class AzDoPipeline implements Pipeline {
 
 
         /*******************************************************************************************
-                             Prepare for takeoff... of the pipeline .. and run it
+                                      Prepare for running the pipeline
          *******************************************************************************************/
 
         // Execute the commands in the bundle are executed
@@ -232,6 +232,10 @@ public class AzDoPipeline implements Pipeline {
             }
         }
 
+        /*******************************************************************************************
+           Push everything to the main and external repositories in the Azure DevOps test project
+         *******************************************************************************************/
+
         // Push the local (main) repo to remote; this is the repository containing the main pipeline YAML file.
         GitUtils.commitAndPush(git,
                 properties.getAzDoUser(),
@@ -248,6 +252,9 @@ public class AzDoPipeline implements Pipeline {
                 properties.getAzdoPat(),
                 properties.getCommitPatternList());
 
+        /*******************************************************************************************
+                         Run the pipeline and retrieve the pipeline run result
+         *******************************************************************************************/
         // Call Azure Devops API to start the pipeline and retrieve the result.
         // If dryRun is true, the pipeline does not start.
         if (!dryRun) {

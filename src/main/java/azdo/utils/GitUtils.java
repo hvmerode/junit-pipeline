@@ -46,6 +46,7 @@ public class GitUtils {
         // Create the uri
         String azdoBaseUrl = "https://dev.azure.com/" + organization;
         String uriTargetRepository = azdoBaseUrl + "/" + project + "/_git/" + repositoryName;
+        uriTargetRepository = Utils.encodePath (uriTargetRepository);
         logger.debug("uriTargetRepository: {}", uriTargetRepository);
 
         // Clone the repo
@@ -60,7 +61,7 @@ public class GitUtils {
             //git.close();
         }
         catch (Exception e) {
-            logger.debug("Cannot clone, but just proceed");
+            logger.debug("Cannot clone {}, but just proceed, {}", repositoryName, e.getMessage());
         }
 
         Utils.wait(1000);
@@ -87,6 +88,7 @@ public class GitUtils {
         // Create the uri
         String baseUrl = "https://github.com";
         String uriTargetRepository = baseUrl + "/" + project + "/" + repositoryName;
+        uriTargetRepository = Utils.encodePath (uriTargetRepository);
         logger.debug("uriTargetRepository: {}", uriTargetRepository);
 
         // Clone the repo
@@ -100,7 +102,7 @@ public class GitUtils {
             //git.close();
         }
         catch (Exception e) {
-            logger.debug("Cannot clone, but just proceed");
+            logger.debug("Cannot clone {}, but just proceed, {}", repositoryName, e.getMessage());
         }
 
         Utils.wait(1000);
@@ -206,27 +208,45 @@ public class GitUtils {
             git = createGit(targetPath);
         }
 
-        // TEST
-        // If the remote branch already exist, checkout the remote branch
-        if (!createRemoteBranch)
-            branchName = "origin/" + branchName;
-        // TEST
-
         // Perform a checkout
         if (git != null) {
             try {
                 logger.debug("git.checkout");
-                git.checkout()
-                        .setForced(true)
-                        .setCreateBranch(createRemoteBranch)
-                        .setName(branchName)
-                        .call();
+                checkout(git, branchName, createRemoteBranch);
             } catch (Exception e) {
-                logger.debug("Exception occurred. Cannot checkout; just continue: {}", e.getMessage());
+                logger.debug("Exception occurred. Cannot checkout {}; try remote: {}", branchName, e.getMessage());
+                try {
+                    branchName = "origin/" + branchName;
+                    checkout(git, branchName, createRemoteBranch);
+                } catch (Exception eRemote) {
+                    logger.debug("Exception occurred. Cannot checkout {}; continue: {}", branchName, eRemote.getMessage());
+                }
             }
         }
 
         Utils.wait(1000);
+        return git;
+    }
+
+    private static Git checkout (Git git,
+                                 String branchName,
+                                 boolean createRemoteBranch) throws Exception {
+        logger.debug("==> Method: GitUtils.checkout");
+        logger.debug("branchName: {}", branchName);
+        logger.debug("createRemoteBranch: {}", createRemoteBranch);
+
+        if (git == null) {
+            logger.debug("Git object is null");
+            return null;
+        }
+
+        logger.debug("git.checkout");
+        git.checkout()
+                .setForced(true)
+                .setCreateBranch(createRemoteBranch)
+                .setName(branchName)
+                .call();
+
         return git;
     }
 
@@ -248,7 +268,6 @@ public class GitUtils {
 
         return git;
     }
-
     // TODO: Refs can also contain tags and remotes
     public static String resolveBranchNameFromRef (String ref) {
         logger.debug("==> Method: GitUtils.resolveBranchFromRef");

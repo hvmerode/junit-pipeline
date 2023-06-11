@@ -1,7 +1,5 @@
 package azdo.yaml;
 
-import org.eclipse.jgit.api.Git;
-
 public class RepositoryResource {
     public String repository;
     public String endpoint;

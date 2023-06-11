@@ -3,9 +3,9 @@
 
 package azdo.yaml;
 
-import azdo.utils.PropertyUtils;
 import azdo.utils.AzDoUtils;
 import azdo.utils.GitUtils;
+import azdo.utils.PropertyUtils;
 import azdo.utils.Utils;
 import org.eclipse.jgit.api.Git;
 import org.slf4j.Logger;

@@ -3,17 +3,15 @@
 
 package azdo.utils;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.apache.commons.io.*;
+import org.springframework.web.util.UriUtils;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static org.codehaus.plexus.util.FileUtils.getFileNames;
 
 public class Utils {
     private static Logger logger = LoggerFactory.getLogger(Utils.class);
@@ -225,6 +223,11 @@ public class Utils {
         catch(IOException e) {}
 
         return null;
+    }
+
+    public static String encodePath (String path) {
+        path = UriUtils.encodePath(path, "UTF-8");
+        return path;
     }
 
     public static void wait(int ms)

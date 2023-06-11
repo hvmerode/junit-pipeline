@@ -437,7 +437,9 @@ is required, the AzDo API returns an HTTP status code 400. TODO: Check whether t
 
 ### Known bugs ##
 ***
-* Probably there are some, but they need to be detected first.
+* An Azure DevOps "on..failure" / "on..success" construction is translated to "true..failure" / "true..success". It may be an issue in snakeyaml, 
+  but that's not sure atm
+* 
 <br></br>
 
 ### Solved ##

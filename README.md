@@ -438,8 +438,9 @@ is required, the AzDo API returns an HTTP status code 400. TODO: Check whether t
 ### Known bugs ##
 ***
 * An Azure DevOps "on..failure" / "on..success" construction is translated to "true..failure" / "true..success". It may be an issue in snakeyaml, 
-  but that's not sure atm
-* 
+  but that's not sure atm.
+* A task with an input parameter 'template:' is handled as if it is a template (although it isn't); processing is still fine though, but it should not 
+  be treated as a template.
 <br></br>
 
 ### Solved ##

@@ -249,21 +249,24 @@ public class Utils {
             else
                 content = content.replace(findString, replaceString);
             fos = new FileOutputStream(f);
-            IOUtils.write(content, new FileOutputStream(fileName), Charset.defaultCharset());
-        }
-        catch (IOException e) {
+            IOUtils.write(content, fos, Charset.defaultCharset());
+        } catch (IOException e) {
             logger.debug("Cannot find {} and replace it with {} in file {}", findString, replaceString, fileName);
             logger.debug("Does file {} exist?", fileName);
-        }
-
-        finally {
-            try {
-                fis.close();
-                fos.close();
+        } finally {
+            if (fis != null) {
+                try {
+                    fis.close();
+                } catch (IOException e) {
+                    logger.debug("Cannot close input stream");
+                }
             }
-            catch (IOException e)
-            {
-                logger.debug("Cannot close input and/or output stream");
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    logger.debug("Cannot close output stream");
+                }
             }
         }
     }

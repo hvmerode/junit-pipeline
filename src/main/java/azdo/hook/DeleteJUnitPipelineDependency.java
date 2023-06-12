@@ -18,7 +18,7 @@ public class DeleteJUnitPipelineDependency extends Hook {
     private String pom;
     private String groupId;
     private String artifactId;
-    private static Logger logger = LoggerFactory.getLogger(AzDoPipeline.class);
+    private static Logger logger = LoggerFactory.getLogger(DeleteJUnitPipelineDependency.class);
     public DeleteJUnitPipelineDependency (String pom, String groupId, String artifactId) {
         logger.debug("==> Class: DeleteJUnitPipelineDependency");
 

@@ -4,14 +4,14 @@ parameters:
   default: aNiceDefault
 stages:
 - stage: Stage_B
-  displayName: Stage B
+  displayName: template-stages.yml stage
   jobs:
   - job: Job_B
-    displayName: Job B
+    displayName: template-stages.yml job
     pool:
       vmImage: ubuntu-latest
     steps:
     - script: |
         echo 'This is job: Job_B with parameter ${{ parameters.aNiceParam }}'
-      displayName: Step B
+      displayName: template-stages.yml script
   - template: ../jobs/template-jobs.yml

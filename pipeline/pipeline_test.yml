@@ -44,32 +44,32 @@ stages:
       aNiceParam: param_1_value
 
   - stage: ExecuteScriptStage
-    displayName: 'Execute script'
+    displayName: 'ExecuteScriptStage'
     condition: always()
     jobs:
-      - job: Job_X
-        displayName: Job XA
+      - job: Job_XA
+        displayName: ExecuteScriptStage job_xa
         pool:
           vmImage: 'ubuntu-latest'
         steps:
           - script: |
               echo 'This is a multiline script'
               echo 'Row 2 of that script'
-            displayName: Step XA
+            displayName: ExecuteScriptStage job_xa script
       - job: Job_XB
-        displayName: Job XB
+        displayName: ExecuteScriptStage job_xb
         pool:
           vmImage: 'ubuntu-latest'
         steps:
           - script: |
               echo 'Job_2.Task_1'
-            displayName: Step XB
+            displayName: ExecuteScriptStage job_xb script
           - template: templates/steps/template-steps.yml
             parameters:
               param_1: param_1_value
               param_2: param_2_value
       - job: Job_XC
-        displayName: Job XC
+        displayName: ExecuteScriptStage job_xc
         pool:
           vmImage: 'ubuntu-latest'
         steps:
@@ -78,7 +78,7 @@ stages:
           - script: |
               echo 'Job_2.Task_3: Sleep some seconds'
               sleep ${{ parameters.sleep }};
-            displayName: Step XC
+            displayName: ExecuteScriptStage job_xc script
       - template: templates/jobs/template-jobs.yml
         parameters:
           param_1: param_1_value
@@ -88,22 +88,22 @@ stages:
     displayName: 'DeployStage'
     jobs:
       - job: Job_XD
-        displayName: Job XD
+        displayName: DeployStage job_xd
         pool:
           vmImage: 'ubuntu-latest'
         steps:
           - script: |
               echo 'AWS Connection is: $(aws_connection)'
               echo 'AWS Region is: $(aws_region)'
-            displayName: Step XD
+            displayName: DeployStage job_xd script
       - job: Job_XE
-        displayName: Job XE
+        displayName: DeployStage job_xe
         pool:
           vmImage: 'ubuntu-latest'
         steps:
           - script: |
               echo 'Deploy to AWS'
-            displayName: Step XE
+            displayName: DeployStage job_xe script
           - task: AWSShellScript@1
             inputs:
               awsCredentials: $(aws_connection)
@@ -122,4 +122,4 @@ stages:
                     --all \
                     --ci \
                     --require-approval never
-            displayName: XF
+            displayName: DeployStage job_xe AWSShellScript

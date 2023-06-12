@@ -4,11 +4,15 @@
 package azdo.utils;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.util.UriUtils;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -228,6 +232,40 @@ public class Utils {
     public static String encodePath (String path) {
         path = UriUtils.encodePath(path, "UTF-8");
         return path;
+    }
+
+    /*
+        Perform a find-and-replace in a given file.
+     */
+    public static void findReplaceInFile(String fileName, String findString, String replaceString, boolean replaceAll) {
+        FileInputStream fis = null;
+        FileOutputStream fos = null;
+        try {
+            File f = new File(fileName);
+            fis = new FileInputStream(f);
+            String content = IOUtils.toString(fis, Charset.defaultCharset());
+            if (replaceAll)
+                content = content.replaceAll(findString, replaceString);
+            else
+                content = content.replace(findString, replaceString);
+            fos = new FileOutputStream(f);
+            IOUtils.write(content, new FileOutputStream(fileName), Charset.defaultCharset());
+        }
+        catch (IOException e) {
+            logger.debug("Cannot find {} and replace it with {} in file {}", findString, replaceString, fileName);
+            logger.debug("Does file {} exist?", fileName);
+        }
+
+        finally {
+            try {
+                fis.close();
+                fos.close();
+            }
+            catch (IOException e)
+            {
+                logger.debug("Cannot close input and/or output stream");
+            }
+        }
     }
 
     public static void wait(int ms)

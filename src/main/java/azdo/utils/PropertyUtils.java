@@ -73,77 +73,54 @@ public class PropertyUtils {
             logger.debug("#################################################################");
 
             // Source
-            sourcePath = properties.getProperty("source.path");
-            logger.debug("source.path: {}", sourcePath);
-            sourceBasePathExternal = properties.getProperty("source.base.path.external");
-            logger.debug("source.base.path.external: {}", sourceBasePathExternal);
+            sourcePath = getStringProperty(properties, "source.path", sourcePath);
+            sourceBasePathExternal = getStringProperty(properties, "source.base.path.external", sourceBasePathExternal);
 
             // Target
-            targetOrganization = properties.getProperty("target.organization");
-            logger.debug("target.organization: {}", targetOrganization);
-            targetProject = properties.getProperty("target.project");
-            logger.debug("target.project: {}", targetProject);
-            targetPath = properties.getProperty("target.path");
-            logger.debug("target.path: {}", targetPath);
-            targetBasePathExternal = properties.getProperty("target.base.path.external");
-            logger.debug("target.base.path.external: {}", targetBasePathExternal);
-            repositoryName = properties.getProperty("target.repository.name");
-            logger.debug("target.repository.name: {}", repositoryName);
-            pipelinePathRepository = properties.getProperty("repository.pipeline.path");
-            logger.debug("repository.pipeline.path: {}", pipelinePathRepository);
-            azdoUser = properties.getProperty("azdo.user");
-            logger.debug("azdo.user: {}", azdoUser);
-            azdoPat = properties.getProperty("azdo.pat");
-            logger.debug("azdo.pat: {}", azdoPat);
-            targetExludeList = properties.getProperty("target.excludelist");
-            logger.debug("target.excludelist: {}", targetExludeList);
+            targetOrganization = getStringProperty(properties, "target.organization", targetOrganization);
+            targetProject = getStringProperty(properties, "target.project", targetProject);
+            targetPath = getStringProperty(properties, "target.path", targetPath);
+            targetBasePathExternal = getStringProperty(properties, "target.base.path.external", targetBasePathExternal);
+            repositoryName = getStringProperty(properties, "target.repository.name", repositoryName);
+            pipelinePathRepository = getStringProperty(properties, "repository.pipeline.path", pipelinePathRepository);
+            azdoUser = getStringProperty(properties, "azdo.user", azdoUser, false);
+            azdoPat = getStringProperty(properties, "azdo.pat", azdoPat, false);
+            targetExludeList = getStringProperty(properties, "target.excludelist", targetExludeList);
 
             // Run trough the commit pattern and create a List
-            commitPattern = properties.getProperty("git.commit.pattern");
+            commitPattern = getStringProperty(properties, "git.commit.pattern", commitPattern);
             commitPatternList = new ArrayList<>();
             var values = commitPattern.split(",");
             for (int i = 0; i < values.length; i++)
             {
                 commitPatternList.add(values[i]);
             }
-            logger.debug("git.commit.pattern: {}", commitPatternList);
 
             // Azure DevOps Pipeline API
-            pipelinesApi = properties.getProperty("pipelines.api");
-            logger.debug("pipelines.api: {}", pipelinesApi);
-            pipelinesApiRuns = properties.getProperty("pipelines.api.runs");
-            logger.debug("pipelines.api.runs: {}", pipelinesApiRuns);
-            pipelinesApiVersion = properties.getProperty("pipelines.api.version");
-            logger.debug("pipelines.api.version: {}", pipelinesApiVersion);
+            pipelinesApi = getStringProperty(properties, "pipelines.api", pipelinesApi);
+            pipelinesApiRuns = getStringProperty(properties, "pipelines.api.runs", pipelinesApiRuns);
+            pipelinesApiVersion = getStringProperty(properties, "pipelines.api.version", pipelinesApiVersion);
 
             // Azure DevOps Git API
-            gitApi = properties.getProperty("git.api");
-            logger.debug("git.api: {}", gitApi);
-            gitApiRepositories = properties.getProperty("git.api.repositories");
-            logger.debug("git.api.repositories: {}", gitApiRepositories);
-            gitApiVersion = properties.getProperty("git.api.version");
-            logger.debug("git.api.version: {}", gitApiVersion);
+            gitApi = getStringProperty(properties, "git.api", gitApi);
+            gitApiRepositories = getStringProperty(properties, "git.api.repositories", gitApiRepositories);
+            gitApiVersion = getStringProperty(properties, "git.api.version", gitApiVersion);
 
             // Azure DevOps Build API
-            buildApi = properties.getProperty("build.api");
-            logger.debug("build.api: {}", buildApi);
-            buildApiPollFrequency = Integer.parseInt(properties.getProperty("build.api.poll.frequency"));
-            logger.debug("build.api.poll.frequency: {}", buildApiPollFrequency);
-            buildApiPollTimeout = Integer.parseInt(properties.getProperty("build.api.poll.timeout"));
-            logger.debug("build.api.poll.timeout: {}", buildApiPollTimeout);
-            buildApiVersion = properties.getProperty("build.api.version");
-            logger.debug("build.api.version: {}", buildApiVersion);
+            buildApi = getStringProperty(properties, "build.api", buildApi);
+            buildApiVersion = getStringProperty(properties, "build.api.version", buildApiVersion);
+            buildApiPollFrequency = getIntProperty(properties, "build.api.poll.frequency", buildApiPollFrequency);
+            buildApiPollTimeout = getIntProperty(properties, "build.api.poll.timeout", buildApiPollTimeout);
 
             // Azure DevOps Project API
-            projectApi = properties.getProperty("project.api");
-            logger.debug("project.api: {}", projectApi);
-            projectApiVersion = properties.getProperty("project.api.version");
-            logger.debug("project.api.version: {}", projectApiVersion);
+            projectApi = getStringProperty(properties, "project.api", projectApi);
+            projectApiVersion = getStringProperty(properties, "project.api.version", projectApiVersion);
 
             // Derived properties
             azdoBaseUrl="https://dev.azure.com/" + targetOrganization;
             logger.debug("Derived azdoBaseUrl: {}", azdoBaseUrl);
             uriTargetRepository = azdoBaseUrl + "/" + targetProject + "/_git/" + repositoryName;
+            uriTargetRepository = Utils.encodePath(uriTargetRepository);
             logger.debug("Derived uriTargetRepository: {}", uriTargetRepository);
             azdoEndpoint = azdoBaseUrl + "/" + targetProject + "/_apis";
             logger.debug("Derived azdoEndpoint: {}", azdoEndpoint);
@@ -159,6 +136,39 @@ public class PropertyUtils {
         catch (IOException e) {
             logger.debug("IOException");
         }
+    }
+
+    private String getStringProperty (Properties properties, String propertyName, String propertyValue) {
+        return getStringProperty (properties, propertyName, propertyValue, true);
+    }
+
+    private String getStringProperty (Properties properties, String propertyName, String propertyValue, boolean showValueInLog) {
+        String p = properties.getProperty(propertyName);
+        if (p != null && !p.isEmpty())
+            propertyValue = p;
+        if (showValueInLog)
+            logger.debug("{}: {}", propertyName, propertyValue);
+        else
+            logger.debug("{}: *****************", propertyName);
+
+        return propertyValue;
+    }
+
+    private int getIntProperty (Properties properties, String propertyName, int propertyValue) {
+        return getIntProperty (properties, propertyName, propertyValue, true);
+    }
+
+    private int getIntProperty (Properties properties, String propertyName, int propertyValue, boolean showValueInLog) {
+        String p = properties.getProperty(propertyName);
+        if (p != null && !p.isEmpty()) {
+            propertyValue = Integer.parseInt(p);
+        }
+        if (showValueInLog)
+            logger.debug("{}: {}", propertyName, propertyValue);
+        else
+            logger.debug("{}: *****************", propertyName);
+
+        return propertyValue;
     }
 
     public String getSourcePath() { return sourcePath; }

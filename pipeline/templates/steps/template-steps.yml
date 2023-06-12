@@ -8,7 +8,7 @@ parameters:
 steps:
 - script: |
     echo 'This is parameter ${{ parameters.param_1 }}'
-  displayName: Step D
+  displayName: template-steps.yml script
 - script: |
     echo 'This is step 2 of file template-steps.yml with parameter ${{ parameters.param_2 }}'
-  displayName: Step E
+  displayName: template-steps.yml script

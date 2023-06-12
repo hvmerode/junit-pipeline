@@ -145,7 +145,7 @@ public class AzDoPipeline implements Pipeline {
     }
     public void startPipeline(String branchName, List<Hook> hooks, boolean dryRun) throws IOException {
         logger.debug("==> Method: AzDoPipeline.startPipeline");
-        logger.debug("branchName {}:", branchName);
+        logger.debug("branchName: {}", branchName);
         logger.debug("dryRun {}:", dryRun);
 
         logger.debug("");

@@ -127,6 +127,8 @@ This repository also contains a few custom hooks:
 Azure DevOps unit test project.
 * _DeleteTargetFile_ - Deletes a single file before it is pushed to the Azure DevOps unit test project. It can be used to
 remove the file that includes the pipeline unit tests, if you don't want it to run it in the test project.
+* _FindReplaceInFile_ - Find and replace a string in a given file; either replaces the first occurence or all occurences.
+  This hook can be used to fix some inconveniences in the target yaml files in the Azure DevOps test project. 
 <br></br>
 
 #### Define unit test ####
@@ -413,7 +415,6 @@ pipeline.getRunResult()
 
 ### Known limitations ##
 ***
-* Not tested on Linux; some filesystem methods in Utils may not work properly
 * Tests cannot be executed in parallel. Because the target repository is updated for each test, the next
   test must wait before the previous one is completed.
 * Templates residing in external repositories (GitHub and other Azure DevOps projects) are taken into account, but:
@@ -423,25 +424,32 @@ pipeline.getRunResult()
     corresponding local directory; this enables the creation of q new clone of the external repository. For example, 
     if an external repository is called 'Templates', 2 local directories are created, 'Templates' and 'Templates-source'; 
     delete them both.
-* Output variables of a step cannot be checked/asserted; TODO: Add option to validate output variables of a certain step
 * If the pipeline makes use of a resource in the test project for the first time, it needs manual approval first; for example, 
   a variable group or an Environment. The Azure DevOps API returns an HTTP status 400. 
 * If unknown service connections are used, the updated pipeline code is not valid YAML anymore, or a manual approval on a resource
-is required, the AzDo API returns an HTTP status code 400. TODO: Check whether the outputed pipeline is valid yaml.
-* The junit-pipeline code itself does not have any unit tests yet. 
-* No methods yet to add, update or remove conditions in stages or jobs. Use the _overrideLiteral_ method, if possible.
-* No methods yet to replace a step with another step.
-* No method to replace a step with a template file (the template file could serve as a mock file)
-* There is no option (yet) to continue on error for all steps.
+is required, the AzDo API returns an HTTP status code 400.
 <br></br>
 
 ### Known bugs ##
 ***
-* An Azure DevOps "on..failure" / "on..success" construction is translated to "true..failure" / "true..success". It may be an issue in snakeyaml, 
-  but that's not sure atm.
+* An Azure DevOps "on..failure" / "on..success" construction is translated to "true..failure" / "true..success". It may be an issue in snakeyaml.
+  * Temporary fix is by adding a FindReplaceInFile hook that replaces the "true:" string with an "on:" string.
 * A task with an input parameter 'template:' is handled as if it is a template (although it isn't); processing is still fine though, but it should not 
   be treated as a template.
 <br></br>
+
+### New features ##
+***
+* Test on Linux; some filesystem methods in Utils may not work properly.
+* Add option to pipeline.mockStep to display a name (the inline script shows as CmdLine in Azure DevOps).
+* Add option to continue on error for all steps.
+* Possibility to replace a step with a template file (the template file could serve as a mock file).
+* Possibility to replace a step with another step.
+* Add unit tests to the junit-pipeline code itself.
+* Check/assert output variables of a step.
+* Add methods to add, update or remove conditions in stages or jobs. Use the _overrideLiteral_ method, if possible.
+* Support "refs/tags/tag" for external repositories with templates.
+* Check whether the output pipeline is a valid pipeline (valid yaml and valid Azure DevOps pipeline).
 
 ### Solved ##
 ***

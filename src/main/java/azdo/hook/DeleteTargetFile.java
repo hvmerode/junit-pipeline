@@ -14,7 +14,7 @@ import java.nio.file.Paths;
  */
 public class DeleteTargetFile extends Hook {
     private String fullQualifiedFileName;
-    private static Logger logger = LoggerFactory.getLogger(AzDoPipeline.class);
+    private static Logger logger = LoggerFactory.getLogger(DeleteTargetFile.class);
     public DeleteTargetFile(String fullQualifiedFileName) {
         logger.debug("==> Class: DeleteTargetFile");
 

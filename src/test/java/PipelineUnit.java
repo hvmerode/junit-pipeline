@@ -27,7 +27,6 @@ public class PipelineUnit {
         // Always replace template-steps.yml with a mock template
         pipeline.commandBundle.overrideLiteral("templates/steps/template-steps.yml", "templates/steps/template-mock.yml");
     }
-
     @Test
     @Order(1)
     public void test1() {

@@ -4,10 +4,11 @@ parameters:
   default: xxx
 jobs:
 - job: Job_A
-  displayName: Job A
+  displayName: template-jobs.yml job
   pool:
     vmImage: ubuntu-latest
   steps:
   - script: |
       echo 'This is job: Job_A with parameter ${{ parameters.param_1 }}'
+    displayName: template-jobs.yml script
   - template: ../steps/template-steps.yml

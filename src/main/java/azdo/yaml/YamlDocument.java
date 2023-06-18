@@ -16,6 +16,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import static azdo.utils.Constants.*;
+
 /*
     A YamlDocument represents one YAML file; this is a pipeline file or a template file.
     In the case of a template file, the specialized Template class is used.
@@ -61,7 +63,7 @@ public class YamlDocument {
        This map is kept into memory and is manipulated by the methods of this class.
      */
     @SuppressWarnings("java:S1192")
-    public Map<String, Object> readYaml() {
+    public Map<String, Object> readYaml(boolean continueOnError) {
         logger.debug("");
         logger.debug("-----------------------------------------------------------------");
         logger.debug("Start YamlDocument.readYaml: {}", sourceInputFile);
@@ -75,7 +77,9 @@ public class YamlDocument {
             yamlMap = yaml.load(inputStream);
             logger.debug("YamlMap: {}", yamlMap);
         } catch (Exception e) {
-            logger.debug("Cannot find file {}", sourceInputFile);
+            logger.error(RED + "Cannot find file {}" + RESET_COLOR, sourceInputFile);
+            logger.debug(DEMARCATION);
+            if (continueOnError) return null; else System. exit(1);
         }
 
         logger.debug("-----------------------------------------------------------------");
@@ -92,13 +96,15 @@ public class YamlDocument {
                               String targetPath,
                               String sourceBasePathExternal,
                               String targetBasePathExternal,
-                              ArrayList<RepositoryResource> repositoryList){
+                              ArrayList<RepositoryResource> repositoryList,
+                              boolean continueOnError){
         logger.debug("==> Method: YamlDocument.readTemplates");
         logger.debug("sourcePath: {}", sourcePath);
         logger.debug("targetPath: {}", targetPath);
         logger.debug("sourceBasePathExternal: {}", sourceBasePathExternal);
         logger.debug("targetBasePathExternal: {}", targetBasePathExternal);
         logger.debug("rootInputFile: {}", rootInputFile);
+        logger.debug("continueOnError: {}", continueOnError);
 
         // The root represents the root path of the pipeline
         Path pathMain = Paths.get(rootInputFile);
@@ -116,20 +122,22 @@ public class YamlDocument {
                 targetPath,
                 sourceBasePathExternal,
                 targetBasePathExternal,
-                repositoryList);
+                repositoryList,
+                continueOnError);
         int index = 0;
         int size = templateList.size();
         Template template;
         for (index = 0; index < size; index++) {
             template = templateList.get(index);
-            template.readYaml();
+            template.readYaml(continueOnError);
 
             // Templates can contain other templates, so recursively read them
             template.readTemplates(sourcePath,
                     targetPath,
                     sourceBasePathExternal,
                     targetBasePathExternal,
-                    repositoryList);
+                    repositoryList,
+                    continueOnError);
         }
     }
 
@@ -617,13 +625,15 @@ public class YamlDocument {
                               String targetPath,
                               String sourceBasePathExternal,
                               String targetBasePathExternal,
-                              ArrayList<RepositoryResource> repositoryList) {
+                              ArrayList<RepositoryResource> repositoryList,
+                              boolean continueOnError) {
         logger.debug("==> Method: YamlDocument.getTemplates");
         logger.debug("root: {}", root);
         logger.debug("sourcePath: {}", sourcePath);
         logger.debug("targetPath: {}", targetPath);
         logger.debug("sourceBasePathExternal: {}", sourceBasePathExternal);
         logger.debug("targetBasePathExternal: {}", targetBasePathExternal);
+        logger.debug("continueOnError: {}", continueOnError);
 
         // Inner could be null
         if (inner == null){
@@ -642,16 +652,31 @@ public class YamlDocument {
                         sourceBasePathExternal,
                         targetBasePathExternal,
                         repositoryAlias,
-                        repositoryList));
+                        repositoryList,
+                        continueOnError));
                 logger.debug("Found template {}; add it to the templateList", entry.getValue());
             }
 
             // Go a level deeper
             if (entry.getValue() instanceof Map) {
-                getTemplates((Map<String, Object>) entry.getValue(), root, sourcePath, targetPath, sourceBasePathExternal, targetBasePathExternal, repositoryList);
+                getTemplates((Map<String, Object>) entry.getValue(),
+                        root,
+                        sourcePath,
+                        targetPath,
+                        sourceBasePathExternal,
+                        targetBasePathExternal,
+                        repositoryList,
+                        continueOnError);
             }
             if (entry.getValue() instanceof ArrayList) {
-                getTemplates((ArrayList<Object>) entry.getValue(), root, sourcePath, targetPath, sourceBasePathExternal, targetBasePathExternal, repositoryList);
+                getTemplates((ArrayList<Object>) entry.getValue(),
+                        root,
+                        sourcePath,
+                        targetPath,
+                        sourceBasePathExternal,
+                        targetBasePathExternal,
+                        repositoryList,
+                        continueOnError);
             }
         }
     }
@@ -661,13 +686,15 @@ public class YamlDocument {
                               String targetPath,
                               String sourceBasePathExternal,
                               String targetBasePathExternal,
-                              ArrayList<RepositoryResource> repositoryList) {
+                              ArrayList<RepositoryResource> repositoryList,
+                              boolean continueOnError) {
         logger.debug("==> Method: YamlDocument.getTemplates");
         logger.debug("root: {}", root);
         logger.debug("sourcePath: {}", sourcePath);
         logger.debug("targetPath: {}", targetPath);
         logger.debug("sourceBasePathExternal: {}", sourceBasePathExternal);
         logger.debug("targetBasePathExternal: {}", targetBasePathExternal);
+        logger.debug("continueOnError: {}", continueOnError);
 
         // Inner could be null
         if (inner == null){
@@ -682,10 +709,24 @@ public class YamlDocument {
             }
             // If inner sections are found, go a level deeper
             if (entry instanceof Map) {
-                getTemplates((Map<String, Object>)entry, root, sourcePath, targetPath, sourceBasePathExternal, targetBasePathExternal, repositoryList);
+                getTemplates((Map<String, Object>)entry,
+                        root,
+                        sourcePath,
+                        targetPath,
+                        sourceBasePathExternal,
+                        targetBasePathExternal,
+                        repositoryList,
+                        continueOnError);
             }
             if (entry instanceof ArrayList) {
-                getTemplates((ArrayList<Object>)entry, root, sourcePath, targetPath, sourceBasePathExternal, targetBasePathExternal, repositoryList);
+                getTemplates((ArrayList<Object>)entry,
+                        root,
+                        sourcePath,
+                        targetPath,
+                        sourceBasePathExternal,
+                        targetBasePathExternal,
+                        repositoryList,
+                        continueOnError);
             }
         });
     }

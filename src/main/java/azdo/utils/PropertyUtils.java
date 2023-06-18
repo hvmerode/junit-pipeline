@@ -53,10 +53,11 @@ public class PropertyUtils {
     private String projectApi = "/projects";
     private String projectApiVersion = "api-version=7.0";
 
-    // Miscellanious
+    // Miscellaneous
     private String commitPattern;
     ArrayList<String> commitPatternList;
     private String repositoryName;
+    private boolean continueOnError = false;
 
     @SuppressWarnings("java:S1192")
     public PropertyUtils(String propertyFile) {
@@ -116,6 +117,9 @@ public class PropertyUtils {
             projectApi = getStringProperty(properties, "project.api", projectApi);
             projectApiVersion = getStringProperty(properties, "project.api.version", projectApiVersion);
 
+            // Miscellaneous
+            continueOnError = getBooleanProperty(properties, "error.continue", continueOnError);
+
             // Derived properties
             azdoBaseUrl="https://dev.azure.com/" + targetOrganization;
             logger.debug("Derived azdoBaseUrl: {}", azdoBaseUrl);
@@ -131,7 +135,7 @@ public class PropertyUtils {
             logger.debug("");
         }
         catch (FileNotFoundException e) {
-            logger.debug("File not found");
+            logger.debug("Property file not found");
         }
         catch (IOException e) {
             logger.debug("IOException");
@@ -162,6 +166,23 @@ public class PropertyUtils {
         String p = properties.getProperty(propertyName);
         if (p != null && !p.isEmpty()) {
             propertyValue = Integer.parseInt(p);
+        }
+        if (showValueInLog)
+            logger.debug("{}: {}", propertyName, propertyValue);
+        else
+            logger.debug("{}: *****************", propertyName);
+
+        return propertyValue;
+    }
+
+    private boolean getBooleanProperty (Properties properties, String propertyName, boolean propertyValue) {
+        return getBooleanProperty (properties, propertyName, propertyValue, true);
+    }
+
+    private boolean getBooleanProperty (Properties properties, String propertyName, boolean propertyValue, boolean showValueInLog) {
+        String p = properties.getProperty(propertyName);
+        if (p != null && !p.isEmpty()) {
+            propertyValue = Boolean.parseBoolean(p);
         }
         if (showValueInLog)
             logger.debug("{}: {}", propertyName, propertyValue);
@@ -211,8 +232,9 @@ public class PropertyUtils {
         return projectApiVersion;
     }
 
-    // Miscellanious
+    // Miscellaneous
     public String getCommitPattern() { return commitPattern; }
     public ArrayList<String> getCommitPatternList() { return commitPatternList; }
     public String getRepositoryName() { return repositoryName; }
+    public boolean isContinueOnError() { return continueOnError; }
 }

@@ -5,10 +5,7 @@ package azdo.junit;
 
 import azdo.command.CommandBundle;
 import azdo.hook.Hook;
-import azdo.utils.AzDoUtils;
-import azdo.utils.GitUtils;
-import azdo.utils.PropertyUtils;
-import azdo.utils.Utils;
+import azdo.utils.*;
 import azdo.yaml.ActionEnum;
 import azdo.yaml.YamlDocumentEntryPoint;
 import org.eclipse.jgit.api.Git;
@@ -19,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import static azdo.utils.Constants.DEMARCATION;
 
 /*
    AzDoPipeline is used in JUnit tests; it acts as a Java representation of an Azure DeVOps pipeline.
@@ -38,7 +36,6 @@ public class AzDoPipeline implements Pipeline {
     private static final String SECTION_STEPS = "steps";
     private static final String IDENTIFIER_NAME = "name";
 
-    private static final String DEMARCATION = "==============================================================================";
     private PropertyUtils properties;
     private Git git = null;
     private CredentialsProvider credentialsProvider;
@@ -57,20 +54,24 @@ public class AzDoPipeline implements Pipeline {
         logger.debug("propertyFile {}:", propertyFile);
         logger.debug("pipelineFile {}:", pipelineFile);
 
+        // Validate the main pipeline file before any other action
+        // If it is not valid, the test may fail
+        properties = new PropertyUtils(propertyFile);
+        Utils.validatePipelineFile(pipelineFile, properties.isContinueOnError());
+
         logger.debug("");
         logger.debug(DEMARCATION);
         logger.debug("Start AzDoPipeline: Initializing repository and pipeline");
         logger.debug(DEMARCATION);
 
         // Read the properties file and create the entry point
-        properties = new PropertyUtils(propertyFile);
         yamlDocumentEntryPoint = new YamlDocumentEntryPoint(properties.getSourcePath(),
                 properties.getTargetPath(),
                 properties.getSourceBasePathExternal(),
                 properties.getTargetBasePathExternal());
 
         // Read the main pipeline file; this is the YAML file used in the Azure DevOps pipeline (in the Azure DeVOps test project)
-        yamlMap = yamlDocumentEntryPoint.read(pipelineFile);
+        yamlMap = yamlDocumentEntryPoint.read(pipelineFile, properties.isContinueOnError());
 
         // The external resources section in the main YAML file is parsed and a list of repositories are stored in
         // the yamlDocumentEntryPoint. These repositories contain template YAML files, referred to in the pipeline.
@@ -280,7 +281,7 @@ public class AzDoPipeline implements Pipeline {
 
         // Re-read the original pipeline for the next test (for a clean start of the next test)
         // The manipulated, in-memory stored YAML files are refreshed with the content of the original (source) files.
-        yamlMap = yamlDocumentEntryPoint.read(yamlFile);
+        yamlMap = yamlDocumentEntryPoint.read(yamlFile, properties.isContinueOnError());
 
         logger.debug("");
         logger.debug(DEMARCATION);

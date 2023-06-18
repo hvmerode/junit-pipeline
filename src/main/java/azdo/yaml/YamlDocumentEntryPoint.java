@@ -114,7 +114,8 @@ public class YamlDocumentEntryPoint {
                 targetPath,
                 sourceBasePathExternal,
                 targetBasePathExternal,
-                repositoryList);
+                repositoryList,
+                properties.isContinueOnError());
     }
 
     /*
@@ -122,16 +123,13 @@ public class YamlDocumentEntryPoint {
        This map is kept in memory. In addition, it creates YAML maps from template files.
      */
     @SuppressWarnings("java:S1192")
-    public Map<String, Object> read (String mainPipelineFile) {
+    public Map<String, Object> read (String mainPipelineFile, boolean continueOnError) {
         logger.debug("==> Method: YamlDocumentEntryPoint.read");
         logger.debug("mainPipelineFile: {}", mainPipelineFile);
 
         // First read the main YAML file
-        //Path mainPipelinePath = Paths.get(mainPipelineFile);
-        //mainPipelinePath = mainPipelinePath.normalize();
-        //mainPipelineFile = mainPipelinePath.toString();
         mainYamlDocument = new YamlDocument(mainPipelineFile, sourcePath, targetPath);
-        Map<String, Object> yamlMap = mainYamlDocument.readYaml();
+        Map<String, Object> yamlMap = mainYamlDocument.readYaml(continueOnError);
 
         return yamlMap;
     }
@@ -192,6 +190,10 @@ public class YamlDocumentEntryPoint {
                                        ArrayList<String> commitPatternList) {
         logger.debug("==> Method: YamlDocumentEntryPoint.commitAndPushAllCode (second method signature)");
 
+        // Return if there is nothing to push
+        if (repositoryResourceList == null)
+            return;
+
         repositoryResourceList.forEach(repository -> {
             commitAndPushAllCode (repository, azdoUser, azdoPat, commitPatternList);
         });
@@ -215,6 +217,10 @@ public class YamlDocumentEntryPoint {
 
     public void copyAllSourceFiles (String excludeList) {
         logger.debug("==> Method: YamlDocumentEntryPoint.copyAllSourceFiles (first method signature)");
+
+        // Return if there is nothing to copy
+        if (repositoryList == null)
+            return;
 
         repositoryList.forEach(repository -> {
             copyAllSourceFiles (repository, excludeList);

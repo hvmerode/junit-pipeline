@@ -26,7 +26,8 @@ public class Template extends YamlDocument{
                      String sourceBasePathExternal,
                      String targetBasePathExternal,
                      String parentAlias,
-                     ArrayList<RepositoryResource> repositoryList){
+                     ArrayList<RepositoryResource> repositoryList,
+                     boolean continueOnError){
         logger.debug("==> Object: Template");
         logger.debug("templateName: {}", templateName);
         logger.debug("sourcePath: {}", sourcePath);
@@ -34,6 +35,7 @@ public class Template extends YamlDocument{
         logger.debug("sourceBasePathExternal: {}", sourceBasePathExternal);
         logger.debug("targetBasePathExternal: {}", targetBasePathExternal);
         logger.debug("parentAlias: {}", parentAlias);
+        logger.debug("continueOnError: {}", continueOnError);
 
         this.templateName = templateName;
         this.rootInputFile = templateName;
@@ -67,7 +69,7 @@ public class Template extends YamlDocument{
             else {
                 // It is an INTERNAL template (defined in the same repository as the main pipeline file)
                 logger.debug("{} is an INTERNAL template", templateName);
-                handleInternalTemplate(templateName, sourcePath);
+                handleInternalTemplate(templateName, sourcePath, continueOnError);
             }
         }
         sourceInputFile = Utils.fixPath(sourceInputFile);
@@ -115,10 +117,12 @@ public class Template extends YamlDocument{
     }
 
     private void handleInternalTemplate (String templateName,
-                                         String sourcePath) {
+                                         String sourcePath,
+                                         boolean continueOnError) {
         logger.debug("==> Method: Template.handleInternalTemplate");
         logger.debug("templateName {}", templateName);
         logger.debug("sourcePath {}", sourcePath);
+        logger.debug("continueOnError {}", continueOnError);
 
         // An internal template resides in the same repository as the main pipeline file
         sourceInputFile = Utils.findFullQualifiedFileNameInDirectory(sourcePath, templateName);
@@ -130,6 +134,10 @@ public class Template extends YamlDocument{
             String fileName = f.getFileName().toString();
             logger.debug("fileName: {}", fileName);
             targetOutputFile = directory + "/" + fileName;
+
+            // Validate the internal pipeline file before any other action
+            // If it is not valid, the test may fail
+            Utils.validatePipelineFile(sourceInputFile, continueOnError);
         }
     }
 

@@ -9,5 +9,6 @@
         <Root level="DEBUG">
             <AppenderRef ref="Console"/>
         </Root>
+        <Logger name="com.networknt" level="OFF"/>
     </Loggers>
 </Configuration>

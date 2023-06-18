@@ -3,21 +3,29 @@
 
 package azdo.utils;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.networknt.schema.JsonSchema;
+import com.networknt.schema.JsonSchemaFactory;
+import com.networknt.schema.SpecVersion;
+import com.networknt.schema.ValidationMessage;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.util.UriUtils;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+
+import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.*;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import static azdo.utils.Constants.*;
 
 public class Utils {
+    private static final int MAX_VAL_ERR = 1;
     private static Logger logger = LoggerFactory.getLogger(Utils.class);
     private static final String EXCLUDEFILESLIST = "\\excludedfileslist.txt";
 
@@ -269,6 +277,72 @@ public class Utils {
                 }
             }
         }
+    }
+
+    public static void validatePipelineFile (String fileName, boolean continueOnError) {
+        logger.debug("==> Method: Utils.validatePipelineFile");
+        logger.debug("fileName: {}", fileName);
+
+        logger.debug(DEMARCATION);
+        logger.debug("Validating {}", fileName);
+
+        // Read the schema from the resources folder
+        InputStream isJsonSchema = Utils.class.getClassLoader().getResourceAsStream(JSON_SCHEMA);
+        if (isJsonSchema == null)
+        {
+            logger.error(RED + "Schema cannot not be read" + RESET_COLOR);
+            logger.debug(DEMARCATION);
+            return;
+        }
+
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+        JsonSchemaFactory factory = JsonSchemaFactory.builder(JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7)).objectMapper(mapper).build(); /* Using draft-07. You can choose anyother draft.*/
+        JsonSchema schema = factory.getSchema(isJsonSchema);
+
+        InputStream isYaml = null;
+        try {
+            isYaml = new FileInputStream(fileName);
+        }
+        catch (FileNotFoundException fnfe) {
+            logger.error(RED + "{} cannot be read" + RESET_COLOR, fileName);
+            logger.debug(DEMARCATION);
+            if (continueOnError) return; else System. exit(1);
+        }
+
+        JsonNode jsonNode = null;
+        try {
+            jsonNode = mapper.readTree(isYaml);
+        }
+        catch (IOException e){
+            logger.error(RED + "Cannot validate {};the file cannot be found or it is not a valid YAML file" + RESET_COLOR, fileName);
+            logger.debug(DEMARCATION);
+            if (continueOnError) return; else System. exit(1);
+        }
+
+        // If jsonNode is null, the yaml was not valid
+        if (jsonNode == null) {
+            logger.error(RED + "File {} is not a valid YAML file" + RESET_COLOR, fileName);
+            logger.debug(DEMARCATION);
+            if (continueOnError) return; else System. exit(1);
+        }
+
+        Set<ValidationMessage> validateMsg = schema.validate(jsonNode);
+        int size = validateMsg.size();
+        if (size > 0) {
+            int i = 0;
+            int maxErr = size < MAX_VAL_ERR ? size : MAX_VAL_ERR;
+            for (ValidationMessage msg : validateMsg) {
+                logger.error(RED + "Validation type [{}]; Error: {}" + RESET_COLOR, msg.getType(), msg.getMessage());
+                if (i >= maxErr)
+                    break;
+                i++;
+            }
+            logger.debug(DEMARCATION);
+            if (continueOnError) return; else System. exit(1);
+        }
+
+        logger.debug("File {} looks valid", fileName);
+        logger.debug(DEMARCATION);
     }
 
     public static void wait(int ms)

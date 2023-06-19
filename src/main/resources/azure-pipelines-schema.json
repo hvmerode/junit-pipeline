@@ -1,0 +1,4102 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/Microsoft/azure-pipelines-vscode/blob/main/service-schema.json",
+  "$comment": "v1.219.1",
+  "title": "Pipeline schema",
+  "description": "A pipeline definition",
+  "anyOf": [
+    {
+      "$ref": "#/definitions/pipeline"
+    },
+    {
+      "type": "string",
+      "pattern": "^$"
+    }
+  ],
+  "definitions": {
+    "string": {
+      "type": "string"
+    },
+    "sequence": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/any"
+      }
+    },
+    "mapping": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "any": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/any"
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": true
+        }
+      ]
+    },
+    "pipeline": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "stages": {
+              "description": "Stages are groups of jobs that can run without human intervention",
+              "$ref": "#/definitions/stages"
+            },
+            "pool": {
+              "description": "Pool where jobs in this pipeline will run unless otherwise specified",
+              "$ref": "#/definitions/pool"
+            },
+            "name": {
+              "description": "Pipeline name",
+              "$ref": "#/definitions/string_allowExpressions"
+            },
+            "appendCommitMessageToRunName": {
+              "description": "Append the commit message to the build number",
+              "$ref": "#/definitions/boolean"
+            },
+            "trigger": {
+              "description": "Continuous integration triggers",
+              "$ref": "#/definitions/trigger"
+            },
+            "parameters": {
+              "description": "Pipeline template parameters",
+              "$ref": "#/definitions/pipelineTemplateParameters"
+            },
+            "pr": {
+              "description": "Pull request triggers",
+              "$ref": "#/definitions/pr"
+            },
+            "schedules": {
+              "$ref": "#/definitions/schedules"
+            },
+            "resources": {
+              "description": "Containers and repositories used in the build",
+              "$ref": "#/definitions/resources"
+            },
+            "variables": {
+              "description": "Variables for this pipeline",
+              "$ref": "#/definitions/variables"
+            },
+            "lockBehavior": {
+              "description": "Behavior lock requests from this stage should exhibit in relation to other exclusive lock requests",
+              "$ref": "#/definitions/lockBehavior"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "stages"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "extends": {
+              "description": "Extends a template",
+              "$ref": "#/definitions/extends"
+            },
+            "pool": {
+              "description": "Pool where jobs in this pipeline will run unless otherwise specified",
+              "$ref": "#/definitions/pool"
+            },
+            "name": {
+              "description": "Pipeline name",
+              "$ref": "#/definitions/string_allowExpressions"
+            },
+            "appendCommitMessageToRunName": {
+              "description": "Append the commit message to the build number",
+              "$ref": "#/definitions/boolean"
+            },
+            "trigger": {
+              "description": "Continuous integration triggers",
+              "$ref": "#/definitions/trigger"
+            },
+            "parameters": {
+              "description": "Pipeline template parameters",
+              "$ref": "#/definitions/pipelineTemplateParameters"
+            },
+            "pr": {
+              "description": "Pull request triggers",
+              "$ref": "#/definitions/pr"
+            },
+            "schedules": {
+              "$ref": "#/definitions/schedules"
+            },
+            "resources": {
+              "description": "Containers and repositories used in the build",
+              "$ref": "#/definitions/resources"
+            },
+            "variables": {
+              "description": "Variables for this pipeline",
+              "$ref": "#/definitions/variables"
+            },
+            "lockBehavior": {
+              "description": "Behavior lock requests from this stage should exhibit in relation to other exclusive lock requests",
+              "$ref": "#/definitions/lockBehavior"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "extends"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jobs": {
+              "description": "Jobs represent units of work which can be assigned to a single agent or server",
+              "$ref": "#/definitions/jobs"
+            },
+            "pool": {
+              "description": "Pool where jobs in this pipeline will run unless otherwise specified",
+              "$ref": "#/definitions/pool"
+            },
+            "name": {
+              "description": "Pipeline name",
+              "$ref": "#/definitions/string_allowExpressions"
+            },
+            "appendCommitMessageToRunName": {
+              "description": "Append the commit message to the build number",
+              "$ref": "#/definitions/boolean"
+            },
+            "trigger": {
+              "description": "Continuous integration triggers",
+              "$ref": "#/definitions/trigger"
+            },
+            "parameters": {
+              "description": "Pipeline template parameters",
+              "$ref": "#/definitions/pipelineTemplateParameters"
+            },
+            "pr": {
+              "description": "Pull request triggers",
+              "$ref": "#/definitions/pr"
+            },
+            "schedules": {
+              "$ref": "#/definitions/schedules"
+            },
+            "resources": {
+              "description": "Containers and repositories used in the build",
+              "$ref": "#/definitions/resources"
+            },
+            "variables": {
+              "description": "Variables for this pipeline",
+              "$ref": "#/definitions/variables"
+            },
+            "lockBehavior": {
+              "description": "Behavior lock requests from this stage should exhibit in relation to other exclusive lock requests",
+              "$ref": "#/definitions/lockBehavior"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "jobs"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "phases": {
+              "description": "Phases which make up the pipeline",
+              "deprecationMessage": "This option is deprecated, use `jobs` instead",
+              "doNotSuggest": true,
+              "$ref": "#/definitions/phases"
+            },
+            "name": {
+              "description": "Pipeline name",
+              "$ref": "#/definitions/string_allowExpressions"
+            },
+            "appendCommitMessageToRunName": {
+              "description": "Append the commit message to the build number",
+              "$ref": "#/definitions/boolean"
+            },
+            "trigger": {
+              "description": "Continuous integration triggers",
+              "$ref": "#/definitions/trigger"
+            },
+            "parameters": {
+              "description": "Pipeline template parameters",
+              "$ref": "#/definitions/pipelineTemplateParameters"
+            },
+            "pr": {
+              "description": "Pull request triggers",
+              "$ref": "#/definitions/pr"
+            },
+            "schedules": {
+              "$ref": "#/definitions/schedules"
+            },
+            "resources": {
+              "description": "Containers and repositories used in the build",
+              "$ref": "#/definitions/resources"
+            },
+            "variables": {
+              "description": "Variables for this pipeline",
+              "$ref": "#/definitions/variables"
+            },
+            "lockBehavior": {
+              "description": "Behavior lock requests from this stage should exhibit in relation to other exclusive lock requests",
+              "$ref": "#/definitions/lockBehavior"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "phases"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "strategy": {
+              "description": "Execution strategy for this job",
+              "$ref": "#/definitions/jobStrategy"
+            },
+            "continueOnError": {
+              "description": "Continue running even on failure?",
+              "$ref": "#/definitions/jobContinueOnError"
+            },
+            "pool": {
+              "description": "Pool where this job will run",
+              "$ref": "#/definitions/pool"
+            },
+            "container": {
+              "description": "Container resource name",
+              "$ref": "#/definitions/jobContainer"
+            },
+            "services": {
+              "$ref": "#/definitions/jobServices"
+            },
+            "workspace": {
+              "$ref": "#/definitions/jobWorkspace"
+            },
+            "steps": {
+              "description": "A list of steps to run in this job",
+              "$ref": "#/definitions/steps"
+            },
+            "name": {
+              "description": "Pipeline name",
+              "$ref": "#/definitions/string_allowExpressions"
+            },
+            "appendCommitMessageToRunName": {
+              "description": "Append the commit message to the build number",
+              "$ref": "#/definitions/boolean"
+            },
+            "trigger": {
+              "description": "Continuous integration triggers",
+              "$ref": "#/definitions/trigger"
+            },
+            "parameters": {
+              "description": "Pipeline template parameters",
+              "$ref": "#/definitions/pipelineTemplateParameters"
+            },
+            "pr": {
+              "description": "Pull request triggers",
+              "$ref": "#/definitions/pr"
+            },
+            "schedules": {
+              "$ref": "#/definitions/schedules"
+            },
+            "resources": {
+              "description": "Containers and repositories used in the build",
+              "$ref": "#/definitions/resources"
+            },
+            "variables": {
+              "description": "Variables for this pipeline",
+              "$ref": "#/definitions/variables"
+            },
+            "lockBehavior": {
+              "description": "Behavior lock requests from this stage should exhibit in relation to other exclusive lock requests",
+              "$ref": "#/definitions/lockBehavior"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "steps"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "continueOnError": {
+              "description": "Continue running even on failure?",
+              "$ref": "#/definitions/jobContinueOnError"
+            },
+            "queue": {
+              "description": "Queue where this phase will run",
+              "deprecationMessage": "This option is deprecated, use pool instead",
+              "doNotSuggest": true,
+              "$ref": "#/definitions/phaseQueueTarget"
+            },
+            "steps": {
+              "description": "A list of steps to run in this phase",
+              "$ref": "#/definitions/steps"
+            },
+            "name": {
+              "description": "Pipeline name",
+              "$ref": "#/definitions/string_allowExpressions"
+            },
+            "appendCommitMessageToRunName": {
+              "description": "Append the commit message to the build number",
+              "$ref": "#/definitions/boolean"
+            },
+            "trigger": {
+              "description": "Continuous integration triggers",
+              "$ref": "#/definitions/trigger"
+            },
+            "parameters": {
+              "description": "Pipeline template parameters",
+              "$ref": "#/definitions/pipelineTemplateParameters"
+            },
+            "pr": {
+              "description": "Pull request triggers",
+              "$ref": "#/definitions/pr"
+            },
+            "schedules": {
+              "$ref": "#/definitions/schedules"
+            },
+            "resources": {
+              "description": "Containers and repositories used in the build",
+              "$ref": "#/definitions/resources"
+            },
+            "variables": {
+              "description": "Variables for this pipeline",
+              "$ref": "#/definitions/variables"
+            },
+            "lockBehavior": {
+              "description": "Behavior lock requests from this stage should exhibit in relation to other exclusive lock requests",
+              "$ref": "#/definitions/lockBehavior"
+            }
+          },
+          "additionalProperties": false,
+          "deprecationMessage": "This option is deprecated, use `job` (inside `jobs`) instead",
+          "required": [
+            "steps"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "continueOnError": {
+              "description": "Continue running even on failure?",
+              "$ref": "#/definitions/jobContinueOnError"
+            },
+            "server": {
+              "description": "True if this is an agent-less phase (runs on server)",
+              "deprecationMessage": "This option is deprecated, use pool:server instead",
+              "doNotSuggest": true,
+              "$ref": "#/definitions/phaseServerTarget"
+            },
+            "steps": {
+              "description": "A list of steps to run in this phase",
+              "$ref": "#/definitions/steps"
+            },
+            "name": {
+              "description": "Pipeline name",
+              "$ref": "#/definitions/string_allowExpressions"
+            },
+            "appendCommitMessageToRunName": {
+              "description": "Append the commit message to the build number",
+              "$ref": "#/definitions/boolean"
+            },
+            "trigger": {
+              "description": "Continuous integration triggers",
+              "$ref": "#/definitions/trigger"
+            },
+            "parameters": {
+              "description": "Pipeline template parameters",
+              "$ref": "#/definitions/pipelineTemplateParameters"
+            },
+            "pr": {
+              "description": "Pull request triggers",
+              "$ref": "#/definitions/pr"
+            },
+            "schedules": {
+              "$ref": "#/definitions/schedules"
+            },
+            "resources": {
+              "description": "Containers and repositories used in the build",
+              "$ref": "#/definitions/resources"
+            },
+            "variables": {
+              "description": "Variables for this pipeline",
+              "$ref": "#/definitions/variables"
+            },
+            "lockBehavior": {
+              "description": "Behavior lock requests from this stage should exhibit in relation to other exclusive lock requests",
+              "$ref": "#/definitions/lockBehavior"
+            }
+          },
+          "additionalProperties": false,
+          "deprecationMessage": "This option is deprecated, use `job` (inside `jobs`) instead",
+          "required": [
+            "steps"
+          ]
+        }
+      ]
+    },
+    "pipelineBase": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Pipeline name",
+          "$ref": "#/definitions/string_allowExpressions"
+        },
+        "appendCommitMessageToRunName": {
+          "description": "Append the commit message to the build number",
+          "$ref": "#/definitions/boolean"
+        },
+        "trigger": {
+          "description": "Continuous integration triggers",
+          "$ref": "#/definitions/trigger"
+        },
+        "parameters": {
+          "description": "Pipeline template parameters",
+          "$ref": "#/definitions/pipelineTemplateParameters"
+        },
+        "pr": {
+          "description": "Pull request triggers",
+          "$ref": "#/definitions/pr"
+        },
+        "schedules": {
+          "$ref": "#/definitions/schedules"
+        },
+        "resources": {
+          "description": "Containers and repositories used in the build",
+          "$ref": "#/definitions/resources"
+        },
+        "variables": {
+          "description": "Variables for this pipeline",
+          "$ref": "#/definitions/variables"
+        },
+        "lockBehavior": {
+          "description": "Behavior lock requests from this stage should exhibit in relation to other exclusive lock requests",
+          "$ref": "#/definitions/lockBehavior"
+        }
+      },
+      "additionalProperties": false
+    },
+    "pipelineTrigger": {
+      "type": "object",
+      "properties": {
+        "trigger": {
+          "description": "Continuous integration triggers",
+          "$ref": "#/definitions/trigger"
+        },
+        "name": {
+          "description": "Pipeline name",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "appendCommitMessageToRunName": {
+          "description": "Append the commit message to the build number",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "parameters": {
+          "description": "Pipeline template parameters",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "pr": {
+          "description": "Pull request triggers",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "schedules": {
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "resources": {
+          "description": "Containers and repositories used in the build",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "variables": {
+          "description": "Variables for the entire pipeline",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "stages": {
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "jobs": {
+          "description": "Jobs which make up the pipeline",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "extends": {
+          "description": "Extends a template",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "phases": {
+          "description": "Phases which make up the pipeline",
+          "deprecationMessage": "This option is deprecated, use `jobs` instead",
+          "doNotSuggest": true,
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "strategy": {
+          "description": "Execution strategy for the job",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "continueOnError": {
+          "description": "Continue running even on failure?",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "pool": {
+          "description": "Pool where this job will run",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "container": {
+          "description": "Container resource name",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "services": {
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "workspace": {
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "steps": {
+          "description": "A list of steps to run",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "queue": {
+          "description": "Queue where this phase will run",
+          "deprecationMessage": "This option is deprecated, use pool instead",
+          "doNotSuggest": true,
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "server": {
+          "description": "True if this is an agent-less phase (runs on server)",
+          "deprecationMessage": "This option is deprecated, use pool:server instead",
+          "doNotSuggest": true,
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "lockBehavior": {
+          "description": "Behavior lock requests from this stage should exhibit in relation to other exclusive lock requests",
+          "$ref": "#/definitions/lockBehavior"
+        }
+      },
+      "additionalProperties": false
+    },
+    "pipelineParameters": {
+      "type": "object",
+      "properties": {
+        "parameters": {
+          "description": "Pipeline template parameters",
+          "$ref": "#/definitions/pipelineTemplateParameters"
+        },
+        "name": {
+          "description": "Pipeline name",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "appendCommitMessageToRunName": {
+          "description": "Append the commit message to the build number",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "trigger": {
+          "description": "Continuous integration triggers",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "pr": {
+          "description": "Pull request triggers",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "schedules": {
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "resources": {
+          "description": "Containers and repositories used in the build",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "variables": {
+          "description": "Variables for the entire pipeline",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "stages": {
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "jobs": {
+          "description": "Jobs which make up the pipeline",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "extends": {
+          "description": "Extends a template",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "phases": {
+          "description": "Phases which make up the pipeline",
+          "deprecationMessage": "This option is deprecated, use `jobs` instead",
+          "doNotSuggest": true,
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "strategy": {
+          "description": "Execution strategy for the job",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "continueOnError": {
+          "description": "Continue running even on failure?",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "pool": {
+          "description": "Pool where this job will run",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "container": {
+          "description": "Container resource name",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "services": {
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "workspace": {
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "steps": {
+          "description": "A list of steps to run",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "queue": {
+          "description": "Queue where this phase will run",
+          "deprecationMessage": "This option is deprecated, use pool instead",
+          "doNotSuggest": true,
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "server": {
+          "description": "True if this is an agent-less phase (runs on server)",
+          "deprecationMessage": "This option is deprecated, use pool:server instead",
+          "doNotSuggest": true,
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "lockBehavior": {
+          "description": "Behavior lock requests from this stage should exhibit in relation to other exclusive lock requests",
+          "$ref": "#/definitions/lockBehavior"
+        }
+      },
+      "additionalProperties": false
+    },
+    "pipelinePR": {
+      "type": "object",
+      "properties": {
+        "pr": {
+          "description": "Pull request triggers",
+          "$ref": "#/definitions/pr"
+        },
+        "name": {
+          "description": "Pipeline name",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "appendCommitMessageToRunName": {
+          "description": "Append the commit message to the build number",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "trigger": {
+          "description": "Continuous integration triggers",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "parameters": {
+          "description": "Pipeline template parameters",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "schedules": {
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "resources": {
+          "description": "Containers and repositories used in the build",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "variables": {
+          "description": "Variables for the entire pipeline",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "stages": {
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "jobs": {
+          "description": "Jobs which make up the pipeline",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "extends": {
+          "description": "Extends a template",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "phases": {
+          "description": "Phases which make up the pipeline",
+          "deprecationMessage": "This option is deprecated, use `jobs` instead",
+          "doNotSuggest": true,
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "strategy": {
+          "description": "Execution strategy for the job",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "continueOnError": {
+          "description": "Continue running even on failure?",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "pool": {
+          "description": "Pool where this job will run",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "container": {
+          "description": "Container resource name",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "services": {
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "workspace": {
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "steps": {
+          "description": "A list of steps to run",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "queue": {
+          "description": "Queue where this phase will run",
+          "deprecationMessage": "This option is deprecated, use pool instead",
+          "doNotSuggest": true,
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "server": {
+          "description": "True if this is an agent-less phase (runs on server)",
+          "deprecationMessage": "This option is deprecated, use pool:server instead",
+          "doNotSuggest": true,
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "lockBehavior": {
+          "description": "Behavior lock requests from this stage should exhibit in relation to other exclusive lock requests",
+          "$ref": "#/definitions/lockBehavior"
+        }
+      },
+      "additionalProperties": false
+    },
+    "pipelineSchedules": {
+      "type": "object",
+      "properties": {
+        "schedules": {
+          "$ref": "#/definitions/schedules"
+        },
+        "name": {
+          "description": "Pipeline name",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "appendCommitMessageToRunName": {
+          "description": "Append the commit message to the build number",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "trigger": {
+          "description": "Continuous integration triggers",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "parameters": {
+          "description": "Pipeline template parameters",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "pr": {
+          "description": "Pull request triggers",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "resources": {
+          "description": "Containers and repositories used in the build",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "variables": {
+          "description": "Variables for the entire pipeline",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "stages": {
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "jobs": {
+          "description": "Jobs which make up the pipeline",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "extends": {
+          "description": "Extends a template",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "phases": {
+          "description": "Phases which make up the pipeline",
+          "deprecationMessage": "This option is deprecated, use `jobs` instead",
+          "doNotSuggest": true,
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "strategy": {
+          "description": "Execution strategy for the job",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "continueOnError": {
+          "description": "Continue running even on failure?",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "pool": {
+          "description": "Pool where this job will run",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "container": {
+          "description": "Container resource name",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "services": {
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "workspace": {
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "steps": {
+          "description": "A list of steps to run",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "queue": {
+          "description": "Queue where this phase will run",
+          "deprecationMessage": "This option is deprecated, use pool instead",
+          "doNotSuggest": true,
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "server": {
+          "description": "True if this is an agent-less phase (runs on server)",
+          "deprecationMessage": "This option is deprecated, use pool:server instead",
+          "doNotSuggest": true,
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "lockBehavior": {
+          "description": "Behavior lock requests from this stage should exhibit in relation to other exclusive lock requests",
+          "$ref": "#/definitions/lockBehavior"
+        }
+      },
+      "additionalProperties": false
+    },
+    "pipelineAnyBase": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "description": "Pipeline name",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "appendCommitMessageToRunName": {
+          "description": "Append the commit message to the build number",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "trigger": {
+          "description": "Continuous integration triggers",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "parameters": {
+          "description": "Pipeline template parameters",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "pr": {
+          "description": "Pull request triggers",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "schedules": {
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "resources": {
+          "description": "Containers and repositories used in the build",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "variables": {
+          "description": "Variables for the entire pipeline",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "stages": {
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "jobs": {
+          "description": "Jobs which make up the pipeline",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "extends": {
+          "description": "Extends a template",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "phases": {
+          "description": "Phases which make up the pipeline",
+          "deprecationMessage": "This option is deprecated, use `jobs` instead",
+          "doNotSuggest": true,
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "strategy": {
+          "description": "Execution strategy for the job",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "continueOnError": {
+          "description": "Continue running even on failure?",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "pool": {
+          "description": "Pool where this job will run",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "container": {
+          "description": "Container resource name",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "services": {
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "workspace": {
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "steps": {
+          "description": "A list of steps to run",
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "queue": {
+          "description": "Queue where this phase will run",
+          "deprecationMessage": "This option is deprecated, use pool instead",
+          "doNotSuggest": true,
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "server": {
+          "description": "True if this is an agent-less phase (runs on server)",
+          "deprecationMessage": "This option is deprecated, use pool:server instead",
+          "doNotSuggest": true,
+          "$ref": "#/definitions/any_allowExpressions"
+        },
+        "lockBehavior": {
+          "description": "Behavior lock requests from this stage should exhibit in relation to other exclusive lock requests",
+          "$ref": "#/definitions/lockBehavior"
+        }
+      },
+      "additionalProperties": false
+    },
+    "pr": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^none$"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/branchFilter"
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "autoCancel": {
+              "description": "Whether to cancel running PR builds when a new commit lands in the branch",
+              "$ref": "#/definitions/boolean"
+            },
+            "branches": {
+              "$ref": "#/definitions/includeExcludeFilters"
+            },
+            "paths": {
+              "$ref": "#/definitions/includeExcludeFilters"
+            },
+            "drafts": {
+              "description": "Whether to start a run when a draft PR is created",
+              "$ref": "#/definitions/boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "trigger": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^none$"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/branchFilter"
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "batch": {
+              "description": "Whether to batch changes per branch",
+              "$ref": "#/definitions/boolean"
+            },
+            "branches": {
+              "$ref": "#/definitions/includeExcludeFilters"
+            },
+            "paths": {
+              "$ref": "#/definitions/includeExcludeFilters"
+            },
+            "tags": {
+              "$ref": "#/definitions/includeExcludeFilters"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "includeExcludeFilters": {
+      "type": "object",
+      "properties": {
+        "include": {
+          "$ref": "#/definitions/branchFilterArray"
+        },
+        "exclude": {
+          "$ref": "#/definitions/branchFilterArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "includeExcludeStringFilters": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/nonEmptyString"
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "include": {
+              "$ref": "#/definitions/sequenceOfNonEmptyString"
+            },
+            "exclude": {
+              "$ref": "#/definitions/sequenceOfNonEmptyString"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "branchFilterArray": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/branchFilter"
+      }
+    },
+    "branchFilter": {
+      "type": "string",
+      "description": "branch name or prefix filter",
+      "pattern": "^[^\\/~\\^\\: \\[\\]\\\\]+(\\/[^\\/~\\^\\: \\[\\]\\\\]+)*$"
+    },
+    "templateParameters": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/templateParameter"
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": true
+        }
+      ]
+    },
+    "templateParameter": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "displayName": {
+          "description": "Human-readable name for the parameter",
+          "$ref": "#/definitions/string"
+        },
+        "type": {
+          "$ref": "#/definitions/templateParameterType"
+        },
+        "default": {
+          "$ref": "#/definitions/any"
+        },
+        "values": {
+          "$ref": "#/definitions/sequenceOfNonEmptyString"
+        }
+      },
+      "additionalProperties": false,
+      "firstProperty": [
+        "name"
+      ]
+    },
+    "templateParameterType": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^boolean$"
+        },
+        {
+          "type": "string",
+          "pattern": "^container$"
+        },
+        {
+          "type": "string",
+          "pattern": "^containerList$"
+        },
+        {
+          "type": "string",
+          "pattern": "^deployment$"
+        },
+        {
+          "type": "string",
+          "pattern": "^deploymentList$"
+        },
+        {
+          "type": "string",
+          "pattern": "^job$"
+        },
+        {
+          "type": "string",
+          "pattern": "^jobList$"
+        },
+        {
+          "type": "string",
+          "pattern": "^legacyObject$"
+        },
+        {
+          "type": "string",
+          "pattern": "^number$"
+        },
+        {
+          "type": "string",
+          "pattern": "^object$"
+        },
+        {
+          "type": "string",
+          "pattern": "^stage$"
+        },
+        {
+          "type": "string",
+          "pattern": "^stageList$"
+        },
+        {
+          "type": "string",
+          "pattern": "^step$"
+        },
+        {
+          "type": "string",
+          "pattern": "^stepList$"
+        },
+        {
+          "type": "string",
+          "pattern": "^string$"
+        }
+      ]
+    },
+    "pipelineTemplateParameters": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/pipelineTemplateParameter"
+      }
+    },
+    "pipelineTemplateParameter": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "displayName": {
+          "description": "Human-readable name for the parameter",
+          "$ref": "#/definitions/string"
+        },
+        "type": {
+          "$ref": "#/definitions/pipelineTemplateParameterType"
+        },
+        "default": {
+          "$ref": "#/definitions/any"
+        },
+        "values": {
+          "$ref": "#/definitions/sequenceOfNonEmptyString"
+        }
+      },
+      "additionalProperties": false,
+      "firstProperty": [
+        "name"
+      ]
+    },
+    "pipelineTemplateParameterType": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^boolean$"
+        },
+        {
+          "type": "string",
+          "pattern": "^container$"
+        },
+        {
+          "type": "string",
+          "pattern": "^containerList$"
+        },
+        {
+          "type": "string",
+          "pattern": "^deployment$"
+        },
+        {
+          "type": "string",
+          "pattern": "^deploymentList$"
+        },
+        {
+          "type": "string",
+          "pattern": "^environment$"
+        },
+        {
+          "type": "string",
+          "pattern": "^filePath$"
+        },
+        {
+          "type": "string",
+          "pattern": "^job$"
+        },
+        {
+          "type": "string",
+          "pattern": "^jobList$"
+        },
+        {
+          "type": "string",
+          "pattern": "^number$"
+        },
+        {
+          "type": "string",
+          "pattern": "^object$"
+        },
+        {
+          "type": "string",
+          "pattern": "^pool$"
+        },
+        {
+          "type": "string",
+          "pattern": "^secureFile$"
+        },
+        {
+          "type": "string",
+          "pattern": "^serviceConnection$"
+        },
+        {
+          "type": "string",
+          "pattern": "^stage$"
+        },
+        {
+          "type": "string",
+          "pattern": "^stageList$"
+        },
+        {
+          "type": "string",
+          "pattern": "^step$"
+        },
+        {
+          "type": "string",
+          "pattern": "^stepList$"
+        },
+        {
+          "type": "string",
+          "pattern": "^string$"
+        }
+      ]
+    },
+    "schedules": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/schedule"
+      }
+    },
+    "schedule": {
+      "type": "object",
+      "properties": {
+        "cron": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "displayName": {
+          "$ref": "#/definitions/string"
+        },
+        "branches": {
+          "$ref": "#/definitions/includeExcludeFilters"
+        },
+        "batch": {
+          "$ref": "#/definitions/boolean"
+        },
+        "always": {
+          "$ref": "#/definitions/boolean"
+        }
+      },
+      "additionalProperties": false,
+      "firstProperty": [
+        "cron"
+      ]
+    },
+    "resources": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "builds": {
+              "description": "List of external build resources",
+              "$ref": "#/definitions/buildResources"
+            },
+            "containers": {
+              "description": "List of container images",
+              "$ref": "#/definitions/containerResources"
+            },
+            "pipelines": {
+              "$ref": "#/definitions/pipelineResources"
+            },
+            "repositories": {
+              "description": "List of external repositories",
+              "$ref": "#/definitions/repositoryResources"
+            },
+            "webhooks": {
+              "description": "List of webhooks",
+              "$ref": "#/definitions/webhookResources"
+            },
+            "packages": {
+              "description": "List of external packages",
+              "$ref": "#/definitions/packageResources"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/legacyResource"
+          }
+        }
+      ]
+    },
+    "buildResources": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/buildResource"
+      }
+    },
+    "buildResource": {
+      "type": "object",
+      "properties": {
+        "build": {
+          "description": "Alias or name of build artifact",
+          "$ref": "#/definitions/referenceName"
+        },
+        "type": {
+          "description": "Name of the artifact type",
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "connection": {
+          "description": "Name of the connection. This connection will be used for all the communication related to this artifact.",
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "source": {
+          "description": "Name of the source definition/build/job",
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "version": {
+          "$ref": "#/definitions/string_allowExpressions"
+        },
+        "branch": {
+          "$ref": "#/definitions/string_allowExpressions"
+        },
+        "trigger": {
+          "description": "When the artifact mentioned in this build resource completes a build, its allowed to trigger this pipeline.",
+          "$ref": "#/definitions/buildResourceTrigger"
+        }
+      },
+      "additionalProperties": false,
+      "firstProperty": [
+        "build"
+      ],
+      "required": [
+        "build",
+        "type",
+        "connection",
+        "source"
+      ]
+    },
+    "buildResourceTrigger": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^none$"
+        },
+        {
+          "type": "string",
+          "pattern": "^true$"
+        }
+      ]
+    },
+    "packageResources": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/packageResource"
+      }
+    },
+    "packageResource": {
+      "type": "object",
+      "properties": {
+        "package": {
+          "description": "Alias of package artifact",
+          "$ref": "#/definitions/referenceName"
+        },
+        "type": {
+          "description": "Type of the package. Ex - NuGet, NPM etc.",
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "connection": {
+          "description": "Name of the connection. This connection will be used for all the communication related to this artifact.",
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "name": {
+          "description": "Name of the package",
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "version": {
+          "$ref": "#/definitions/string_allowExpressions"
+        },
+        "tag": {
+          "$ref": "#/definitions/string_allowExpressions"
+        },
+        "trigger": {
+          "description": "Trigger a new pipeline run when a new version of this package is available.",
+          "$ref": "#/definitions/packageResourceTrigger"
+        }
+      },
+      "additionalProperties": false,
+      "firstProperty": [
+        "package"
+      ],
+      "required": [
+        "package",
+        "type",
+        "connection",
+        "name"
+      ]
+    },
+    "packageResourceTrigger": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^none$"
+        },
+        {
+          "type": "string",
+          "pattern": "^true$"
+        }
+      ]
+    },
+    "containerResources": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/containerResource"
+      }
+    },
+    "containerResource": {
+      "type": "object",
+      "properties": {
+        "container": {
+          "description": "ID for the container",
+          "$ref": "#/definitions/referenceName"
+        },
+        "type": {
+          "$ref": "#/definitions/containerArtifactType"
+        },
+        "trigger": {
+          "$ref": "#/definitions/containerResourceTrigger"
+        },
+        "endpoint": {
+          "description": "ID of the service endpoint connecting to a private container registry",
+          "$ref": "#/definitions/string_allowExpressions"
+        },
+        "env": {
+          "description": "Variables to map into the container's environment",
+          "$ref": "#/definitions/mappingOfStringString"
+        },
+        "image": {
+          "description": "Container image tag",
+          "$ref": "#/definitions/string",
+          "examples": [
+            "ubuntu:16.04",
+            "windows:1803"
+          ]
+        },
+        "mapDockerSocket": {
+          "description": "Set this flag to false to force the agent not to setup the /var/run/docker.sock volume on container jobs",
+          "$ref": "#/definitions/boolean"
+        },
+        "options": {
+          "description": "Options to pass into container host",
+          "$ref": "#/definitions/string_allowExpressions"
+        },
+        "ports": {
+          "$ref": "#/definitions/sequenceOfString_allowExpressions"
+        },
+        "volumes": {
+          "$ref": "#/definitions/sequenceOfString_allowExpressions"
+        },
+        "mountReadOnly": {
+          "$ref": "#/definitions/readOnlyMounts"
+        }
+      },
+      "additionalProperties": true,
+      "firstProperty": [
+        "container"
+      ],
+      "required": [
+        "container",
+        "image"
+      ]
+    },
+    "containerArtifactType": {
+      "anyOf": [
+        {
+          "type": "string",
+          "ignoreCase": "value",
+          "pattern": "^ACR$"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "containerResourceTrigger": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^none$"
+        },
+        {
+          "type": "string",
+          "pattern": "^true$"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "$ref": "#/definitions/boolean"
+            },
+            "tags": {
+              "$ref": "#/definitions/includeExcludeStringFilters"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "pipelineResources": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/pipelineResource"
+      }
+    },
+    "pipelineResource": {
+      "type": "object",
+      "properties": {
+        "pipeline": {
+          "description": "ID of the pipeline resource",
+          "$ref": "#/definitions/referenceName"
+        },
+        "project": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "source": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "version": {
+          "$ref": "#/definitions/string_allowExpressions"
+        },
+        "branch": {
+          "$ref": "#/definitions/string_allowExpressions"
+        },
+        "tags": {
+          "$ref": "#/definitions/sequenceOfNonEmptyString"
+        },
+        "trigger": {
+          "$ref": "#/definitions/pipelineResourceTrigger"
+        }
+      },
+      "additionalProperties": false,
+      "firstProperty": [
+        "pipeline"
+      ],
+      "required": [
+        "pipeline"
+      ]
+    },
+    "pipelineResourceTrigger": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^none$"
+        },
+        {
+          "type": "string",
+          "pattern": "^true$"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "$ref": "#/definitions/boolean"
+            },
+            "branches": {
+              "$ref": "#/definitions/triggerBranchFilter"
+            },
+            "stages": {
+              "$ref": "#/definitions/sequenceOfNonEmptyString"
+            },
+            "tags": {
+              "$ref": "#/definitions/sequenceOfNonEmptyString"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "triggerBranchFilter": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "include": {
+              "$ref": "#/definitions/branchFilterArray"
+            },
+            "exclude": {
+              "$ref": "#/definitions/branchFilterArray"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/branchFilter"
+          }
+        }
+      ]
+    },
+    "repositoryResources": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/repositoryResource"
+      }
+    },
+    "repositoryResource": {
+      "type": "object",
+      "properties": {
+        "repository": {
+          "description": "ID of the external repository",
+          "$ref": "#/definitions/referenceName"
+        },
+        "endpoint": {
+          "description": "ID of the service endpoint connecting to this repository",
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "trigger": {
+          "$ref": "#/definitions/trigger"
+        },
+        "checkoutOptions": {
+          "deprecationMessage": "This location is deprecated, `checkoutOptions` should be a peer of the `repository` keyword.",
+          "doNotSuggest": true,
+          "$ref": "#/definitions/repositoryCheckoutOptions"
+        },
+        "ref": {
+          "$ref": "#/definitions/string_allowExpressions"
+        }
+      },
+      "additionalProperties": true,
+      "firstProperty": [
+        "repository"
+      ],
+      "required": [
+        "repository"
+      ]
+    },
+    "repositoryCheckoutOptions": {
+      "type": "object",
+      "properties": {
+        "clean": {
+          "description": "Scorch the repo before fetching?",
+          "enum": [
+            "true",
+            "false"
+          ],
+          "$ref": "#/definitions/string"
+        },
+        "fetchDepth": {
+          "description": "Depth of Git graph to fetch",
+          "$ref": "#/definitions/string"
+        },
+        "fetchTags": {
+          "description": "Fetch tags?",
+          "$ref": "#/definitions/string"
+        },
+        "lfs": {
+          "description": "Fetch and checkout Git LFS objects?",
+          "$ref": "#/definitions/string"
+        },
+        "submodules": {
+          "description": "Fetch and checkout submodules?",
+          "$ref": "#/definitions/string"
+        },
+        "persistCredentials": {
+          "description": "Keep credentials available for later use?",
+          "$ref": "#/definitions/string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "legacyResource": {
+      "type": "object",
+      "properties": {
+        "repo": {
+          "$ref": "#/definitions/legacyRepoResourceAlias"
+        },
+        "clean": {
+          "description": "Scorch the repo before fetching?",
+          "enum": [
+            "true",
+            "false"
+          ],
+          "$ref": "#/definitions/string"
+        },
+        "fetchDepth": {
+          "description": "Depth of Git graph to fetch",
+          "$ref": "#/definitions/string"
+        },
+        "lfs": {
+          "description": "Fetch and checkout Git LFS objects?",
+          "$ref": "#/definitions/string"
+        }
+      },
+      "additionalProperties": false,
+      "firstProperty": [
+        "repo"
+      ]
+    },
+    "legacyRepoResourceAlias": {
+      "type": "string",
+      "pattern": "^self$"
+    },
+    "webhookResources": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/webhookResource"
+      }
+    },
+    "webhookResource": {
+      "type": "object",
+      "properties": {
+        "webhook": {
+          "description": "Name of the webhook",
+          "$ref": "#/definitions/referenceName"
+        },
+        "connection": {
+          "description": "Name of the connection. In case of offline webhook this will be the type of Incoming Webhook otherwise it will be the type of the webhook extension.",
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "type": {
+          "description": "Name of the webhook extension. leave this empty if its offline webhook.",
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "filters": {
+          "description": "List of trigger filters.",
+          "$ref": "#/definitions/webhookFilters"
+        }
+      },
+      "additionalProperties": false,
+      "firstProperty": [
+        "webhook"
+      ],
+      "required": [
+        "webhook",
+        "connection"
+      ]
+    },
+    "webhookFilters": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/webhookFilter"
+      }
+    },
+    "webhookFilter": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "description": "json path to select data from event payload",
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "value": {
+          "description": "Expected value for the filter to match",
+          "$ref": "#/definitions/nonEmptyString"
+        }
+      },
+      "additionalProperties": false,
+      "firstProperty": [
+        "path"
+      ],
+      "required": [
+        "path",
+        "value"
+      ]
+    },
+    "variablesTemplate": {
+      "type": "object",
+      "properties": {
+        "parameters": {
+          "$ref": "#/definitions/templateParameters"
+        },
+        "variables": {
+          "$ref": "#/definitions/variables"
+        }
+      },
+      "additionalProperties": false
+    },
+    "variables": {
+      "onaOf": [
+        {
+          "type": "object",
+          "additionalProperties": true
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/variable"
+          }
+        }
+      ]
+    },
+    "variable": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "value": {
+              "$ref": "#/definitions/string"
+            },
+            "readonly": {
+              "$ref": "#/definitions/boolean"
+            }
+          },
+          "additionalProperties": false,
+          "firstProperty": [
+            "name"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "group": {
+              "$ref": "#/definitions/nonEmptyString"
+            }
+          },
+          "additionalProperties": false,
+          "firstProperty": [
+            "group"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "template": {
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "parameters": {
+              "$ref": "#/definitions/mapping"
+            }
+          },
+          "additionalProperties": false,
+          "firstProperty": [
+            "template"
+          ]
+        }
+      ]
+    },
+    "stagesTemplate": {
+      "type": "object",
+      "properties": {
+        "parameters": {
+          "$ref": "#/definitions/templateParameters"
+        },
+        "stages": {
+          "$ref": "#/definitions/stages"
+        }
+      },
+      "additionalProperties": false
+    },
+    "stages": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/stage"
+      }
+    },
+    "stage": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "stage": {
+              "description": "ID of the stage",
+              "$ref": "#/definitions/onlyAlphanumeric"
+            },
+            "displayName": {
+              "description": "Human-readable name for the stage",
+              "$ref": "#/definitions/string"
+            },
+            "pool": {
+              "description": "Pool where jobs in this stage will run unless otherwise specified",
+              "$ref": "#/definitions/pool"
+            },
+            "dependsOn": {
+              "description": "Any stages which must complete before this one",
+              "$ref": "#/definitions/jobDependsOn"
+            },
+            "condition": {
+              "description": "Evaluate this condition expression to determine whether to run this stage",
+              "$ref": "#/definitions/string"
+            },
+            "variables": {
+              "description": "Stage-specific variables",
+              "$ref": "#/definitions/variables"
+            },
+            "jobs": {
+              "description": "Jobs which make up the stage",
+              "$ref": "#/definitions/jobs"
+            },
+            "lockBehavior": {
+              "description": "Behavior lock requests from this stage should exhibit in relation to other exclusive lock requests",
+              "$ref": "#/definitions/lockBehavior"
+            },
+            "templateContext": {
+              "$ref": "#/definitions/templateContext"
+            }
+          },
+          "additionalProperties": false,
+          "firstProperty": [
+            "stage"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "template": {
+              "description": "Reference to a template for this stage",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "parameters": {
+              "description": "Parameters used in a stage template",
+              "$ref": "#/definitions/mapping"
+            }
+          },
+          "additionalProperties": false,
+          "firstProperty": [
+            "template"
+          ]
+        }
+      ]
+    },
+    "lockBehavior": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^sequential$"
+        },
+        {
+          "type": "string",
+          "pattern": "^runLatest$"
+        }
+      ]
+    },
+    "extendsParameters": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/templateParameter"
+      }
+    },
+    "extendsTemplate": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "stages": {
+              "$ref": "#/definitions/stages"
+            },
+            "trigger": {
+              "$ref": "#/definitions/trigger"
+            },
+            "resources": {
+              "$ref": "#/definitions/resources"
+            },
+            "parameters": {
+              "$ref": "#/definitions/extendsParameters"
+            },
+            "variables": {
+              "$ref": "#/definitions/variables"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "jobs": {
+              "$ref": "#/definitions/jobs"
+            },
+            "trigger": {
+              "$ref": "#/definitions/trigger"
+            },
+            "resources": {
+              "$ref": "#/definitions/resources"
+            },
+            "parameters": {
+              "$ref": "#/definitions/extendsParameters"
+            },
+            "variables": {
+              "$ref": "#/definitions/variables"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "steps": {
+              "$ref": "#/definitions/steps"
+            },
+            "trigger": {
+              "$ref": "#/definitions/trigger"
+            },
+            "resources": {
+              "$ref": "#/definitions/resources"
+            },
+            "parameters": {
+              "$ref": "#/definitions/extendsParameters"
+            },
+            "variables": {
+              "$ref": "#/definitions/variables"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "trigger": {
+              "$ref": "#/definitions/trigger"
+            },
+            "resources": {
+              "$ref": "#/definitions/resources"
+            },
+            "parameters": {
+              "$ref": "#/definitions/extendsParameters"
+            },
+            "extends": {
+              "$ref": "#/definitions/extends"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "extendsTemplateBase": {
+      "type": "object",
+      "properties": {
+        "trigger": {
+          "$ref": "#/definitions/trigger"
+        },
+        "resources": {
+          "$ref": "#/definitions/resources"
+        },
+        "parameters": {
+          "$ref": "#/definitions/extendsParameters"
+        },
+        "variables": {
+          "$ref": "#/definitions/variables"
+        }
+      },
+      "additionalProperties": false
+    },
+    "parametersTemplate": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "parameters": {
+              "description": "Step-specific parameters",
+              "$ref": "#/definitions/templateParameters"
+            },
+            "steps": {
+              "description": "A list of steps to run",
+              "$ref": "#/definitions/steps"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "steps"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "parameters": {
+              "description": "Parameters used in a job template",
+              "$ref": "#/definitions/templateParameters"
+            },
+            "jobs": {
+              "description": "Jobs which make up the pipeline",
+              "$ref": "#/definitions/jobs"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "parameters": {
+              "$ref": "#/definitions/templateParameters"
+            },
+            "stages": {
+              "$ref": "#/definitions/stages"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "resources": {
+              "$ref": "#/definitions/resources"
+            },
+            "parameters": {
+              "$ref": "#/definitions/templateParameters"
+            },
+            "extends": {
+              "description": "Extends a template",
+              "$ref": "#/definitions/extends"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "extends"
+          ]
+        }
+      ]
+    },
+    "extends": {
+      "type": "object",
+      "properties": {
+        "template": {
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "parameters": {
+          "description": "Parameters used in the extend",
+          "$ref": "#/definitions/mapping"
+        }
+      },
+      "additionalProperties": false
+    },
+    "jobsTemplate": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "parameters": {
+              "description": "Parameters used in a job template",
+              "$ref": "#/definitions/templateParameters"
+            },
+            "jobs": {
+              "description": "Jobs which make up the pipeline",
+              "$ref": "#/definitions/jobs"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "parameters": {
+              "description": "Parameters used in a phase template",
+              "$ref": "#/definitions/templateParameters"
+            },
+            "phases": {
+              "description": "Phases which make up the pipeline",
+              "deprecationMessage": "This option is deprecated, use `jobs` instead",
+              "doNotSuggest": true,
+              "$ref": "#/definitions/phases"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "jobs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/job"
+      }
+    },
+    "job": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "job": {
+              "description": "ID of the job",
+              "$ref": "#/definitions/onlyAlphanumeric"
+            },
+            "displayName": {
+              "description": "Human-readable name for the job",
+              "$ref": "#/definitions/string"
+            },
+            "dependsOn": {
+              "description": "Any jobs which must complete before this one",
+              "$ref": "#/definitions/jobDependsOn"
+            },
+            "condition": {
+              "description": "Evaluate this condition expression to determine whether to run this job",
+              "$ref": "#/definitions/string"
+            },
+            "continueOnError": {
+              "description": "Continue running even on failure?",
+              "$ref": "#/definitions/jobContinueOnError"
+            },
+            "timeoutInMinutes": {
+              "description": "Time to wait for this job to complete before the server kills it",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "cancelTimeoutInMinutes": {
+              "description": "Time to wait for the job to cancel before forcibly terminating it",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "variables": {
+              "description": "Job-specific variables",
+              "$ref": "#/definitions/variables"
+            },
+            "strategy": {
+              "description": "Execution strategy for this job",
+              "$ref": "#/definitions/jobStrategy"
+            },
+            "pool": {
+              "description": "Pool where this job will run",
+              "$ref": "#/definitions/pool"
+            },
+            "container": {
+              "description": "Container resource name",
+              "$ref": "#/definitions/jobContainer"
+            },
+            "services": {
+              "$ref": "#/definitions/jobServices"
+            },
+            "workspace": {
+              "$ref": "#/definitions/jobWorkspace"
+            },
+            "uses": {
+              "description": "Any resources required by this job that are not already referenced",
+              "$ref": "#/definitions/explicitResources"
+            },
+            "steps": {
+              "description": "A list of steps to run",
+              "$ref": "#/definitions/steps"
+            },
+            "templateContext": {
+              "$ref": "#/definitions/templateContext"
+            }
+          },
+          "additionalProperties": false,
+          "firstProperty": [
+            "job"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "deployment": {
+              "$ref": "#/definitions/string"
+            },
+            "displayName": {
+              "description": "Human-readable name for the deployment",
+              "$ref": "#/definitions/string"
+            },
+            "dependsOn": {
+              "description": "Any jobs which must complete before this one",
+              "$ref": "#/definitions/jobDependsOn"
+            },
+            "condition": {
+              "description": "Evaluate this condition expression to determine whether to run this deployment",
+              "$ref": "#/definitions/string"
+            },
+            "continueOnError": {
+              "description": "Continue running even on failure?",
+              "$ref": "#/definitions/jobContinueOnError"
+            },
+            "timeoutInMinutes": {
+              "description": "Time to wait for this job to complete before the server kills it",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "cancelTimeoutInMinutes": {
+              "description": "Time to wait for the job to cancel before forcibly terminating it",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "variables": {
+              "description": "Deployment-specific variables",
+              "$ref": "#/definitions/variables"
+            },
+            "pool": {
+              "description": "Pool where this job will run",
+              "$ref": "#/definitions/pool"
+            },
+            "environment": {
+              "$ref": "#/definitions/deploymentEnvironment"
+            },
+            "strategy": {
+              "description": "Execution strategy for this deployment",
+              "$ref": "#/definitions/deploymentStrategy"
+            },
+            "workspace": {
+              "description": "What to clean up before the job runs",
+              "$ref": "#/definitions/jobWorkspace"
+            },
+            "uses": {
+              "description": "Any resources required by this job that are not already referenced",
+              "$ref": "#/definitions/explicitResources"
+            },
+            "container": {
+              "description": "Container resource name",
+              "$ref": "#/definitions/jobContainer"
+            },
+            "services": {
+              "description": "Container resources to run as a service container",
+              "$ref": "#/definitions/jobServices"
+            },
+            "templateContext": {
+              "$ref": "#/definitions/templateContext"
+            }
+          },
+          "additionalProperties": false,
+          "firstProperty": [
+            "deployment"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "template": {
+              "description": "Reference to a template for this deployment",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "parameters": {
+              "description": "Parameters used in a deployment template",
+              "$ref": "#/definitions/mapping"
+            }
+          },
+          "additionalProperties": false,
+          "firstProperty": [
+            "template"
+          ]
+        }
+      ]
+    },
+    "explicitResources": {
+      "type": "object",
+      "properties": {
+        "repositories": {
+          "description": "Repository references",
+          "$ref": "#/definitions/sequenceOfNonEmptyString"
+        },
+        "pools": {
+          "description": "Pool references",
+          "$ref": "#/definitions/sequenceOfNonEmptyString"
+        }
+      },
+      "additionalProperties": false
+    },
+    "pool": {
+      "description": "Pool details",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "description": "Name of a pool",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "demands": {
+              "description": "List of demands (for a private pool)",
+              "$ref": "#/definitions/poolDemands"
+            }
+          },
+          "additionalProperties": true
+        }
+      ]
+    },
+    "poolDemands": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/nonEmptyString"
+          }
+        }
+      ]
+    },
+    "jobContainer": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "alias": {
+              "description": "The alias of the container resource",
+              "$ref": "#/definitions/string"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "endpoint": {
+              "description": "ID of the service endpoint connecting to a private container registry",
+              "$ref": "#/definitions/string_allowExpressions"
+            },
+            "env": {
+              "description": "Variables to map into the container's environment",
+              "$ref": "#/definitions/mappingOfStringString"
+            },
+            "image": {
+              "description": "Container image tag",
+              "$ref": "#/definitions/string",
+              "examples": [
+                "ubuntu:16.04",
+                "windows:1803"
+              ]
+            },
+            "mapDockerSocket": {
+              "description": "Set this flag to false to force the agent not to setup the /var/run/docker.sock volume on container jobs",
+              "$ref": "#/definitions/boolean"
+            },
+            "options": {
+              "description": "Options to pass into container host",
+              "$ref": "#/definitions/string_allowExpressions"
+            },
+            "ports": {
+              "$ref": "#/definitions/sequenceOfString_allowExpressions"
+            },
+            "volumes": {
+              "$ref": "#/definitions/sequenceOfString_allowExpressions"
+            },
+            "mountReadOnly": {
+              "$ref": "#/definitions/readOnlyMounts"
+            }
+          },
+          "required": [
+            "image"
+          ]
+        }
+      ]
+    },
+    "containerBase": {
+      "type": "object",
+      "properties": {
+        "endpoint": {
+          "description": "ID of the service endpoint connecting to a private container registry",
+          "$ref": "#/definitions/string_allowExpressions"
+        },
+        "env": {
+          "description": "Variables to map into the container's environment",
+          "$ref": "#/definitions/mappingOfStringString"
+        },
+        "image": {
+          "description": "Container image tag",
+          "$ref": "#/definitions/string",
+          "examples": [
+            "ubuntu:16.04",
+            "windows:1803"
+          ]
+        },
+        "mapDockerSocket": {
+          "description": "Set this flag to false to force the agent not to setup the /var/run/docker.sock volume on container jobs",
+          "$ref": "#/definitions/boolean"
+        },
+        "options": {
+          "description": "Options to pass into container host",
+          "$ref": "#/definitions/string_allowExpressions"
+        },
+        "ports": {
+          "$ref": "#/definitions/sequenceOfString_allowExpressions"
+        },
+        "volumes": {
+          "$ref": "#/definitions/sequenceOfString_allowExpressions"
+        },
+        "mountReadOnly": {
+          "$ref": "#/definitions/readOnlyMounts"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "image"
+      ]
+    },
+    "readOnlyMounts": {
+      "type": "object",
+      "properties": {
+        "work": {
+          "description": "Mount the work directory as readonly",
+          "$ref": "#/definitions/boolean"
+        },
+        "externals": {
+          "description": "Mount the externals directory as readonly",
+          "$ref": "#/definitions/boolean"
+        },
+        "tools": {
+          "description": "Mount the tools directory as readonly",
+          "$ref": "#/definitions/boolean"
+        },
+        "tasks": {
+          "description": "Mount the tasks directory as readonly",
+          "$ref": "#/definitions/boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "jobServices": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "jobWorkspace": {
+      "type": "object",
+      "properties": {
+        "clean": {
+          "description": "Which parts of the workspace should be scorched before fetching",
+          "enum": [
+            "outputs",
+            "resources",
+            "all"
+          ],
+          "$ref": "#/definitions/string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "jobStrategy": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "matrix": {
+              "$ref": "#/definitions/jobMatrix"
+            },
+            "maxParallel": {
+              "description": "Maximum number of jobs running in parallel",
+              "$ref": "#/definitions/nonEmptyString"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "parallel": {
+              "description": "Run the job this many times",
+              "$ref": "#/definitions/nonEmptyString"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "jobMatrix": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": true,
+          "minProperties": 1,
+          "patternProperties": {
+            "^[A-Za-z0-9_]+$": {
+              "$ref": "#/definitions/matrixProperties"
+            }
+          }
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "matrixProperties": {
+      "type": "object",
+      "description": "Variable-value pair to pass in this matrix instance",
+      "additionalProperties": true
+    },
+    "deploymentEnvironment": {
+      "description": "Environment details",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "name": {
+              "description": "Name of environment",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "resourceName": {
+              "description": "Name of resource",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "resourceId": {
+              "description": "Id of resource",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "resourceType": {
+              "description": "Type of environment resource",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "tags": {
+              "description": "List of tag filters",
+              "$ref": "#/definitions/nonEmptyString"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "deploymentStrategy": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "runOnce": {
+              "description": "RunOnce Deployment strategy",
+              "$ref": "#/definitions/runOnceDeploymentStrategy"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "rolling": {
+              "description": "Rolling Deployment strategy",
+              "$ref": "#/definitions/rollingDeploymentStrategy"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "canary": {
+              "description": "Canary Deployment strategy",
+              "$ref": "#/definitions/canaryDeploymentStrategy"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "preDeployHook": {
+      "type": "object",
+      "properties": {
+        "steps": {
+          "description": "A list of steps to run",
+          "$ref": "#/definitions/steps"
+        },
+        "pool": {
+          "description": "Pool where pre deploy steps will run",
+          "$ref": "#/definitions/pool"
+        }
+      },
+      "additionalProperties": false
+    },
+    "deployHook": {
+      "type": "object",
+      "properties": {
+        "steps": {
+          "description": "A list of steps to run",
+          "$ref": "#/definitions/steps"
+        },
+        "pool": {
+          "description": "Pool where deploy steps will run",
+          "$ref": "#/definitions/pool"
+        }
+      },
+      "additionalProperties": false
+    },
+    "routeTrafficHook": {
+      "type": "object",
+      "properties": {
+        "steps": {
+          "description": "A list of steps to run",
+          "$ref": "#/definitions/steps"
+        },
+        "pool": {
+          "description": "Pool where route traffic steps will run",
+          "$ref": "#/definitions/pool"
+        }
+      },
+      "additionalProperties": false
+    },
+    "postRouteTrafficHook": {
+      "type": "object",
+      "properties": {
+        "steps": {
+          "description": "A list of steps to run",
+          "$ref": "#/definitions/steps"
+        },
+        "pool": {
+          "description": "Pool where post route traffic steps will run",
+          "$ref": "#/definitions/pool"
+        }
+      },
+      "additionalProperties": false
+    },
+    "onSuccessOrFailureHook": {
+      "type": "object",
+      "properties": {
+        "failure": {
+          "description": "Runs on failure of any step",
+          "$ref": "#/definitions/onFailureHook"
+        },
+        "success": {
+          "description": "Runs on success of all of the steps",
+          "$ref": "#/definitions/onSuccessHook"
+        }
+      },
+      "additionalProperties": false
+    },
+    "onFailureHook": {
+      "type": "object",
+      "properties": {
+        "steps": {
+          "description": "A list of steps to run",
+          "$ref": "#/definitions/steps"
+        },
+        "pool": {
+          "description": "Pool where post on failure steps will run",
+          "$ref": "#/definitions/pool"
+        }
+      },
+      "additionalProperties": false
+    },
+    "onSuccessHook": {
+      "type": "object",
+      "properties": {
+        "steps": {
+          "description": "A list of steps to run",
+          "$ref": "#/definitions/steps"
+        },
+        "pool": {
+          "description": "Pool where on success steps will run",
+          "$ref": "#/definitions/pool"
+        }
+      },
+      "additionalProperties": false
+    },
+    "runOnceDeploymentStrategy": {
+      "type": "object",
+      "properties": {
+        "preDeploy": {
+          "description": "Pre deploy hook for runOnce deployment strategy",
+          "$ref": "#/definitions/preDeployHook"
+        },
+        "deploy": {
+          "description": "Deploy hook for runOnce deployment strategy",
+          "$ref": "#/definitions/deployHook"
+        },
+        "routeTraffic": {
+          "description": "Route traffic hook for runOnce deployment strategy",
+          "$ref": "#/definitions/routeTrafficHook"
+        },
+        "postRouteTraffic": {
+          "description": "Post route traffic hook for runOnce deployment strategy",
+          "$ref": "#/definitions/postRouteTrafficHook"
+        },
+        "on": {
+          "description": "On success or failure hook for runOnce deployment strategy",
+          "$ref": "#/definitions/onSuccessOrFailureHook"
+        }
+      },
+      "additionalProperties": false
+    },
+    "rollingDeploymentStrategy": {
+      "type": "object",
+      "properties": {
+        "maxParallel": {
+          "description": "Maximum number of jobs running in parallel",
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "preDeploy": {
+          "description": "Pre deploy hook for rolling deployment strategy",
+          "$ref": "#/definitions/preDeployHook"
+        },
+        "deploy": {
+          "description": "Deploy hook for rolling deployment strategy",
+          "$ref": "#/definitions/deployHook"
+        },
+        "routeTraffic": {
+          "description": "Route traffic hook for rolling deployment strategy",
+          "$ref": "#/definitions/routeTrafficHook"
+        },
+        "postRouteTraffic": {
+          "description": "Post route traffic hook for rolling deployment strategy",
+          "$ref": "#/definitions/postRouteTrafficHook"
+        },
+        "on": {
+          "description": "On success or failure hook for rolling deployment strategy",
+          "$ref": "#/definitions/onSuccessOrFailureHook"
+        }
+      },
+      "additionalProperties": false
+    },
+    "canaryDeploymentStrategy": {
+      "type": "object",
+      "properties": {
+        "increments": {
+          "description": "Maximum batch size for deployment",
+          "$ref": "#/definitions/canaryDeploymentIncrements"
+        },
+        "preDeploy": {
+          "description": "Pre deploy hook for canary deployment strategy",
+          "$ref": "#/definitions/preDeployHook"
+        },
+        "deploy": {
+          "description": "Deploy hook for canary deployment strategy",
+          "$ref": "#/definitions/deployHook"
+        },
+        "routeTraffic": {
+          "description": "Route traffic hook for canary deployment strategy",
+          "$ref": "#/definitions/routeTrafficHook"
+        },
+        "postRouteTraffic": {
+          "description": "Post route traffic hook for canary deployment strategy",
+          "$ref": "#/definitions/postRouteTrafficHook"
+        },
+        "on": {
+          "description": "On success or failure hook for canary deployment strategy",
+          "$ref": "#/definitions/onSuccessOrFailureHook"
+        }
+      },
+      "additionalProperties": false
+    },
+    "canaryDeploymentIncrements": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/nonEmptyString"
+      }
+    },
+    "phases": {
+      "type": "array",
+      "deprecationMessage": "This option is deprecated, use `jobs` instead",
+      "items": {
+        "$ref": "#/definitions/phase"
+      }
+    },
+    "phase": {
+      "deprecationMessage": "This option is deprecated, use `job` (inside `jobs`) instead",
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "phase": {
+              "description": "ID of the phase",
+              "$ref": "#/definitions/referenceName"
+            },
+            "dependsOn": {
+              "description": "Any phases which must complete before this one",
+              "$ref": "#/definitions/jobDependsOn"
+            },
+            "displayName": {
+              "description": "Human-readable name of the phase",
+              "$ref": "#/definitions/string"
+            },
+            "condition": {
+              "description": "Evaluate this condition expression to determine whether to run this phase",
+              "$ref": "#/definitions/string"
+            },
+            "continueOnError": {
+              "description": "Continue running even on failure?",
+              "$ref": "#/definitions/jobContinueOnError"
+            },
+            "queue": {
+              "description": "Queue where this phase will run",
+              "deprecationMessage": "This option is deprecated, use pool instead",
+              "doNotSuggest": true,
+              "$ref": "#/definitions/phaseQueueTarget"
+            },
+            "variables": {
+              "description": "Phase-specific variables",
+              "$ref": "#/definitions/variables"
+            },
+            "steps": {
+              "description": "A list of steps to run in this phase",
+              "$ref": "#/definitions/steps"
+            }
+          },
+          "additionalProperties": false,
+          "firstProperty": [
+            "phase"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "phase": {
+              "description": "ID of the phase",
+              "$ref": "#/definitions/referenceName"
+            },
+            "dependsOn": {
+              "description": "Any phases which must complete before this one",
+              "$ref": "#/definitions/jobDependsOn"
+            },
+            "displayName": {
+              "description": "Human-readable name of the phase",
+              "$ref": "#/definitions/string"
+            },
+            "condition": {
+              "description": "Evaluate this condition expression to determine whether to run this phase",
+              "$ref": "#/definitions/string"
+            },
+            "continueOnError": {
+              "description": "Continue running even on failure?",
+              "$ref": "#/definitions/jobContinueOnError"
+            },
+            "server": {
+              "description": "True if this is an agent-less phase (runs on server)",
+              "deprecationMessage": "This option is deprecated, use pool:server instead",
+              "doNotSuggest": true,
+              "$ref": "#/definitions/phaseServerTarget"
+            },
+            "variables": {
+              "description": "Phase-specific variables",
+              "$ref": "#/definitions/variables"
+            },
+            "steps": {
+              "description": "A list of steps to run in this phase",
+              "$ref": "#/definitions/steps"
+            }
+          },
+          "additionalProperties": false,
+          "firstProperty": [
+            "phase"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "template": {
+              "description": "Reference to a template for this phase",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "parameters": {
+              "description": "Parameters used in a phase template",
+              "$ref": "#/definitions/mapping"
+            }
+          },
+          "additionalProperties": false,
+          "firstProperty": [
+            "template"
+          ]
+        }
+      ]
+    },
+    "phaseQueueTarget": {
+      "description": "Queue details",
+      "deprecationMessage": "This option is deprecated, use `pool` under `jobs` instead",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "cancelTimeoutInMinutes": {
+              "description": "Time to wait for the phase to cancel before forcibly terminating it",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "container": {
+              "description": "Container resource name",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "demands": {
+              "description": "List of demands (for a private queue)",
+              "$ref": "#/definitions/phaseTargetDemands"
+            },
+            "matrix": {
+              "$ref": "#/definitions/phaseTargetMatrix"
+            },
+            "name": {
+              "description": "Name of a queue",
+              "$ref": "#/definitions/string"
+            },
+            "parallel": {
+              "description": "Maximum number of parallel agent executions",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "timeoutInMinutes": {
+              "description": "Time to wait before cancelling the phase",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "workspace": {
+              "$ref": "#/definitions/phaseTargetWorkspace"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "phaseServerTarget": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "cancelTimeoutInMinutes": {
+              "description": "Time to wait for the job to cancel before forcibly terminating it",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "matrix": {
+              "$ref": "#/definitions/phaseTargetMatrix"
+            },
+            "parallel": {
+              "description": "Maximum number of parallel agent executions",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "timeoutInMinutes": {
+              "description": "Time to wait before cancelling the job",
+              "$ref": "#/definitions/nonEmptyString"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "phaseTargetDemands": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/nonEmptyString"
+          }
+        }
+      ]
+    },
+    "phaseTargetWorkspace": {
+      "type": "object",
+      "properties": {
+        "clean": {
+          "description": "Scorch the repo before fetching?",
+          "enum": [
+            "outputs",
+            "resources",
+            "all"
+          ],
+          "$ref": "#/definitions/string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "phaseTargetMatrix": {
+      "description": "List of permutations of variable values to run",
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": true
+        },
+        {
+          "type": "string"
+        }
+      ],
+      "minProperties": 1,
+      "patternProperties": {
+        "^[A-Za-z0-9_]+$": {
+          "$ref": "#/definitions/matrixProperties"
+        }
+      }
+    },
+    "stepsTemplate": {
+      "type": "object",
+      "properties": {
+        "parameters": {
+          "description": "Step-specific parameters",
+          "$ref": "#/definitions/templateParameters"
+        },
+        "steps": {
+          "description": "A list of steps to run",
+          "$ref": "#/definitions/steps"
+        }
+      },
+      "additionalProperties": false
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/step"
+      }
+    },
+    "step": {
+      "anyOf": [
+        {
+          "type": "object",
+          "$ref": "#/definitions/task"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "script": {
+              "description": "An inline script",
+              "$ref": "#/definitions/string"
+            },
+            "failOnStderr": {
+              "description": "Fail the task if output is sent to Stderr?",
+              "$ref": "#/definitions/string"
+            },
+            "workingDirectory": {
+              "description": "Start the script with this working directory",
+              "$ref": "#/definitions/string"
+            },
+            "condition": {
+              "description": "Evaluate this condition expression to determine whether to run this task",
+              "$ref": "#/definitions/string"
+            },
+            "continueOnError": {
+              "description": "Continue running even on failure?",
+              "$ref": "#/definitions/boolean"
+            },
+            "displayName": {
+              "description": "Human-readable name for the task",
+              "$ref": "#/definitions/string"
+            },
+            "target": {
+              "description": "Environment in which to run this task",
+              "$ref": "#/definitions/stepTarget"
+            },
+            "enabled": {
+              "description": "Run this task when the job runs?",
+              "$ref": "#/definitions/boolean"
+            },
+            "env": {
+              "description": "Variables to map into the process's environment",
+              "$ref": "#/definitions/mappingOfStringString"
+            },
+            "name": {
+              "description": "ID of the step",
+              "$ref": "#/definitions/referenceName"
+            },
+            "timeoutInMinutes": {
+              "description": "Time to wait for this task to complete before the server kills it",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "retryCountOnTaskFailure": {
+              "description": "Number of retries if the task fails",
+              "$ref": "#/definitions/string"
+            }
+          },
+          "additionalProperties": false,
+          "firstProperty": [
+            "script"
+          ],
+          "required": [
+            "script"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "powershell": {
+              "description": "Inline PowerShell or reference to a PowerShell file",
+              "$ref": "#/definitions/string"
+            },
+            "errorActionPreference": {
+              "$ref": "#/definitions/string"
+            },
+            "failOnStderr": {
+              "description": "Fail the task if output is sent to Stderr?",
+              "$ref": "#/definitions/string"
+            },
+            "ignoreLASTEXITCODE": {
+              "description": "Check the final exit code of the script to determine whether the step succeeded?",
+              "$ref": "#/definitions/string"
+            },
+            "workingDirectory": {
+              "description": "Start the script with this working directory",
+              "$ref": "#/definitions/string"
+            },
+            "condition": {
+              "description": "Evaluate this condition expression to determine whether to run this task",
+              "$ref": "#/definitions/string"
+            },
+            "continueOnError": {
+              "description": "Continue running even on failure?",
+              "$ref": "#/definitions/boolean"
+            },
+            "displayName": {
+              "description": "Human-readable name for the task",
+              "$ref": "#/definitions/string"
+            },
+            "target": {
+              "description": "Environment in which to run this task",
+              "$ref": "#/definitions/stepTarget"
+            },
+            "enabled": {
+              "description": "Run this task when the job runs?",
+              "$ref": "#/definitions/boolean"
+            },
+            "env": {
+              "description": "Variables to map into the process's environment",
+              "$ref": "#/definitions/mappingOfStringString"
+            },
+            "name": {
+              "description": "ID of the step",
+              "$ref": "#/definitions/referenceName"
+            },
+            "timeoutInMinutes": {
+              "description": "Time to wait for this task to complete before the server kills it",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "retryCountOnTaskFailure": {
+              "description": "Number of retries if the task fails",
+              "$ref": "#/definitions/string"
+            }
+          },
+          "additionalProperties": false,
+          "firstProperty": [
+            "powershell"
+          ],
+          "required": [
+            "powershell"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "pwsh": {
+              "description": "Inline PowerShell or reference to a PowerShell file",
+              "$ref": "#/definitions/string"
+            },
+            "errorActionPreference": {
+              "$ref": "#/definitions/string"
+            },
+            "failOnStderr": {
+              "description": "Fail the task if output is sent to Stderr?",
+              "$ref": "#/definitions/string"
+            },
+            "ignoreLASTEXITCODE": {
+              "description": "Check the final exit code of the script to determine whether the step succeeded?",
+              "$ref": "#/definitions/string"
+            },
+            "workingDirectory": {
+              "description": "Start the script with this working directory",
+              "$ref": "#/definitions/string"
+            },
+            "condition": {
+              "description": "Evaluate this condition expression to determine whether to run this task",
+              "$ref": "#/definitions/string"
+            },
+            "continueOnError": {
+              "description": "Continue running even on failure?",
+              "$ref": "#/definitions/boolean"
+            },
+            "displayName": {
+              "description": "Human-readable name for the task",
+              "$ref": "#/definitions/string"
+            },
+            "target": {
+              "description": "Environment in which to run this task",
+              "$ref": "#/definitions/stepTarget"
+            },
+            "enabled": {
+              "description": "Run this task when the job runs?",
+              "$ref": "#/definitions/boolean"
+            },
+            "env": {
+              "description": "Variables to map into the process's environment",
+              "$ref": "#/definitions/mappingOfStringString"
+            },
+            "name": {
+              "description": "ID of the step",
+              "$ref": "#/definitions/referenceName"
+            },
+            "timeoutInMinutes": {
+              "description": "Time to wait for this task to complete before the server kills it",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "retryCountOnTaskFailure": {
+              "description": "Number of retries if the task fails",
+              "$ref": "#/definitions/string"
+            }
+          },
+          "additionalProperties": false,
+          "firstProperty": [
+            "pwsh"
+          ],
+          "required": [
+            "pwsh"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "bash": {
+              "description": "An inline script",
+              "$ref": "#/definitions/string"
+            },
+            "failOnStderr": {
+              "description": "Fail the task if output is sent to Stderr?",
+              "$ref": "#/definitions/string"
+            },
+            "workingDirectory": {
+              "description": "Start the script with this working directory",
+              "$ref": "#/definitions/string"
+            },
+            "condition": {
+              "description": "Evaluate this condition expression to determine whether to run this task",
+              "$ref": "#/definitions/string"
+            },
+            "continueOnError": {
+              "description": "Continue running even on failure?",
+              "$ref": "#/definitions/boolean"
+            },
+            "displayName": {
+              "description": "Human-readable name for the task",
+              "$ref": "#/definitions/string"
+            },
+            "target": {
+              "description": "Environment in which to run this task",
+              "$ref": "#/definitions/stepTarget"
+            },
+            "enabled": {
+              "description": "Run this task when the job runs?",
+              "$ref": "#/definitions/boolean"
+            },
+            "env": {
+              "description": "Variables to map into the process's environment",
+              "$ref": "#/definitions/mappingOfStringString"
+            },
+            "name": {
+              "description": "ID of the step",
+              "$ref": "#/definitions/referenceName"
+            },
+            "timeoutInMinutes": {
+              "description": "Time to wait for this task to complete before the server kills it",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "retryCountOnTaskFailure": {
+              "description": "Number of retries if the task fails",
+              "$ref": "#/definitions/string"
+            }
+          },
+          "additionalProperties": false,
+          "firstProperty": [
+            "bash"
+          ],
+          "required": [
+            "bash"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "checkout": {
+              "description": "Alias of the repository resource to check out or 'none'",
+              "$ref": "#/definitions/string"
+            },
+            "clean": {
+              "description": "Scorch the repo before fetching?",
+              "enum": [
+                "true",
+                "false"
+              ],
+              "$ref": "#/definitions/string"
+            },
+            "fetchDepth": {
+              "description": "Depth of Git graph to fetch",
+              "$ref": "#/definitions/string"
+            },
+            "fetchTags": {
+              "description": "Fetch tags?",
+              "$ref": "#/definitions/string"
+            },
+            "lfs": {
+              "description": "Fetch Git-LFS objects?",
+              "$ref": "#/definitions/string"
+            },
+            "persistCredentials": {
+              "description": "Keep credentials available for later use?",
+              "$ref": "#/definitions/string"
+            },
+            "submodules": {
+              "description": "Check out Git submodules?",
+              "$ref": "#/definitions/string"
+            },
+            "path": {
+              "description": "Path of the repository to check out",
+              "$ref": "#/definitions/string"
+            },
+            "condition": {
+              "description": "Evaluate this condition expression to determine whether to run this task",
+              "$ref": "#/definitions/string"
+            },
+            "continueOnError": {
+              "description": "Continue running even on failure?",
+              "$ref": "#/definitions/boolean"
+            },
+            "displayName": {
+              "description": "Human-readable name for the task",
+              "$ref": "#/definitions/string"
+            },
+            "target": {
+              "description": "Environment in which to run this task",
+              "$ref": "#/definitions/stepTarget"
+            },
+            "enabled": {
+              "description": "Run this task when the job runs?",
+              "$ref": "#/definitions/boolean"
+            },
+            "env": {
+              "description": "Variables to map into the process's environment",
+              "$ref": "#/definitions/mappingOfStringString"
+            },
+            "name": {
+              "description": "ID of the step",
+              "$ref": "#/definitions/referenceName"
+            },
+            "timeoutInMinutes": {
+              "description": "Time to wait for this task to complete before the server kills it",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "retryCountOnTaskFailure": {
+              "description": "Number of retries if the task fails",
+              "$ref": "#/definitions/string"
+            }
+          },
+          "additionalProperties": false,
+          "firstProperty": [
+            "checkout"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "download": {
+              "description": "Reference to the pipeline",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "artifact": {
+              "description": "Name of the artifact to download",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "patterns": {
+              "description": "Pattern to download files from artifact",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "condition": {
+              "description": "Evaluate this condition expression to determine whether to run this task",
+              "$ref": "#/definitions/string"
+            },
+            "continueOnError": {
+              "description": "Continue running even on failure?",
+              "$ref": "#/definitions/boolean"
+            },
+            "displayName": {
+              "description": "Human-readable name for the task",
+              "$ref": "#/definitions/string"
+            },
+            "target": {
+              "description": "Environment in which to run this task",
+              "$ref": "#/definitions/stepTarget"
+            },
+            "enabled": {
+              "description": "Run this task when the job runs?",
+              "$ref": "#/definitions/boolean"
+            },
+            "env": {
+              "description": "Variables to map into the process's environment",
+              "$ref": "#/definitions/mappingOfStringString"
+            },
+            "name": {
+              "description": "ID of the step",
+              "$ref": "#/definitions/referenceName"
+            },
+            "timeoutInMinutes": {
+              "description": "Time to wait for this task to complete before the server kills it",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "retryCountOnTaskFailure": {
+              "description": "Number of retries if the task fails",
+              "$ref": "#/definitions/string"
+            }
+          },
+          "additionalProperties": false,
+          "firstProperty": [
+            "download"
+          ],
+          "required": [
+            "download"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "downloadBuild": {
+              "description": "ID for the build resource",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "artifact": {
+              "description": "Name of the artifact to download",
+              "$ref": "#/definitions/string"
+            },
+            "path": {
+              "description": "Path to download the artifact into",
+              "$ref": "#/definitions/string"
+            },
+            "patterns": {
+              "description": "Downloads the files which matches the patterns",
+              "$ref": "#/definitions/string"
+            },
+            "condition": {
+              "description": "Evaluate this condition expression to determine whether to run this task",
+              "$ref": "#/definitions/string"
+            },
+            "continueOnError": {
+              "description": "Continue running even on failure?",
+              "$ref": "#/definitions/boolean"
+            },
+            "displayName": {
+              "description": "Human-readable name for the task",
+              "$ref": "#/definitions/string"
+            },
+            "target": {
+              "description": "Environment in which to run this task",
+              "$ref": "#/definitions/stepTarget"
+            },
+            "enabled": {
+              "description": "Run this task when the job runs?",
+              "$ref": "#/definitions/boolean"
+            },
+            "env": {
+              "description": "Variables to map into the process's environment",
+              "$ref": "#/definitions/mappingOfStringString"
+            },
+            "name": {
+              "description": "ID of the step",
+              "$ref": "#/definitions/referenceName"
+            },
+            "timeoutInMinutes": {
+              "description": "Time to wait for this task to complete before the server kills it",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "retryCountOnTaskFailure": {
+              "description": "Number of retries if the task fails",
+              "$ref": "#/definitions/string"
+            }
+          },
+          "additionalProperties": false,
+          "firstProperty": [
+            "downloadBuild"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "getPackage": {
+              "description": "ID for the package resource",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "path": {
+              "description": "Path to download the package into",
+              "$ref": "#/definitions/string"
+            },
+            "condition": {
+              "description": "Evaluate this condition expression to determine whether to run this task",
+              "$ref": "#/definitions/string"
+            },
+            "continueOnError": {
+              "description": "Continue running even on failure?",
+              "$ref": "#/definitions/boolean"
+            },
+            "displayName": {
+              "description": "Human-readable name for the task",
+              "$ref": "#/definitions/string"
+            },
+            "target": {
+              "description": "Environment in which to run this task",
+              "$ref": "#/definitions/stepTarget"
+            },
+            "enabled": {
+              "description": "Run this task when the job runs?",
+              "$ref": "#/definitions/boolean"
+            },
+            "env": {
+              "description": "Variables to map into the process's environment",
+              "$ref": "#/definitions/mappingOfStringString"
+            },
+            "name": {
+              "description": "ID of the step",
+              "$ref": "#/definitions/referenceName"
+            },
+            "timeoutInMinutes": {
+              "description": "Time to wait for this task to complete before the server kills it",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "retryCountOnTaskFailure": {
+              "description": "Number of retries if the task fails",
+              "$ref": "#/definitions/string"
+            }
+          },
+          "additionalProperties": false,
+          "firstProperty": [
+            "getPackage"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "upload": {
+              "deprecationMessage": "This option is deprecated, use `publish` instead",
+              "doNotSuggest": true,
+              "$ref": "#/definitions/string"
+            },
+            "artifact": {
+              "$ref": "#/definitions/string"
+            },
+            "condition": {
+              "description": "Evaluate this condition expression to determine whether to run this task",
+              "$ref": "#/definitions/string"
+            },
+            "continueOnError": {
+              "description": "Continue running even on failure?",
+              "$ref": "#/definitions/boolean"
+            },
+            "displayName": {
+              "description": "Human-readable name for the task",
+              "$ref": "#/definitions/string"
+            },
+            "target": {
+              "description": "Environment in which to run this task",
+              "$ref": "#/definitions/stepTarget"
+            },
+            "enabled": {
+              "description": "Run this task when the job runs?",
+              "$ref": "#/definitions/boolean"
+            },
+            "env": {
+              "description": "Variables to map into the process's environment",
+              "$ref": "#/definitions/mappingOfStringString"
+            },
+            "name": {
+              "description": "ID of the step",
+              "$ref": "#/definitions/referenceName"
+            },
+            "timeoutInMinutes": {
+              "description": "Time to wait for this task to complete before the server kills it",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "retryCountOnTaskFailure": {
+              "description": "Number of retries if the task fails",
+              "$ref": "#/definitions/string"
+            }
+          },
+          "additionalProperties": false,
+          "firstProperty": [
+            "upload"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "publish": {
+              "$ref": "#/definitions/string"
+            },
+            "artifact": {
+              "$ref": "#/definitions/string"
+            },
+            "condition": {
+              "description": "Evaluate this condition expression to determine whether to run this task",
+              "$ref": "#/definitions/string"
+            },
+            "continueOnError": {
+              "description": "Continue running even on failure?",
+              "$ref": "#/definitions/boolean"
+            },
+            "displayName": {
+              "description": "Human-readable name for the task",
+              "$ref": "#/definitions/string"
+            },
+            "target": {
+              "description": "Environment in which to run this task",
+              "$ref": "#/definitions/stepTarget"
+            },
+            "enabled": {
+              "description": "Run this task when the job runs?",
+              "$ref": "#/definitions/boolean"
+            },
+            "env": {
+              "description": "Variables to map into the process's environment",
+              "$ref": "#/definitions/mappingOfStringString"
+            },
+            "name": {
+              "description": "ID of the step",
+              "$ref": "#/definitions/referenceName"
+            },
+            "timeoutInMinutes": {
+              "description": "Time to wait for this task to complete before the server kills it",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "retryCountOnTaskFailure": {
+              "description": "Number of retries if the task fails",
+              "$ref": "#/definitions/string"
+            }
+          },
+          "additionalProperties": false,
+          "firstProperty": [
+            "publish"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "template": {
+              "description": "Reference to a template for this step",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "parameters": {
+              "description": "Parameters used in a step template",
+              "$ref": "#/definitions/mapping"
+            }
+          },
+          "additionalProperties": false,
+          "firstProperty": [
+            "template"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "reviewApp": {
+              "$ref": "#/definitions/string"
+            },
+            "condition": {
+              "description": "Evaluate this condition expression to determine whether to run this task",
+              "$ref": "#/definitions/string"
+            },
+            "continueOnError": {
+              "description": "Continue running even on failure?",
+              "$ref": "#/definitions/boolean"
+            },
+            "displayName": {
+              "description": "Human-readable name for the task",
+              "$ref": "#/definitions/string"
+            },
+            "target": {
+              "description": "Environment in which to run this task",
+              "$ref": "#/definitions/stepTarget"
+            },
+            "enabled": {
+              "description": "Run this task when the job runs?",
+              "$ref": "#/definitions/boolean"
+            },
+            "env": {
+              "description": "Variables to map into the process's environment",
+              "$ref": "#/definitions/mappingOfStringString"
+            },
+            "name": {
+              "description": "ID of the step",
+              "$ref": "#/definitions/referenceName"
+            },
+            "timeoutInMinutes": {
+              "description": "Time to wait for this task to complete before the server kills it",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "retryCountOnTaskFailure": {
+              "description": "Number of retries if the task fails",
+              "$ref": "#/definitions/string"
+            }
+          },
+          "additionalProperties": false,
+          "firstProperty": [
+            "reviewApp"
+          ]
+        }
+      ]
+    },
+    "stepTarget": {
+      "description": "Step target",
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "container": {
+              "description": "Container to target (or 'host' for host machine)",
+              "$ref": "#/definitions/nonEmptyString"
+            },
+            "commands": {
+              "description": "Set of allowed logging commands ('any' or 'restricted')",
+              "enum": [
+                "any",
+                "restricted"
+              ],
+              "$ref": "#/definitions/string"
+            },
+            "settableVariables": {
+              "description": "Restrictions on which variables that can be set",
+              "$ref": "#/definitions/variableRestrictions"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "variableRestrictions": {
+      "anyOf": [
+        {
+          "type": "string",
+          "ignoreCase": "value",
+          "pattern": "^none$"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/nonEmptyString"
+          }
+        }
+      ]
+    },
+    "jobDecoratorSteps": {
+      "type": "object",
+      "properties": {
+        "steps": {
+          "description": "A list of steps to run in this job",
+          "$ref": "#/definitions/tasks"
+        }
+      },
+      "additionalProperties": false
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/task"
+      }
+    },
+    "taskBase": {
+      "type": "object",
+      "properties": {
+        "condition": {
+          "description": "Evaluate this condition expression to determine whether to run this task",
+          "$ref": "#/definitions/string"
+        },
+        "continueOnError": {
+          "description": "Continue running even on failure?",
+          "$ref": "#/definitions/boolean"
+        },
+        "displayName": {
+          "description": "Human-readable name for the task",
+          "$ref": "#/definitions/string"
+        },
+        "target": {
+          "description": "Environment in which to run this task",
+          "$ref": "#/definitions/stepTarget"
+        },
+        "enabled": {
+          "description": "Run this task when the job runs?",
+          "$ref": "#/definitions/boolean"
+        },
+        "env": {
+          "description": "Variables to map into the process's environment",
+          "$ref": "#/definitions/mappingOfStringString"
+        },
+        "name": {
+          "description": "ID of the step",
+          "$ref": "#/definitions/referenceName"
+        },
+        "timeoutInMinutes": {
+          "description": "Time to wait for this task to complete before the server kills it",
+          "$ref": "#/definitions/nonEmptyString"
+        },
+        "retryCountOnTaskFailure": {
+          "description": "Number of retries if the task fails",
+          "$ref": "#/definitions/string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "jobContinueOnError": {
+      "type": "string"
+    },
+    "jobDependsOn": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/string"
+          }
+        }
+      ]
+    },
+    "referenceName": {
+      "type": "string",
+      "pattern": "^[-_A-Za-z0-9]*$"
+    },
+    "onlyAlphanumeric": {
+      "type": "string",
+      "pattern": "^[-_A-Za-z0-9]*^[^!\"#$%&',-.:;?<> ]+$"
+    },
+    "templateContext": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "boolean": {
+      "anyOf": [
+        {
+          "type": "string",
+          "ignoreCase": "value",
+          "pattern": "^true$"
+        },
+        {
+          "type": "string",
+          "ignoreCase": "value",
+          "pattern": "^y$"
+        },
+        {
+          "type": "string",
+          "ignoreCase": "value",
+          "pattern": "^yes$"
+        },
+        {
+          "type": "string",
+          "ignoreCase": "value",
+          "pattern": "^on$"
+        },
+        {
+          "type": "string",
+          "ignoreCase": "value",
+          "pattern": "^false$"
+        },
+        {
+          "type": "string",
+          "ignoreCase": "value",
+          "pattern": "^n$"
+        },
+        {
+          "type": "string",
+          "ignoreCase": "value",
+          "pattern": "^no$"
+        },
+        {
+          "type": "string",
+          "ignoreCase": "value",
+          "pattern": "^off$"
+        }
+      ]
+    },
+    "string_allowExpressions": {
+      "type": "string"
+    },
+    "nonEmptyString": {
+      "type": "string"
+    },
+    "sequenceOfNonEmptyString": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/nonEmptyString"
+      }
+    },
+    "sequenceOfString_allowExpressions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/string_allowExpressions"
+      }
+    },
+    "mappingOfStringString": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "any_allowExpressions": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/any"
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": true
+        }
+      ]
+    },
+    "task": {
+      "type": "object",
+      "properties": {
+        "task": {
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Human-readable name for the task"
+        },
+        "name": {
+          "type": "string",
+          "description": "ID of the task instance",
+          "pattern": "^[_A-Za-z0-9]*$"
+        },
+        "condition": {
+          "type": "string",
+          "description": "Evaluate this condition expression to determine whether to run this task"
+        },
+        "continueOnError": {
+          "type": "boolean",
+          "description": "Continue running the parent job even on failure?"
+        },
+        "enabled": {
+          "type": "string",
+          "description": "Run this task when the job runs?"
+        },
+        "retryCountOnTaskFailure": {
+          "type": "integer",
+          "description": "Number of retries if the task fails"
+        },
+        "timeoutInMinutes": {
+          "type": "integer",
+          "description": "Time to wait for this task to complete before the server kills it"
+        },
+        "inputs": {
+          "type": "object",
+          "description": "Task-specific inputs"
+        },
+        "env": {
+          "type": "object",
+          "description": "Variables to map into the process's environment"
+        }
+      },
+      "additionalProperties": false,
+      "firstProperty": [
+        "task"
+      ]
+    }
+  }
+}

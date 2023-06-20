@@ -102,10 +102,7 @@
               "$ref": "#/definitions/lockBehavior"
             }
           },
-          "additionalProperties": false,
-          "required": [
-            "stages"
-          ]
+          "additionalProperties": false
         },
         {
           "type": "object",
@@ -3152,6 +3149,9 @@
     },
     "step": {
       "anyOf": [
+        {
+          "type": "object",
+        },
         {
           "type": "object",
           "$ref": "#/definitions/task"

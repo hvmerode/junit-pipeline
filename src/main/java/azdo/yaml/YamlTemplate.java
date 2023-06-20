@@ -7,6 +7,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
+import static azdo.utils.Constants.RED;
+import static azdo.utils.Constants.RESET_COLOR;
+
 /*
     A YamlTemplate is a specific YamlDocument and represents a template YAML file.
     A template can be invoked by the main pipeline or invoked by other templates in the same or in other repositories.
@@ -17,8 +20,7 @@ public class YamlTemplate extends YamlDocument{
         EXTERNAL
     }
     private InternalOrExternalTemplate internalOrExternalTemplate = InternalOrExternalTemplate.EXTERNAL;
-    private String templateName; // The template name as defined in the pipeline (without the @ postfix)
-    //private String repositoryAlias; // The name of the repository in which the template resides (in case of an external template)
+    //private String templateName; // The template name as defined in the pipeline (without the @ postfix)
     private static Logger logger = LoggerFactory.getLogger(YamlTemplate.class);
 
     public YamlTemplate(String templateName,
@@ -65,7 +67,7 @@ public class YamlTemplate extends YamlDocument{
             sourceInputFile = Utils.findFullQualifiedFileNameInDirectory(sourcePath, templateName);
             if (sourceInputFile == null) {
                 // It is an EXTERNAL template
-                logger.debug("{} is an EXTERNAL template but referred as a local file", templateName);
+                logger.debug("{} is an EXTERNAL template but referred as a local file in another external template", templateName);
                 handleExternalTemplate(templateName,
                         sourceBasePathExternal,
                         targetBasePathExternal,
@@ -93,10 +95,10 @@ public class YamlTemplate extends YamlDocument{
                                          boolean withAt) {
         // It is an EXTERNAL template (defined in another repository)
         logger.debug("==> Method: YamlTemplate.handleExternalTemplate");
-        logger.debug("templateName {}", templateName);
-        logger.debug("sourceBasePathExternal {}", sourceBasePathExternal);
-        logger.debug("targetBasePathExternal {}", targetBasePathExternal);
-        logger.debug("parentAlias {}", parentAlias);
+        logger.debug("templateName: {}", templateName);
+        logger.debug("sourceBasePathExternal: {}", sourceBasePathExternal);
+        logger.debug("targetBasePathExternal: {}", targetBasePathExternal);
+        logger.debug("parentAlias: {}", parentAlias);
 
         internalOrExternalTemplate = InternalOrExternalTemplate.EXTERNAL;
         if (withAt) {
@@ -116,10 +118,10 @@ public class YamlTemplate extends YamlDocument{
             String temp = Utils.fixPath(templateName);
             sourceInputFile = sourceBasePathExternal + "/" + repositoryResource.name + RepositoryResource.LOCAL_SOURCE_POSTFIX + "/" + temp;
             targetOutputFile = targetBasePathExternal + "/" + repositoryResource.name + "/" + temp;
-            logger.debug("{} is an EXTERNAL template and resides in repository {}", templateName, repositoryResource.name);
+            logger.debug("{} is an EXTERNAL template and resides in repository: {}", templateName, repositoryResource.name);
         }
         else {
-            logger.debug("repositoryResource is null; cannot determine the name of the resource (= repository name)");
+            logger.error(RED + "repositoryResource is null; this may be a false-positive" + RESET_COLOR);
         }
     }
 
@@ -127,9 +129,9 @@ public class YamlTemplate extends YamlDocument{
                                          String sourcePath,
                                          boolean continueOnError) {
         logger.debug("==> Method: YamlTemplate.handleInternalTemplate");
-        logger.debug("templateName {}", templateName);
-        logger.debug("sourcePath {}", sourcePath);
-        logger.debug("continueOnError {}", continueOnError);
+        logger.debug("templateName: {}", templateName);
+        logger.debug("sourcePath: {}", sourcePath);
+        logger.debug("continueOnError: {}", continueOnError);
 
         // An internal template resides in the same repository as the main pipeline file
         sourceInputFile = Utils.findFullQualifiedFileNameInDirectory(sourcePath, templateName);
@@ -154,8 +156,8 @@ public class YamlTemplate extends YamlDocument{
                 // Only replace the first occurence
                 // TODO: Maybe better to replace the sourcePath with the targetPath?
                 logger.debug("Replace the repository name");
-                logger.debug("sourceInputFilePath is {}", sourceInputFile);
-                logger.debug("tempTargetOutputFile is {}", tempTargetOutputFile);
+                logger.debug("sourceInputFilePath is: {}", sourceInputFile);
+                logger.debug("tempTargetOutputFile is: {}", tempTargetOutputFile);
                 targetOutputFile = tempTargetOutputFile.replace(sourceRepositoryName, targetRepositoryName);
             }
             else

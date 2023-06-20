@@ -14,6 +14,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
 
+import static azdo.utils.Constants.RED;
+import static azdo.utils.Constants.RESET_COLOR;
+
 /*
    A YamlDocumentEntryPoint is the entry point of the main pipeline YAML file.
    YamlDocumentEntryPoint forms the point of contact between the pipeline - as represented by the AzDoPipeline class -
@@ -317,7 +320,7 @@ public class YamlDocumentEntryPoint {
         logger.debug("basePathExternal: {}", basePathExternal);
 
         if (map == null) {
-            logger.debug("map is null");
+            logger.error(RED + "map is null" + RESET_COLOR);
             return null;
         }
 
@@ -407,13 +410,13 @@ public class YamlDocumentEntryPoint {
         logger.debug("basePathExternal: {}", basePathExternal);
 
         if (inner == null) {
-            logger.debug("inner is null");
+            logger.error(RED + "inner is null" + RESET_COLOR);
             return;
         }
 
         inner.forEach(entry -> {
             if (entry == null) {
-                logger.debug("entry is null");
+                logger.error(RED + "entry is null" + RESET_COLOR);
                 return;
             }
 

@@ -31,7 +31,6 @@ public class YamlDocument {
     protected String targetPath; // The path of the repository that contains the main yaml document.
     protected String sourceInputFile; // The source yaml filename associated with this YamlDocument, including the path in the repository.
     protected String targetOutputFile; // The target filename used to dump the manipulated yaml.
-
     protected String sourceRepositoryName; // The source repositoryName
     protected String targetRepositoryName; // The target repositoryName
 
@@ -39,6 +38,8 @@ public class YamlDocument {
     // section of the pipeline
     protected String repositoryAlias = "";
 
+    // If this YamlDocument is type of YamlTemplate, the templateName is filled. Otherwise it is empty.
+    protected String templateName = ""; // The template name as defined in the pipeline (without the @ postfix)
 
     // Default constructor
     public YamlDocument() {}
@@ -77,6 +78,20 @@ public class YamlDocument {
         logger.debug("-----------------------------------------------------------------");
         logger.debug("Start YamlDocument.readYaml: {}", sourceInputFile);
         logger.debug("-----------------------------------------------------------------");
+
+        if (sourceInputFile == null) {
+            // This may be a false-positive, so don't exit
+            // This typically happens if a parameter is called 'template'
+            logger.error(RED + "sourceInputFile is null; this may be a false-positive" + RESET_COLOR);
+            if (this instanceof YamlTemplate)
+                logger.error(RED + "This is a template with name: {}" + RESET_COLOR, templateName);
+            logger.debug("-----------------------------------------------------------------");
+            logger.debug("End YamlDocument.readYaml");
+            logger.debug("-----------------------------------------------------------------");
+            logger.debug("");
+
+            return null;
+        }
 
         try {
             // Read the yaml file
@@ -167,8 +182,25 @@ public class YamlDocument {
         logger.debug("=================================================================");
         logger.debug("Dump the yamlMap of {} to {}", sourceInputFile, targetOutputFile);
         logger.debug("=================================================================");
-        logger.debug("");
 
+        if (sourceInputFile == null) {
+            // This may be a false-positive, so don't exit
+            logger.error(RED + "sourceInputFile is null; this may be a false-positive" + RESET_COLOR);
+            if (this instanceof YamlTemplate)
+                logger.error(RED + "This is a template with name: {}" + RESET_COLOR, templateName);
+            logger.debug("");
+
+            return;
+        }
+        if (targetOutputFile == null) {
+            // This may be a false-positive, so don't exit
+            logger.error(RED + "targetOutputFile is null; this may be a false-positive" + RESET_COLOR);
+            logger.debug("");
+
+            return;
+        }
+
+        logger.debug("");
         final DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         options.setPrettyFlow(true);
@@ -361,11 +393,11 @@ public class YamlDocument {
                                     String sectionValue) {
         if (sectionName.equals(entry.getKey())) {
             if (sectionValue == null || sectionValue.isEmpty()) {
-                logger.debug("Found section <{}>", sectionName);
+                logger.debug("Found section: {}", sectionName);
                 return true;
             } else {
                 if (sectionValue.equals(entry.getValue())) {
-                    logger.debug("Found section <{}>", sectionValue);
+                    logger.debug("Found section: {}", sectionValue);
                     return true;
                 }
             }
@@ -402,7 +434,7 @@ public class YamlDocument {
             return;
 
         section.forEach(entry -> {
-            logger.debug("Section = {}, Class: = {}", entry, entry.getClass());
+            logger.debug("Section = {}, Class = {}", entry, entry.getClass());
 
             // If inner sections are found, go a level deeper
             if (entry instanceof Map) {
@@ -478,7 +510,7 @@ public class YamlDocument {
                             // Check the key/value pairs of which the value needs to be replaced
                             if (keyName.equals(entry.getKey())) {
                                 logger.debug("Found <{}> with value <{}>", entry.getKey(), entry.getValue());
-                                logger.debug("Replace with value <{}>", keyValue);
+                                logger.debug("Replace with value: {}", keyValue);
                                 entry.setValue(keyValue);
                                 return;
                             }
@@ -543,7 +575,7 @@ public class YamlDocument {
                             // Check the key/value pairs of which the value needs to be replaced
                             if (keyName.equals(entry.getKey())) {
                                 logger.debug("Found <{}> with value <{}>", entry.getKey(), entry.getValue());
-                                logger.debug("Replace with value <{}>", keyValue);
+                                logger.debug("Replace with value: {}", keyValue);
                                 entry.setValue(keyValue);
                                 return;
                             }
@@ -690,7 +722,7 @@ public class YamlDocument {
 
         // Inner could be null
         if (inner == null){
-            logger.debug("inner is null; the reason is probably because the file could not be read, so return");
+            logger.error(RED + "inner is null; the reason is probably because the file could not be read, so return" + RESET_COLOR);
             return;
         }
 
@@ -761,13 +793,13 @@ public class YamlDocument {
 
         // Inner could be null
         if (inner == null){
-            logger.debug("inner is null; the reason is probably because the file could not be read, so return");
+            logger.error(RED + "inner is null; the reason is probably because the file could not be read, so return" + RESET_COLOR);
             return;
         }
 
         inner.forEach(entry -> {
             if (entry == null) {
-                logger.debug("entry is null");
+                logger.error(RED + "entry is null" + RESET_COLOR);
                 return;
             }
             // If inner sections are found, go a level deeper
@@ -808,7 +840,7 @@ public class YamlDocument {
     }
     private void makeResourcesLocal (Map<String, Object> map) {
         if (map == null) {
-            logger.debug("map is null");
+            logger.error(RED + "map is null" + RESET_COLOR);
             return;
         }
 
@@ -859,13 +891,13 @@ public class YamlDocument {
 
     private void makeResourcesLocal(ArrayList<Object> inner) {
         if (inner == null) {
-            logger.debug("inner is null");
+            logger.error(RED + "inner is null" + RESET_COLOR);
             return;
         }
 
         inner.forEach(entry -> {
             if (entry == null) {
-                logger.debug("entry is null");
+                logger.error(RED + "entry is null" + RESET_COLOR);
                 return;
             }
 

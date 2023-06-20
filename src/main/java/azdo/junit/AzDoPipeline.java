@@ -68,7 +68,9 @@ public class AzDoPipeline implements Pipeline {
         yamlDocumentEntryPoint = new YamlDocumentEntryPoint(properties.getSourcePath(),
                 properties.getTargetPath(),
                 properties.getSourceBasePathExternal(),
-                properties.getTargetBasePathExternal());
+                properties.getTargetBasePathExternal(),
+                properties.getSourceRepositoryName(),
+                properties.getTargetRepositoryName());
 
         // Read the main pipeline file; this is the YAML file used in the Azure DevOps pipeline (in the Azure DeVOps test project)
         yamlMap = yamlDocumentEntryPoint.read(pipelineFile, properties.isContinueOnError());
@@ -93,7 +95,7 @@ public class AzDoPipeline implements Pipeline {
         repositoryId = AzDoUtils.createRepositoryIfNotExists (properties.getAzDoUser(),
                 properties.getAzdoPat(),
                 properties.getTargetPath(),
-                properties.getRepositoryName(),
+                properties.getTargetRepositoryName(),
                 properties.getTargetOrganization(),
                 properties.getTargetProject(),
                 properties.getAzdoBaseUrl(),
@@ -108,7 +110,7 @@ public class AzDoPipeline implements Pipeline {
         pipelineId = AzDoUtils.createPipelineIfNotExists (properties.getAzDoUser(),
                 properties.getAzdoPat(),
                 properties.getPipelinePathRepository(),
-                properties.getRepositoryName(),
+                properties.getTargetRepositoryName(),
                 properties.getAzdoEndpoint(),
                 properties.getPipelinesApi(),
                 properties.getPipelinesApiVersion(),
@@ -151,7 +153,7 @@ public class AzDoPipeline implements Pipeline {
 
         logger.debug("");
         logger.debug(DEMARCATION);
-        logger.debug("Start pipeline {} for branch {}", properties.getRepositoryName(), branchName);
+        logger.debug("Start pipeline {} for branch {}", properties.getTargetRepositoryName(), branchName);
         logger.debug(DEMARCATION);
 
         /*******************************************************************************************
@@ -163,7 +165,7 @@ public class AzDoPipeline implements Pipeline {
         try {
             // Clone the main repository to local and initialize
             git = GitUtils.cloneAzdoToLocal(properties.getTargetPath(),
-                    properties.getRepositoryName(),
+                    properties.getTargetRepositoryName(),
                     properties.getAzDoUser(),
                     properties.getAzdoPat(),
                     properties.getTargetOrganization(),
@@ -219,7 +221,7 @@ public class AzDoPipeline implements Pipeline {
         commandBundle.execute(this);
 
         // Save the manipulated main YAML (incl. template files) to the target location.
-        // The manipulated YAML files are stored in memory (in a YamlDocument or Template object). The target
+        // The manipulated YAML files are stored in memory (in a YamlDocument or YamlTemplate object). The target
         // location is a local repository, with a remote repository residing in the Azure DevOps test project.
         // Manipulation is performed in JUnit tests by calling the pipeline actions (overrideVariable, overrideLiteral. etc...)
         yamlDocumentEntryPoint.dumpYaml();
@@ -285,7 +287,7 @@ public class AzDoPipeline implements Pipeline {
 
         logger.debug("");
         logger.debug(DEMARCATION);
-        logger.debug("End pipeline {} for branch {}", properties.getRepositoryName(), branchName);
+        logger.debug("End pipeline {} for branch {}", properties.getTargetRepositoryName(), branchName);
         logger.debug(DEMARCATION);
     }
 
@@ -566,5 +568,20 @@ public class AzDoPipeline implements Pipeline {
     public PropertyUtils getProperties() {
         return properties;
     }
+
+    /*
+       Returns a Step object, given a certain type. Type can be Maven@3 for example
+       The first task found is return. This method cannot be used if a pipeline contains
+       a number of steps; use getStepByDisplayName() instead.
+     */
+    // TODO: Add implementation
+//    public Step getStepByType (String type) { return new Step(); }
+//
+//    /*
+//       Returns a Step object, given a certain displayName.
+//     */
+//    // TODO: Add implementation
+//    public Step getStepByDisplayName (String displayName) { return new Step(); }
+
 }
 

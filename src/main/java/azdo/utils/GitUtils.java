@@ -58,13 +58,13 @@ public class GitUtils {
                     .setCredentialsProvider(credentialsProvider)
                     .setDirectory(new File(targetPath))
                     .call();
+            Utils.wait(1000);
             //git.close();
         }
         catch (Exception e) {
             logger.debug("Cannot clone {}, but just proceed, {}", repositoryName, e.getMessage());
         }
 
-        Utils.wait(1000);
         return git;
     }
 
@@ -99,13 +99,12 @@ public class GitUtils {
                     .setCloneAllBranches(true)
                     .setDirectory(new File(targetPath))
                     .call();
-            //git.close();
+            Utils.wait(1000);
         }
         catch (Exception e) {
             logger.debug("Cannot clone {}, but just proceed, {}", repositoryName, e.getMessage());
         }
 
-        Utils.wait(1000);
         return git;
     }
 
@@ -174,6 +173,7 @@ public class GitUtils {
                     .setCommitter(azdoUser, "")
                     .setMessage("Init repo")
                     .call();
+            Utils.wait(1000);
 
             // Create the credentials provider
             CredentialsProvider credentialsProvider = new UsernamePasswordCredentialsProvider(azdoUser, azdoPat);
@@ -184,13 +184,12 @@ public class GitUtils {
                     .setCredentialsProvider(credentialsProvider)
                     .setForce(true)
                     .call();
+            Utils.wait(1000);
         }
 
         catch (Exception e) {
             logger.debug("Exception pushing to repo: {}", e.getMessage());
         }
-
-        Utils.wait(1000);
     }
 
     public static Git checkout (Git git,
@@ -206,6 +205,7 @@ public class GitUtils {
         if (git == null) {
             targetPath = Utils.fixPath(targetPath);
             git = createGit(targetPath);
+            Utils.wait (1000);
         }
 
         // Perform a checkout
@@ -213,18 +213,18 @@ public class GitUtils {
             try {
                 logger.debug("git.checkout");
                 checkout(git, branchName, createRemoteBranch);
+                Utils.wait (1000);
             } catch (Exception e) {
                 logger.debug("Exception occurred. Cannot checkout {}; try remote: {}", branchName, e.getMessage());
                 try {
                     branchName = "origin/" + branchName;
                     checkout(git, branchName, createRemoteBranch);
+                    Utils.wait (1000);
                 } catch (Exception eRemote) {
                     logger.debug("Exception occurred. Cannot checkout {}; continue: {}", branchName, eRemote.getMessage());
                 }
             }
         }
-
-        Utils.wait(1000);
         return git;
     }
 
@@ -246,6 +246,7 @@ public class GitUtils {
                 .setCreateBranch(createRemoteBranch)
                 .setName(branchName)
                 .call();
+        Utils.wait(1000);
 
         return git;
     }
@@ -260,6 +261,7 @@ public class GitUtils {
             targetPath = Utils.fixPath(targetPath);
             File f = new File(targetPath);
             git = Git.open(f);
+            Utils.wait(1000);
         }
         catch (IOException e) {
             logger.debug("Cannot create a Git object: {}", e.getMessage());
@@ -268,6 +270,7 @@ public class GitUtils {
 
         return git;
     }
+
     // TODO: Refs can also contain tags and remotes
     public static String resolveBranchNameFromRef (String ref) {
         logger.debug("==> Method: GitUtils.resolveBranchFromRef");

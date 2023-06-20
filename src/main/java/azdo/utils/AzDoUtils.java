@@ -400,8 +400,8 @@ public class AzDoUtils {
                 runResult.status = RunResult.Status.timeout;
             }
             logger.debug("Buildnumber: {}", buildNumber);
-            logger.debug("Status response: {}", runResult.status.toString());
-            logger.debug("Status response: {}", runResult.status.toString());
+            logger.debug("Status: {}", runResult.status.toString());
+            logger.debug("Result: {}", runResult.result.toString());
         }
 
         return runResult;

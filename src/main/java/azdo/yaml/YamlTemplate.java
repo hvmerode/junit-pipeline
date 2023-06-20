@@ -4,13 +4,14 @@ import azdo.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 /*
-    A Template is a specific YamlDocument and represents a template YAML file.
+    A YamlTemplate is a specific YamlDocument and represents a template YAML file.
     A template can be invoked by the main pipeline or invoked by other templates in the same or in other repositories.
  */
-public class Template extends YamlDocument{
+public class YamlTemplate extends YamlDocument{
     public enum InternalOrExternalTemplate {
         INTERNAL,
         EXTERNAL
@@ -18,22 +19,26 @@ public class Template extends YamlDocument{
     private InternalOrExternalTemplate internalOrExternalTemplate = InternalOrExternalTemplate.EXTERNAL;
     private String templateName; // The template name as defined in the pipeline (without the @ postfix)
     //private String repositoryAlias; // The name of the repository in which the template resides (in case of an external template)
-    private static Logger logger = LoggerFactory.getLogger(Template.class);
+    private static Logger logger = LoggerFactory.getLogger(YamlTemplate.class);
 
-    public Template (String templateName,
-                     String sourcePath,
-                     String targetPath,
-                     String sourceBasePathExternal,
-                     String targetBasePathExternal,
-                     String parentAlias,
-                     ArrayList<RepositoryResource> repositoryList,
-                     boolean continueOnError){
-        logger.debug("==> Object: Template");
+    public YamlTemplate(String templateName,
+                        String sourcePath,
+                        String targetPath,
+                        String sourceBasePathExternal,
+                        String targetBasePathExternal,
+                        String sourceRepositoryName,
+                        String targetRepositoryName,
+                        String parentAlias,
+                        ArrayList<RepositoryResource> repositoryList,
+                        boolean continueOnError){
+        logger.debug("==> Object: YamlTemplate");
         logger.debug("templateName: {}", templateName);
         logger.debug("sourcePath: {}", sourcePath);
         logger.debug("targetPath: {}", targetPath);
         logger.debug("sourceBasePathExternal: {}", sourceBasePathExternal);
         logger.debug("targetBasePathExternal: {}", targetBasePathExternal);
+        logger.debug("sourceRepositoryName: {}", sourceRepositoryName);
+        logger.debug("targetRepositoryName: {}", targetRepositoryName);
         logger.debug("parentAlias: {}", parentAlias);
         logger.debug("continueOnError: {}", continueOnError);
 
@@ -41,6 +46,8 @@ public class Template extends YamlDocument{
         this.rootInputFile = templateName;
         this.sourcePath = sourcePath;
         this.targetPath = targetPath;
+        this.sourceRepositoryName = sourceRepositoryName;
+        this.targetRepositoryName = targetRepositoryName;
 
         if (templateName != null && templateName.contains("@")) {
             // It is an EXTERNAL template (defined in another repository)
@@ -85,7 +92,7 @@ public class Template extends YamlDocument{
                                          ArrayList<RepositoryResource> repositoryList,
                                          boolean withAt) {
         // It is an EXTERNAL template (defined in another repository)
-        logger.debug("==> Method: Template.handleExternalTemplate");
+        logger.debug("==> Method: YamlTemplate.handleExternalTemplate");
         logger.debug("templateName {}", templateName);
         logger.debug("sourceBasePathExternal {}", sourceBasePathExternal);
         logger.debug("targetBasePathExternal {}", targetBasePathExternal);
@@ -119,7 +126,7 @@ public class Template extends YamlDocument{
     private void handleInternalTemplate (String templateName,
                                          String sourcePath,
                                          boolean continueOnError) {
-        logger.debug("==> Method: Template.handleInternalTemplate");
+        logger.debug("==> Method: YamlTemplate.handleInternalTemplate");
         logger.debug("templateName {}", templateName);
         logger.debug("sourcePath {}", sourcePath);
         logger.debug("continueOnError {}", continueOnError);
@@ -127,13 +134,32 @@ public class Template extends YamlDocument{
         // An internal template resides in the same repository as the main pipeline file
         sourceInputFile = Utils.findFullQualifiedFileNameInDirectory(sourcePath, templateName);
         if (sourceInputFile != null) {
+            // Some juggling with the path is needed, because templates can be assigned by relative paths
+            // This is particular annoying if a template with a relative path includes another templates with
+            // a relative path
             Path p = Path.of(sourceInputFile);
             String directory = p.getParent().toString();
             logger.debug("directory: {}", directory);
             Path f = Path.of(templateName);
             String fileName = f.getFileName().toString();
             logger.debug("fileName: {}", fileName);
-            targetOutputFile = directory + "/" + fileName;
+
+            // Derive the output file; it is the same as the source file, but with a different repository name
+            String tempTargetOutputFile = directory + "/" + fileName; // This is not yet the final name
+            Path sourceInputFilePath = Paths.get(sourceInputFile).normalize();
+            Path targetInputFilePath = Paths.get(tempTargetOutputFile).normalize();
+            if (targetInputFilePath.equals(sourceInputFilePath))
+            {
+                // Replace the repository name (replace the source repository with the target repository name)
+                // Only replace the first occurence
+                // TODO: Maybe better to replace the sourcePath with the targetPath?
+                logger.debug("Replace the repository name");
+                logger.debug("sourceInputFilePath is {}", sourceInputFile);
+                logger.debug("tempTargetOutputFile is {}", tempTargetOutputFile);
+                targetOutputFile = tempTargetOutputFile.replace(sourceRepositoryName, targetRepositoryName);
+            }
+            else
+                targetOutputFile = tempTargetOutputFile;
 
             // Validate the internal pipeline file before any other action
             // If it is not valid, the test may fail
@@ -142,7 +168,7 @@ public class Template extends YamlDocument{
     }
 
     private RepositoryResource findRepositoryResourceByAlias (ArrayList<RepositoryResource> repositoryList, String alias) {
-        logger.debug("==> Method: Template.findRepositoryResourceByAlias");
+        logger.debug("==> Method: YamlTemplate.findRepositoryResourceByAlias");
         logger.debug("alias: {}", alias);
         logger.debug("repositoryList: {}", repositoryList.toString());
 

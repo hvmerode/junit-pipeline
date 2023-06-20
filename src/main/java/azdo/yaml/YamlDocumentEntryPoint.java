@@ -40,6 +40,11 @@ public class YamlDocumentEntryPoint {
     private String sourceBasePathExternal = "";
     private String targetBasePathExternal = "";
 
+    // The source- and target repository names refer to the name of the main repository (the source) and its
+    // corresponding repository in the Azure DevOps test project.
+    private String sourceRepositoryName = "";
+    private String targetRepositoryName = "";
+
     // List of repositories, defined in the resources section in the main pipeline file.
     ArrayList<RepositoryResource> repositoryList = null;
 
@@ -47,11 +52,15 @@ public class YamlDocumentEntryPoint {
     public YamlDocumentEntryPoint (String sourcePath,
                                    String targetPath,
                                    String sourceBasePathExternal,
-                                   String targetBasePathExternal) {
+                                   String targetBasePathExternal,
+                                   String sourceRepositoryName,
+                                   String targetRepositoryName) {
         this.sourcePath = sourcePath;
         this.targetPath = targetPath;
         this.sourceBasePathExternal = sourceBasePathExternal;
         this.targetBasePathExternal = targetBasePathExternal;
+        this.sourceRepositoryName = sourceRepositoryName;
+        this.targetRepositoryName = targetRepositoryName;
     }
 
     /*
@@ -114,6 +123,8 @@ public class YamlDocumentEntryPoint {
                 targetPath,
                 sourceBasePathExternal,
                 targetBasePathExternal,
+                sourceRepositoryName,
+                targetRepositoryName,
                 repositoryList,
                 properties.isContinueOnError());
     }
@@ -128,7 +139,11 @@ public class YamlDocumentEntryPoint {
         logger.debug("mainPipelineFile: {}", mainPipelineFile);
 
         // First read the main YAML file
-        mainYamlDocument = new YamlDocument(mainPipelineFile, sourcePath, targetPath);
+        mainYamlDocument = new YamlDocument(mainPipelineFile,
+                sourcePath,
+                targetPath,
+                sourceRepositoryName,
+                targetRepositoryName);
         Map<String, Object> yamlMap = mainYamlDocument.readYaml(continueOnError);
 
         return yamlMap;

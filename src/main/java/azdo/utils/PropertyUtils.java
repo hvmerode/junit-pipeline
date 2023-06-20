@@ -18,6 +18,8 @@ public class PropertyUtils {
     // Source
     private Properties properties;
     private String sourcePath;
+
+    private String sourceRepositoryName;
     private String sourceBasePathExternal;
 
     // Target
@@ -56,7 +58,7 @@ public class PropertyUtils {
     // Miscellaneous
     private String commitPattern;
     ArrayList<String> commitPatternList;
-    private String repositoryName;
+    private String targetRepositoryName;
     private boolean continueOnError = false;
 
     @SuppressWarnings("java:S1192")
@@ -76,13 +78,14 @@ public class PropertyUtils {
             // Source
             sourcePath = getStringProperty(properties, "source.path", sourcePath);
             sourceBasePathExternal = getStringProperty(properties, "source.base.path.external", sourceBasePathExternal);
+            sourceRepositoryName = getStringProperty(properties, "source.repository.name", sourceRepositoryName);
 
             // Target
             targetOrganization = getStringProperty(properties, "target.organization", targetOrganization);
             targetProject = getStringProperty(properties, "target.project", targetProject);
             targetPath = getStringProperty(properties, "target.path", targetPath);
             targetBasePathExternal = getStringProperty(properties, "target.base.path.external", targetBasePathExternal);
-            repositoryName = getStringProperty(properties, "target.repository.name", repositoryName);
+            targetRepositoryName = getStringProperty(properties, "target.repository.name", targetRepositoryName);
             pipelinePathRepository = getStringProperty(properties, "repository.pipeline.path", pipelinePathRepository);
             azdoUser = getStringProperty(properties, "azdo.user", azdoUser, false);
             azdoPat = getStringProperty(properties, "azdo.pat", azdoPat, false);
@@ -123,7 +126,7 @@ public class PropertyUtils {
             // Derived properties
             azdoBaseUrl="https://dev.azure.com/" + targetOrganization;
             logger.debug("Derived azdoBaseUrl: {}", azdoBaseUrl);
-            uriTargetRepository = azdoBaseUrl + "/" + targetProject + "/_git/" + repositoryName;
+            uriTargetRepository = azdoBaseUrl + "/" + targetProject + "/_git/" + targetRepositoryName;
             uriTargetRepository = Utils.encodePath(uriTargetRepository);
             logger.debug("Derived uriTargetRepository: {}", uriTargetRepository);
             azdoEndpoint = azdoBaseUrl + "/" + targetProject + "/_apis";
@@ -196,6 +199,8 @@ public class PropertyUtils {
     public String getTargetProject() {
         return targetProject;
     }
+    public String getTargetRepositoryName() { return targetRepositoryName; }
+    public String getSourceRepositoryName() { return sourceRepositoryName; }
     public String getTargetOrganization() {
         return targetOrganization;
     }
@@ -235,6 +240,5 @@ public class PropertyUtils {
     // Miscellaneous
     public String getCommitPattern() { return commitPattern; }
     public ArrayList<String> getCommitPatternList() { return commitPatternList; }
-    public String getRepositoryName() { return repositoryName; }
     public boolean isContinueOnError() { return continueOnError; }
 }

@@ -5,6 +5,9 @@ parameters:
 jobs:
 - job: Job_A
   displayName: template-jobs.yml job
+  variables:
+    - name: jobVar
+      value: 'jobVarInTemplate'
   pool:
     vmImage: ubuntu-latest
   steps:

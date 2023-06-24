@@ -1,14 +1,10 @@
 package azdo.yaml;
 
+import azdo.utils.Log;
 import azdo.utils.Utils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-
-import static azdo.utils.Constants.RED;
-import static azdo.utils.Constants.RESET_COLOR;
 
 /*
     A YamlTemplate is a specific YamlDocument and represents a template YAML file.
@@ -19,9 +15,10 @@ public class YamlTemplate extends YamlDocument{
         INTERNAL,
         EXTERNAL
     }
+
+    private static Log logger = Log.getLogger();
     private InternalOrExternalTemplate internalOrExternalTemplate = InternalOrExternalTemplate.EXTERNAL;
     //private String templateName; // The template name as defined in the pipeline (without the @ postfix)
-    private static Logger logger = LoggerFactory.getLogger(YamlTemplate.class);
 
     public YamlTemplate(String templateName,
                         String sourcePath,
@@ -121,7 +118,7 @@ public class YamlTemplate extends YamlDocument{
             logger.debug("{} is an EXTERNAL template and resides in repository: {}", templateName, repositoryResource.name);
         }
         else {
-            logger.error(RED + "repositoryResource is null; this may be a false-positive" + RESET_COLOR);
+            logger.warn("repositoryResource is null; this may be a false-positive");
         }
     }
 

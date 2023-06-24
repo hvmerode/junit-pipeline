@@ -12,10 +12,7 @@ import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.util.UriUtils;
-
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.*;
@@ -26,7 +23,7 @@ import static azdo.utils.Constants.*;
 
 public class Utils {
     private static final int MAX_VAL_ERR = 1;
-    private static Logger logger = LoggerFactory.getLogger(Utils.class);
+    private static Log logger = Log.getLogger();
     private static final String EXCLUDEFILESLIST = "\\excludedfileslist.txt";
 
     public static boolean isLinux(){
@@ -290,7 +287,7 @@ public class Utils {
         InputStream isJsonSchema = Utils.class.getClassLoader().getResourceAsStream(JSON_SCHEMA);
         if (isJsonSchema == null)
         {
-            logger.error(RED + "Schema cannot not be read" + RESET_COLOR);
+            logger.warn("Schema cannot not be read");
             logger.debug(DEMARCATION);
             return;
         }
@@ -304,7 +301,7 @@ public class Utils {
             isYaml = new FileInputStream(fileName);
         }
         catch (FileNotFoundException fnfe) {
-            logger.error(RED + "{} cannot be read" + RESET_COLOR, fileName);
+            logger.error("{} cannot be read", fileName);
             logger.debug(DEMARCATION);
             if (continueOnError) return; else System. exit(1);
         }
@@ -314,14 +311,14 @@ public class Utils {
             jsonNode = mapper.readTree(isYaml);
         }
         catch (IOException e){
-            logger.error(RED + "Cannot validate {};the file cannot be found or it is not a valid YAML file" + RESET_COLOR, fileName);
+            logger.error("Cannot validate {};the file cannot be found or it is not a valid YAML file", fileName);
             logger.debug(DEMARCATION);
             if (continueOnError) return; else System. exit(1);
         }
 
         // If jsonNode is null, the yaml was not valid
         if (jsonNode == null) {
-            logger.error(RED + "File {} is not a valid YAML file" + RESET_COLOR, fileName);
+            logger.error("File {} is not a valid YAML file", fileName);
             logger.debug(DEMARCATION);
             if (continueOnError) return; else System. exit(1);
         }
@@ -332,7 +329,7 @@ public class Utils {
             int i = 0;
             int maxErr = size < MAX_VAL_ERR ? size : MAX_VAL_ERR;
             for (ValidationMessage msg : validateMsg) {
-                logger.error(RED + "Validation type [{}]; Error: {}" + RESET_COLOR, msg.getType(), msg.getMessage());
+                logger.error("Validation type [{}]; Error: {}", msg.getType(), msg.getMessage());
                 if (i >= maxErr)
                     break;
                 i++;

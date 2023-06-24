@@ -20,6 +20,4 @@ public interface Pipeline {
     void skipJob(String jobName);
     void skipStep(String stepName);
     void mockStep(String stepValue, String inlineScript);
-//    Step getStepByType (String type);
-//    Step getStepByDisplayName (String displayName);
 }

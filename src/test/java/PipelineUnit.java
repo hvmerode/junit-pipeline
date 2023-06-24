@@ -4,16 +4,15 @@
 import azdo.hook.Hook;
 import azdo.junit.AzDoPipeline;
 import azdo.junit.RunResult;
+import azdo.utils.Log;
 import org.junit.jupiter.api.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class PipelineUnit {
-    private static Logger logger = LoggerFactory.getLogger(PipelineUnit.class);
+    private static Log logger = Log.getLogger();
     private static AzDoPipeline pipeline;
 
     @BeforeAll
@@ -89,6 +88,19 @@ public class PipelineUnit {
         logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
         try {
+            // TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST
+            //pipeline.skipStage("ExecuteScriptStage");
+            //pipeline.skipStage("DeployStage");
+            //pipeline.overrideVariable("jobVar", "666");
+            //pipeline.overrideVariable("aws_connection", "999");
+            //pipeline.skipStageByDisplayName("The executeScriptStage");
+            //pipeline.skipSection("template", "templates/stages/template-stages.yml");
+            //pipeline.overrideParameterDefault("environment", "prod");
+
+            //pipeline.setVariableBeforeStep ("AWSShellScript@1", "aws_connection", "666");
+            pipeline.setVariableBeforeStepByDisplayName ("DeployStage job_xd script", "aws_connection", "666");
+            // TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST
+
             // Create a hook to perform an action just before starting the pipeline
             class TestHook extends Hook {
                 @Override
@@ -96,8 +108,8 @@ public class PipelineUnit {
                     logger.debug("Executes hook with an argument");
                 }
             }
-            pipeline.skipStage("ExecuteScriptStage");
-            pipeline.skipStage("DeployStage");
+            //pipeline.skipStage("ExecuteScriptStage");
+            //pipeline.skipStage("DeployStage");
 
             // Create a list with hooks and pass it to the startPipeline
             // Note: The startPipeline has a dryRun = true setting, meaning that it does not start the pipeline in AzUre DevOps

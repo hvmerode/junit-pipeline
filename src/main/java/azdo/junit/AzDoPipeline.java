@@ -3,6 +3,7 @@
 
 package azdo.junit;
 
+import azdo.action.*;
 import azdo.command.CommandBundle;
 import azdo.hook.Hook;
 import azdo.utils.*;
@@ -11,12 +12,11 @@ import azdo.yaml.YamlDocumentEntryPoint;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.io.IOException;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import static azdo.utils.Constants.DEMARCATION;
+import static azdo.utils.Constants.*;
 
 /*
    AzDoPipeline is used in JUnit tests; it acts as a Java representation of an Azure DeVOps pipeline.
@@ -24,18 +24,7 @@ import static azdo.utils.Constants.DEMARCATION;
    All AzDoPipeline methods used by the JUnit tests are forwarded to the encapsulated objects.
 */
 public class AzDoPipeline implements Pipeline {
-    private static Logger logger = LoggerFactory.getLogger(AzDoPipeline.class);
-    private static final String SECTION_PARAMETERS = "parameters";
-    private static final String SECTION_STAGE = "stage";
-    private static final String SECTION_STAGES = "stages";
-    private static final String SECTION_JOB = "job";
-    private static final String SECTION_JOBS = "jobs";
-    private static final String SECTION_STEP = "step";
-    private static final String SECTION_TASK = "task";
-    private static final String SECTION_SCRIPT = "script";
-    private static final String SECTION_STEPS = "steps";
-    private static final String IDENTIFIER_NAME = "name";
-
+    private static Log logger = Log.getLogger();
     private PropertyUtils properties;
     private Git git = null;
     private CredentialsProvider credentialsProvider;
@@ -314,29 +303,29 @@ public class AzDoPipeline implements Pipeline {
 
        This method does not replace variables defined in a Library.
      */
-    public void overrideVariable(String variableName, String value) {
-        logger.debug("==> Method: AzDoPipeline.overrideVariable {} with {}", variableName, value);
-
-        // Replace according to construction 1
-        yamlDocumentEntryPoint.executeCommand(ActionEnum.replaceValue,
-                "variables",
-                "",
-                "",
-                "",
-                variableName,
-                value,
-                false);
-
-        // Replace according to construction 2
-        yamlDocumentEntryPoint.executeCommand(ActionEnum.replaceValue,
-                "variables",
-                "",
-                IDENTIFIER_NAME,
-                variableName,
-                "value",
-                value,
-                false);
-    }
+//    public void overrideVariable(String variableName, String value) {
+//        logger.debug("==> Method: AzDoPipeline.overrideVariable {} with {}", variableName, value);
+//
+//        // Replace according to construction 1
+//        yamlDocumentEntryPoint.executeCommand(ActionEnum.replaceValue,
+//                "variables",
+//                "",
+//                "",
+//                "",
+//                variableName,
+//                value,
+//                false);
+//
+//        // Replace according to construction 2
+//        yamlDocumentEntryPoint.executeCommand(ActionEnum.replaceValue,
+//                "variables",
+//                "",
+//                IDENTIFIER_NAME,
+//                variableName,
+//                "value",
+//                value,
+//                false);
+//    }
 
     /* Replace the default value of a parameter in the 'parameters' section. Example:
       - name: myNumber
@@ -360,17 +349,17 @@ public class AzDoPipeline implements Pipeline {
         - 8
         - 16
      */
-    public void overrideParameterDefault(String parameterName, String value) {
-        logger.debug("==> Method: AzDoPipeline.overrideParameterDefault {} with {}", parameterName, value);
-        yamlDocumentEntryPoint.executeCommand(ActionEnum.replaceValue,
-                SECTION_PARAMETERS,
-                "",
-                IDENTIFIER_NAME,
-                parameterName,
-                "default",
-                value,
-                false);
-    }
+//    public void overrideParameterDefault(String parameterName, String value) {
+//        logger.debug("==> Method: AzDoPipeline.overrideParameterDefault {} with {}", parameterName, value);
+//        yamlDocumentEntryPoint.executeCommand(ActionEnum.replaceValue,
+//                SECTION_PARAMETERS,
+//                "",
+//                IDENTIFIER_NAME,
+//                parameterName,
+//                "default",
+//                value,
+//                false);
+//    }
 
     /* Replace the value of a parameter in the 'template' section. Example:
        - template: step/mytemplate.yml
@@ -462,17 +451,17 @@ public class AzDoPipeline implements Pipeline {
        Call skipStage("my_stage")
        ==> The stage with name "my_stage" is skipped
      */
-    public void skipStage(String stageName) {
-        logger.debug("==> Method: AzDoPipeline.skipStage: {}", stageName);
-        yamlDocumentEntryPoint.executeCommand(ActionEnum.delete,
-                SECTION_STAGES,
-                "",
-                "",
-                "",
-                SECTION_STAGE,
-                stageName,
-                false);
-    }
+//    public void skipStage(String stageName) {
+//        logger.debug("==> Method: AzDoPipeline.skipStage: {}", stageName);
+//        yamlDocumentEntryPoint.executeCommand(ActionEnum.delete,
+//                SECTION_STAGES,
+//                "",
+//                "",
+//                "",
+//                SECTION_STAGE,
+//                stageName,
+//                false);
+//    }
 
     /* Skip a job.
        The result is, that the job is completely removed from the output pipeline yaml file, which basically is
@@ -569,19 +558,270 @@ public class AzDoPipeline implements Pipeline {
         return properties;
     }
 
-    /*
-       Returns a Step object, given a certain type. Type can be Maven@3 for example
-       The first task found is return. This method cannot be used if a pipeline contains
-       a number of steps; use getStepByDisplayName() instead.
-     */
-    // TODO: Add implementation
-//    public Step getStepByType (String type) { return new Step(); }
-//
-//    /*
-//       Returns a Step object, given a certain displayName.
-//     */
-//    // TODO: Add implementation
-//    public Step getStepByDisplayName (String displayName) { return new Step(); }
 
+
+
+
+
+
+    /******************************************************************************************
+     This next section contains the re-implemention of performing actions on a YAML file
+     ******************************************************************************************/
+
+    /******************************************************************************************
+     Skip a stage.
+     The result is, that the stage is completely removed from the output pipeline yaml file,
+     which basically is the same as skipping it.
+
+     Example:
+     =========
+     - stage: my_stage
+       displayName: 'This is my stage'
+
+     Call skipStage("my_stage")
+     ==> The stage with name "my_stage" is skipped
+     ******************************************************************************************/
+        public void skipStage (String stageIdentifier) {
+        logger.debug("==> Method: AzDoPipeline.skipStage");
+        logger.debug("stageIdentifier: {}", stageIdentifier);
+
+        // Call the performAction method; find "stage" section with the identifier
+        yamlDocumentEntryPoint.performAction (new ActionDeleteSection("stage", stageIdentifier),
+                "stage",
+                stageIdentifier);
+    }
+
+    /******************************************************************************************
+     Skip a stage, but search it using the displayName
+     ******************************************************************************************/
+    public void skipStageByDisplayName (String displayValue) {
+        logger.debug("==> Method: AzDoPipeline.skipStageByDisplayName");
+        logger.debug("displayValue: {}", displayValue);
+
+        // Call the performAction method; find a "stage" section
+        // If a stage is found (can be any stage), determine whether its property name (in this case "displayName"), has a certain value
+        yamlDocumentEntryPoint.performAction (new ActionDeleteSectionByProperty("stage", "displayName", displayValue),
+                "stage",
+                "");
+    }
+
+    // Same as the previous one, but instead of a fixed property (displayName), another property can be used to skip the stage
+
+    /******************************************************************************************
+     Same as the previous one, but instead of a fixed property (displayName), another property
+     can be used to skip the stage ('pool', if you want).
+     @see  azdo.action.ActionDeleteSectionByProperty
+     ******************************************************************************************/
+    public void skipStageByProperty (String property, String propertyValue) {
+        logger.debug("==> Method: AzDoPipeline.skipStageByProperty");
+        logger.debug("property: {}", property);
+        logger.debug("propertyValue: {}", propertyValue);
+
+        // Call the performAction method; find "stage" section with the identifier
+        // If a stage is found, determine whether the given property has a certain value
+        yamlDocumentEntryPoint.performAction (new ActionDeleteSectionByProperty("stage", property, propertyValue),
+                "stage",
+                "");
+    }
+
+    /******************************************************************************************
+     Same as skipStage(), but now any type of section can be skipped (for example "job" or
+     "task"). The section is searched using the 'sectionIdentifier'.
+     @see  azdo.action.ActionDeleteSectionByProperty
+     ******************************************************************************************/
+    public void skipSection (String sectionType, String sectionIdentifier) {
+        logger.debug("==> Method: AzDoPipeline.skipSection");
+        logger.debug("sectionType: {}", sectionType);
+        logger.debug("sectionIdentifier: {}", sectionIdentifier);
+
+        // Call the performAction method; find the section defined by sectionType, with the sectionIdentifier
+        yamlDocumentEntryPoint.performAction (new ActionDeleteSection(sectionType, sectionIdentifier),
+                sectionType,
+                sectionIdentifier);
+    }
+
+    /******************************************************************************************
+     Same as the previous one, but instead of a "stage", any section can be defined (for
+     example "job" or "task"). Searching can be done using any property of the section.
+     @see  azdo.action.ActionDeleteSectionByProperty
+     ******************************************************************************************/
+    public void skipSectionByProperty (String sectionType, String property, String propertyValue) {
+        logger.debug("==> Method: AzDoPipeline.skipSectionByProperty");
+        logger.debug("sectionType: {}", sectionType);
+        logger.debug("property: {}", property);
+        logger.debug("propertyValue: {}", propertyValue);
+
+        // Call the performAction method; find "stage" section with the identifier
+        // If a stage is found, determine whether the given property has a certain value
+        yamlDocumentEntryPoint.performAction (new ActionDeleteSectionByProperty(sectionType, property, propertyValue),
+                sectionType,
+                "");
+    }
+
+    /******************************************************************************************
+     Inserts a yaml section (step) bfore a given step.
+     @see azdo.action.ActionInsertSection
+     ******************************************************************************************/
+    public void insertBeforeStep (String stepType, Map<String, Object> stepToInsert) {
+        logger.debug("==> Method: AzDoPipeline.insertBeforeStep");
+        logger.debug("stepType: {}", stepType); // Can be a Maven@02 task
+        logger.debug("stepToInsert: {}", stepToInsert);
+
+        // Call the performAction method; find the "step" section with the identifier
+        yamlDocumentEntryPoint.performAction (new ActionInsertSection("task", stepType, stepToInsert, true),
+                "task",
+                stepType);
+
+        // It can also be a "task", so try that one also
+        yamlDocumentEntryPoint.performAction (new ActionInsertSection("step", stepType, stepToInsert, true),
+                "step",
+                stepType);
+    }
+
+    /******************************************************************************************
+     Inserts a yaml section (step) after a given step.
+     @see azdo.action.ActionInsertSection
+     ******************************************************************************************/
+    public void insertAfterStep (String stepType, Map<String, Object> stepToInsert) {
+        logger.debug("==> Method: AzDoPipeline.insertAfterStep");
+        logger.debug("stepType: {}", stepType); // Can be a Maven@02 task
+        logger.debug("stepToInsert: {}", stepToInsert);
+
+        // Call the performAction method; find the "step" section with the identifier
+        yamlDocumentEntryPoint.performAction (new ActionInsertSection("task", stepType, stepToInsert, false),
+                "task",
+                stepType);
+
+        // It can also be a "task", so try that one also
+        yamlDocumentEntryPoint.performAction (new ActionInsertSection("step", stepType, stepToInsert, false),
+                "step",
+                stepType);
+    }
+
+    /******************************************************************************************
+     Replaces the value of a variable in the 'variables' section. Example:
+
+     variables:
+     - name: myVar
+       value: myValue
+
+     overrideVariable("myVar", "myNewValue") results in:
+     variables:
+     - name: myVar
+       value: myNewValue
+
+     This method does not replace variables defined in a Library.
+     ******************************************************************************************/
+    public void overrideVariable (String variableName, String value) {
+        logger.debug("==> Method: AzDoPipeline.overrideVariable");
+        logger.debug("variableName: {}", variableName);
+        logger.debug("value: {}", value);
+
+        // Call the performAction method; find the "variables" section, and replace the old value of the variable (with name
+        // 'variableName') with the new value
+        yamlDocumentEntryPoint.performAction (new ActionOverrideElement(variableName, value),
+                "variables",
+                null);
+    }
+
+    /******************************************************************************************
+     Sets (changes) the value of a variable (identified by "variableName") just before a certain
+     step is executed. This means that the variable value is changed at runtime (while running
+     the pipeline), unlike the overrideVariable() method, which replaces the value during
+     pre-processing the pipelines.
+     This step is found using the "stepType". The value of "stepType" is
+     for example, "Maven@02". The methods searches for the first instance of a "Maven@02" task.
+     ******************************************************************************************/
+    public void setVariableBeforeStep (String stepType, String variableName, String value) {
+        logger.debug("==> Method: AzDoPipeline.setVariableBeforeStep");
+        logger.debug("stepType: {}", stepType); // Can be a Maven@02 task
+        logger.debug("variableName: {}", variableName);
+        logger.debug("value: {}", value);
+
+        // Create a script task that sets the value of a variable
+        Map<String, Object> stepToInsert = new LinkedHashMap<>();
+        String s = "echo '##vso[task.setvariable variable=" + variableName + "]" + value .toString() + "'";
+        stepToInsert.put("script", s);
+
+        // Call the performAction method; find the "step" section with the identifier
+        yamlDocumentEntryPoint.performAction (new ActionInsertSection("task", stepType, stepToInsert, true),
+                "task",
+                stepType);
+
+        // It can also be a "task", so try that one also
+        yamlDocumentEntryPoint.performAction (new ActionInsertSection("step", stepType, stepToInsert, true),
+                "step",
+                stepType);
+    }
+
+    /******************************************************************************************
+     Set the variable at runtime, just as the previous method, but search the step using the
+     displayName. The step can be of any type "step", "tasks", or "script".
+     ******************************************************************************************/
+    public void setVariableBeforeStepByDisplayName (String displayValue, String variableName, String value) {
+        logger.debug("==> Method: AzDoPipeline.setVariableBeforeStep");
+        logger.debug("displayValue: {}", displayValue); // Can be something like "Execute this step"
+        logger.debug("variableName: {}", variableName);
+        logger.debug("value: {}", value);
+
+        // Create a script task that sets the value of a variable
+        Map<String, Object> stepToInsert = new LinkedHashMap<>();
+        String s = "echo '##vso[task.setvariable variable=" + variableName + "]" + value .toString() + "'";
+        stepToInsert.put("script", s);
+
+        // Call the performAction method; find the "step" section with the displayName
+        ActionInsertSectionByProperty actionTask = new ActionInsertSectionByProperty("task", "displayName", displayValue, stepToInsert, true);
+        yamlDocumentEntryPoint.performAction (actionTask, "task", "");
+
+        // It can also be a "task", so try that one also
+        ActionInsertSectionByProperty actionStep = new ActionInsertSectionByProperty("step", "displayName", displayValue, stepToInsert, true);
+        yamlDocumentEntryPoint.performAction (actionStep, "step", "");
+
+        // It can even be a "script" with that displayName
+        ActionInsertSectionByProperty actionScript = new ActionInsertSectionByProperty("script", "displayName", displayValue, stepToInsert, true);
+        yamlDocumentEntryPoint.performAction (actionScript, "script", "");
+    }
+
+    /******************************************************************************************
+     Replaces the default value of a parameter in the 'parameters' section. Example:
+
+     parameters:
+     - name: myNumber
+       type: number
+       default: 2
+       values:
+       - 1
+       - 2
+       - 4
+       - 8
+       - 16
+
+     overrideParameterDefault("myNumber", "8") result in:
+
+     parameters:
+     - name: myNumber
+       type: number
+       default: 8
+       values:
+       - 1
+       - 2
+       - 4
+       - 8
+       - 16
+     ******************************************************************************************/
+    public void overrideParameterDefault (String parameterName, String defaultValue) {
+        logger.debug("==> Method: AzDoPipeline.overrideParameterDefault");
+        logger.debug("parameterName: {}", parameterName);
+        logger.debug("defaultValue: {}", defaultValue);
+
+        // Call the performAction method; find the "parameters" section, and replace the old value of the parameter (with name
+        // 'parameterName') with the new value
+        ActionOverrideElement overrideParameterDefault = new ActionOverrideElement(parameterName,
+                defaultValue,
+                "name",
+                "default");
+        yamlDocumentEntryPoint.performAction (overrideParameterDefault,
+                "parameters",
+                null);
+    }
 }
-

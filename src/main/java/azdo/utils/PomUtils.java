@@ -8,8 +8,6 @@ import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -18,7 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class PomUtils {
-    private static Logger logger = LoggerFactory.getLogger(PomUtils.class);
+    private static Log logger = Log.getLogger();
 
     public static boolean checkDependency(String pomFile,
                                           String groupID,

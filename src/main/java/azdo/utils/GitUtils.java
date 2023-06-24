@@ -6,15 +6,13 @@ import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class GitUtils {
-    private static Logger logger = LoggerFactory.getLogger(GitUtils.class);
+    private static Log logger = Log.getLogger();
     private static Git git = null;
     public static final String BRANCH_MASTER = "master";
 

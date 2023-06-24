@@ -3,9 +3,9 @@
 
 package azdo.yaml;
 
+import azdo.action.Action;
+import azdo.utils.Log;
 import azdo.utils.Utils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import java.io.*;
@@ -23,7 +23,7 @@ import static azdo.utils.Constants.*;
     In the case of a template file, the specialized YamlTemplate class is used.
  */
 public class YamlDocument {
-    private static Logger logger = LoggerFactory.getLogger(YamlDocument.class);
+    private static Log logger = Log.getLogger();
     private Map<String, Object> yamlMap; // Map of the pipeline/template yaml file.
     private ArrayList<YamlTemplate> yamlTemplateList = new ArrayList<>(); // Contains an array with templates referred in the yaml file associated with this YamlDocument.
     protected String rootInputFile; // The main yaml document, including the root path within the repository
@@ -68,10 +68,10 @@ public class YamlDocument {
         logger.debug("targetOutputFile: {}", targetOutputFile);
     }
 
-    /*
-       Reads a pipeline file from the local file system and creates a yaml map object.
-       This map is kept into memory and is manipulated by the methods of this class.
-     */
+    /******************************************************************************************
+     Reads a pipeline file from the local file system and creates a yaml map object.
+     This map is kept into memory and is manipulated by the methods of this class.
+     ******************************************************************************************/
     @SuppressWarnings("java:S1192")
     public Map<String, Object> readYaml(boolean continueOnError) {
         logger.debug("");
@@ -82,9 +82,9 @@ public class YamlDocument {
         if (sourceInputFile == null) {
             // This may be a false-positive, so don't exit
             // This typically happens if a parameter is called 'template'
-            logger.error(RED + "sourceInputFile is null; this may be a false-positive" + RESET_COLOR);
+            logger.warn("sourceInputFile is null; this may be a false-positive");
             if (this instanceof YamlTemplate)
-                logger.error(RED + "This is a template with name: {}" + RESET_COLOR, templateName);
+                logger.warn("This is a template with name: {}", templateName);
             logger.debug("-----------------------------------------------------------------");
             logger.debug("End YamlDocument.readYaml");
             logger.debug("-----------------------------------------------------------------");
@@ -101,7 +101,7 @@ public class YamlDocument {
             yamlMap = yaml.load(inputStream);
             logger.debug("YamlMap: {}", yamlMap);
         } catch (Exception e) {
-            logger.error(RED + "Cannot find file {}" + RESET_COLOR, sourceInputFile);
+            logger.warn("Cannot find file {}", sourceInputFile);
             logger.debug(DEMARCATION);
             if (continueOnError) return null; else System. exit(1);
         }
@@ -114,8 +114,10 @@ public class YamlDocument {
         return yamlMap;
     }
 
-    // For each template file found in this yaml, a YamlTemplate object is created and added to the list.
-    // This means that each YamlDocument - which is associated with a yaml file - has its own list of YamlTemplate objects.
+    /******************************************************************************************
+     For each template file found in this yaml, a YamlTemplate object is created and added to the list.
+     This means that each YamlDocument - which is associated with a yaml file - has its own list of YamlTemplate objects.
+     ******************************************************************************************/
     public void readTemplates(String sourcePath,
                               String targetPath,
                               String sourceBasePathExternal,
@@ -171,10 +173,10 @@ public class YamlDocument {
         }
     }
 
-    /*
-       The manipulated yaml map is saved onto the local file system. The location is a target location,
-       other than the original location of the pipeline file.
-     */
+    /******************************************************************************************
+     The manipulated yaml map is saved onto the local file system. The location is a target location,
+     other than the original location of the pipeline file.
+     ******************************************************************************************/
     public void dumpYaml() throws IOException {
         logger.debug("==> Method: YamlDocument.dumpYaml");
 
@@ -185,16 +187,16 @@ public class YamlDocument {
 
         if (sourceInputFile == null) {
             // This may be a false-positive, so don't exit
-            logger.error(RED + "sourceInputFile is null; this may be a false-positive" + RESET_COLOR);
+            logger.warn("sourceInputFile is null; this may be a false-positive");
             if (this instanceof YamlTemplate)
-                logger.error(RED + "This is a template with name: {}" + RESET_COLOR, templateName);
+                logger.warn("This is a template with name: {}", templateName);
             logger.debug("");
 
             return;
         }
         if (targetOutputFile == null) {
             // This may be a false-positive, so don't exit
-            logger.error(RED + "targetOutputFile is null; this may be a false-positive" + RESET_COLOR);
+            logger.warn("targetOutputFile is null; this may be a false-positive");
             logger.debug("");
 
             return;
@@ -219,9 +221,12 @@ public class YamlDocument {
         }
     }
 
-    /*
-       If a specific section is found, the framework executes a actionEnum within that section.
-     */
+
+    // START - DEPRECATED SECTION- DEPRECATED SECTION - DEPRECATED SECTION - DEPRECATED SECTION
+    // START - DEPRECATED SECTION- DEPRECATED SECTION - DEPRECATED SECTION - DEPRECATED SECTION
+    /******************************************************************************************
+     If a specific section is found, the framework executes a actionEnum within that section.
+     ******************************************************************************************/
     public void executeCommand (ActionEnum actionEnum,
                                 String sectionName,
                                 String sectionValue,
@@ -462,9 +467,9 @@ public class YamlDocument {
         });
     }
 
-    /*
-       Replace a string, identified by keyName, with a string, identified by keyValue
-     */
+    /******************************************************************************************
+     Replace a string, identified by keyName, with a string, identified by keyValue
+     ******************************************************************************************/
     public void replaceLiteral(String findLiteral, String replaceLiteral, boolean continueSearching) {
         logger.debug("==> Method: YamlDocument.replaceLiteral");
         logger.debug("findLiteral: {}", findLiteral);
@@ -480,9 +485,9 @@ public class YamlDocument {
         yamlMap = (Map) yaml.load(s);
     }
 
-    /*
-       Replace the value of a keyName/keyValue pair in the yaml.
-     */
+    /******************************************************************************************
+     Replace the value of a keyName/keyValue pair in the yaml.
+     ******************************************************************************************/
     private void replaceValue(Map.Entry<String, Object> section,
                               String keyName,
                               String keyValue) {
@@ -521,26 +526,27 @@ public class YamlDocument {
         }
     }
 
-    /*
-        Replace a value in the yaml. The construct is:
-        s:
-        - n1: value_n1
-          k1: value_n1_k1
-          k2: value_n1_k2
-          k3: value_n1_k3
-        - n2_: value_n2
-          k1: value_n2_k1
-          k2: value_n2_k2
+    /******************************************************************************************
+     Replace a value in the yaml. The construct is:
+     s:
+     - n1: value_n1
+     k1: value_n1_k1
+     k2: value_n1_k2
+     k3: value_n1_k3
+     - n2_: value_n2
+     k1: value_n2_k1
+     k2: value_n2_k2
 
-          Assume the following arguments:
-            section is 's'
-            identifierName is 'n1'
-            identifierValue is value_n1
-            name is 'k3'
-            value is 'myReplacedValue'
+     Assume the following arguments:
+     section is 's'
+     identifierName is 'n1'
+     identifierValue is value_n1
+     name is 'k3'
+     value is 'myReplacedValue'
 
-          After execution of this method, the value 'value_n1_k3' of k3 of section 's' and sectionName/name pair 'n1/value_n1' is replaced with 'myReplacedValue'
-     */
+     After execution of this method, the value 'value_n1_k3' of k3 of section 's' and sectionName
+     name pair 'n1/value_n1' is replaced with 'myReplacedValue'
+     ******************************************************************************************/
     private void replaceValue(Map.Entry<String, Object> section,
                               String identifierName,
                               String identifierValue,
@@ -586,11 +592,10 @@ public class YamlDocument {
         }
     }
 
-
-    /*
-       Skip a section in the yaml. This can be a specific stage, a specific job, or a specific step.
-       It does not disable the stage, job, or step but completely removes it from the modified pipeline.
-     */
+    /******************************************************************************************
+     Skip a section in the yaml. This can be a specific stage, a specific job, or a specific step.
+     It does not disable the stage, job, or step but completely removes it from the modified pipeline.
+     ******************************************************************************************/
     private void skipSection (Map.Entry<String, Object> section, String keyName, String value) {
         logger.debug("==> Method: YamlDocument.skipSection");
         logger.debug("key: {}", keyName);
@@ -622,6 +627,9 @@ public class YamlDocument {
         }
     }
 
+    /******************************************************************************************
+     TODO
+     ******************************************************************************************/
     private void mockSection(Map.Entry<String, Object> section, String sectionName, String id, String inlineScript){
         logger.debug("==> Method: YamlDocument.mockSection");
         logger.debug("s: {}", sectionName);
@@ -662,44 +670,12 @@ public class YamlDocument {
             }
         }
     }
+    // END - DEPRECATED SECTION- DEPRECATED SECTION - DEPRECATED SECTION - DEPRECATED SECTION
 
-    // TODO
-    // TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST
-//    private void insertAfterSection (Map.Entry<String, Object> section, String keyName, String value) {
-//        logger.debug("==> Method: YamlDocument.insertAfterSection");
-//        logger.debug("key: {}", keyName);
-//        logger.debug("value: {}", value);
-//
-//        // Run trough the elements of the list and insert a section before and/or after
-//        if (section.getValue() instanceof ArrayList) {
-//            ArrayList<Object> list = (ArrayList<Object>)section.getValue();
-//            int index = 0;
-//            int size = list.size();
-//            for (index = 0; index < size; index++) {
-//                logger.debug("Element = {}, Class = {}", list.get(index), list.get(index).getClass());
-//
-//                // If it is a Map, it contains key/value; iterate trough them to detect whether the key/value pair exists
-//                if (list.get(index) instanceof Map) {
-//                    Map<String, Object> map = (Map<String, Object>)list.get(index);
-//                    for (Map.Entry<String, Object> entry : map.entrySet()) {
-//
-//                        // Check whether the entry has the given key and value
-//                        if (keyName.equals(entry.getKey()) && value.equals(entry.getValue())) {
-//                            // TODO
-//                            logger.debug("Insert after: {}", value);
-//
-//                            return;
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
-    // TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST
 
-    /*
-       Create a list of all templates.
-     */
+    /******************************************************************************************
+     Create a list of all templates.
+     ******************************************************************************************/
     private void getTemplates(Map<String, Object> inner,
                               String root,
                               String sourcePath,
@@ -722,7 +698,7 @@ public class YamlDocument {
 
         // Inner could be null
         if (inner == null){
-            logger.error(RED + "inner is null; the reason is probably because the file could not be read, so return" + RESET_COLOR);
+            logger.warn("inner is null; the reason is probably because the file could not be read, so return");
             return;
         }
 
@@ -793,13 +769,13 @@ public class YamlDocument {
 
         // Inner could be null
         if (inner == null){
-            logger.error(RED + "inner is null; the reason is probably because the file could not be read, so return" + RESET_COLOR);
+            logger.warn("inner is null; the reason is probably because the file could not be read, so return");
             return;
         }
 
         inner.forEach(entry -> {
             if (entry == null) {
-                logger.error(RED + "entry is null" + RESET_COLOR);
+                logger.warn("entry is null");
                 return;
             }
             // If inner sections are found, go a level deeper
@@ -830,17 +806,18 @@ public class YamlDocument {
         });
     }
 
-    /* Repositories in the resources section of the yaml pipeline are made local, meaning that they
-       are all of type 'git', even if they were originally from GitHub. The junit-pipeline framework
-       copies there repositories to the Azure DeVOps test project.
-     */
+    /******************************************************************************************
+     Repositories in the resources section of the yaml pipeline are made local, meaning that they
+     are all of type 'git', even if they were originally from GitHub. The junit-pipeline framework
+     copies there repositories to the Azure DeVOps test project.
+     ******************************************************************************************/
     public void makeResourcesLocal () {
         logger.debug("==> Method: YamlDocumentEntryPoint.makeResourcesLocal");
         makeResourcesLocal (yamlMap);
     }
     private void makeResourcesLocal (Map<String, Object> map) {
         if (map == null) {
-            logger.error(RED + "map is null" + RESET_COLOR);
+            logger.warn("map is null");
             return;
         }
 
@@ -891,13 +868,13 @@ public class YamlDocument {
 
     private void makeResourcesLocal(ArrayList<Object> inner) {
         if (inner == null) {
-            logger.error(RED + "inner is null" + RESET_COLOR);
+            logger.warn("inner is null");
             return;
         }
 
         inner.forEach(entry -> {
             if (entry == null) {
-                logger.error(RED + "entry is null" + RESET_COLOR);
+                logger.warn("entry is null");
                 return;
             }
 
@@ -909,5 +886,191 @@ public class YamlDocument {
                 makeResourcesLocal((ArrayList<Object>)entry);
             }
         });
+    }
+
+    /********************************************************************************
+     Parses the yaml document until a specific section is found. A section is either
+     a type - identified using 'sectionType' - such as 'variables', 'parameters',
+     'stages', or it is a type in combination with a 'sectionIdentifier', for example:
+         'stage: myStage'
+     This method is performing recursion by calling itself to search for sections
+     deeper in the yaml structure.
+
+     If the section is found, it tries to execute an action object containing
+     specific variables.
+     ********************************************************************************/
+    public ActionResult performAction (Action action,
+                                       String sectionType,
+                                       String sectionIdentifier) {
+        logger.debug("==> Method: YamlDocument.performAction");
+        ActionResult ar = performActionOnThis (action, sectionType, sectionIdentifier);
+        performActionOnTemplates (action, sectionType, sectionIdentifier);
+        return ar;
+    }
+    private ActionResult performActionOnThis (Action action,
+                                              String sectionType,
+                                              String sectionIdentifier) {
+        logger.debug("==> Method: YamlDocument.performActionOnThis (first level)");
+
+        ActionResult actionResult = new ActionResult();
+        actionResult.l1 = yamlMap;
+        actionResult.l2 = null;
+        actionResult.l3 = null;
+        return performActionOnThis (actionResult, action, sectionType, sectionIdentifier);
+    }
+
+    private ActionResult performActionOnThis (ActionResult actionResult,
+                                              Action action,
+                                              String sectionType,
+                                              String sectionIdentifier){
+        logger.debug("==> Method: YamlDocument.performActionOnThis (second level)");
+        logger.debug("action: {}", action.getClass().getName());
+        logger.debug("sectionType: {}", sectionType);
+        logger.debug("sectionIdentifier: {}", sectionIdentifier);
+
+        if (actionResult == null) {
+            logger.warn("actionResult is null");
+            return null;
+        }
+
+        if (actionResult.l1 == null) {
+            logger.debug("actionResult.l1 is null; return");
+        }
+
+        if (sectionType == null || sectionType.isEmpty()) {
+            logger.warn("sectionType is not provided");
+        }
+
+        // Find the section; handle the Map
+        Object l1 = actionResult.l1;
+        Map<String, Object> map = null;
+        boolean found = false;
+
+        // --------------------------------- Handle the map ---------------------------------
+        if (l1 instanceof Map) {
+            logger.debug("l1 is instance of map...");
+            map = (Map<String, Object>) l1;
+            String key;
+            String stringValue;
+            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                key = entry.getKey();
+                stringValue = entry.getValue().toString();
+                logger.debug("Key: {}", key);
+                logger.debug("Value: {}", stringValue);
+
+                if (sectionType.equals(key)) {
+                    logger.debug("Found a sectionType with the key: {}", key);
+
+                    if (!action.needsSectionIdentifier()) {
+                        doAction (actionResult, action, entry);
+                        //return actionResult;
+                    }
+
+                    // Check whether value equals to sectionIdentifier
+                    if (sectionIdentifier != null && sectionIdentifier.equals(stringValue)) {
+                        logger.debug("And the stringValue also equals the value: {}", stringValue);
+
+                        if (action.needsSectionIdentifier()) {
+                            doAction (actionResult, action, entry);
+                        }
+
+                        return actionResult;
+                    }
+                }
+                if (sectionType.equals(stringValue)) {
+                    logger.debug("Found a sectionType with the value: {}", stringValue);
+
+                    if (!action.needsSectionIdentifier()) {
+                        doAction (actionResult, action, entry);
+                        //return actionResult;
+                    }
+
+                    // Check whether key equals to sectionIdentifier
+                    if (sectionIdentifier.equals(key)) {
+                        logger.debug("And the stringValue also equals the key: {}", key);
+
+                        if (action.needsSectionIdentifier()) {
+                            doAction (actionResult, action, entry);
+                        }
+
+                        return actionResult;
+                    }
+                }
+
+                // Go a level deeper
+                ActionResult pac = goALevelDeeper (entry.getValue(), entry, action, sectionType, sectionIdentifier);
+                if (pac != null && pac.found)
+                    return pac;
+            }
+        }
+
+        // --------------------------------- Handle the arraylist ---------------------------------
+        if (l1 instanceof ArrayList) {
+            logger.debug("l1 is instance of arraylist...");
+            ArrayList<Object> list = (ArrayList<Object>) l1;
+            if (list.isEmpty())
+                return null;
+
+            int size = list.size();
+            logger.debug("list.size(): {}", list.size());
+            for (int i = 0; i < size; i++) {
+                actionResult.l1 = list.get(i);
+                actionResult.l2 = list;
+                logger.debug("list.get(i): {}", list.get(i));
+                performActionOnThis (actionResult,
+                        action,
+                        sectionType,
+                        sectionIdentifier);
+            }
+        }
+
+        return actionResult;
+    };
+
+    private void doAction (ActionResult actionResult,
+                           Action action,
+                           Map.Entry<String, Object> entry) {
+        actionResult.l3 = actionResult.l2;
+        actionResult.l2 = actionResult.l1;
+        actionResult.l1 = entry.getValue();
+        actionResult.found = true;
+        action.execute(actionResult);
+    }
+
+    private ActionResult goALevelDeeper (Object l1,
+                                         Map.Entry<String, Object> entry,
+                                         Action action,
+                                         String sectionType,
+                                         String sectionIdentifier) {
+        logger.debug("==> Method: YamlDocument.goALevelDeeper");
+
+        ActionResult pac = new ActionResult();
+        pac.l1 = l1;
+        pac.l2 = entry.getValue();
+        logger.debug("pac.parent {}", pac.l1);
+        logger.debug("pac.child {}", pac.l2);
+        pac = performActionOnThis (pac,
+                action,
+                sectionType,
+                sectionIdentifier);
+        return pac;
+    }
+
+    public ActionResult performActionOnTemplates (Action action,
+                                                  String sectionType,
+                                                  String sectionIdentifier) {
+        logger.debug("==> Method: YamlDocument.performActionOnTemplates");
+
+        // Execute the command in the yamlTemplate files
+        int index = 0;
+        int size = yamlTemplateList.size();
+        YamlTemplate yamlTemplate;
+        for (index = 0; index < size; index++) {
+            yamlTemplate = yamlTemplateList.get(index);
+            yamlTemplate.performAction(action,
+                    sectionType,
+                    sectionIdentifier);
+        }
+        return null;
     }
 }

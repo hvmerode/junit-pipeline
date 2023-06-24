@@ -3,19 +3,12 @@
 
 package azdo.yaml;
 
-import azdo.utils.AzDoUtils;
-import azdo.utils.GitUtils;
-import azdo.utils.PropertyUtils;
-import azdo.utils.Utils;
+import azdo.action.Action;
+import azdo.utils.*;
 import org.eclipse.jgit.api.Git;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
-
-import static azdo.utils.Constants.RED;
-import static azdo.utils.Constants.RESET_COLOR;
 
 /*
    A YamlDocumentEntryPoint is the entry point of the main pipeline YAML file.
@@ -23,7 +16,7 @@ import static azdo.utils.Constants.RESET_COLOR;
    and the YamlDocument class that represents the main YAML pipeline file.
 */
 public class YamlDocumentEntryPoint {
-    private static Logger logger = LoggerFactory.getLogger(YamlDocumentEntryPoint.class);
+    private static Log logger = Log.getLogger();
 
     // Refers to the main pipeline file, which is the entrypoint of the pipeline.
     private YamlDocument mainYamlDocument;
@@ -320,7 +313,7 @@ public class YamlDocumentEntryPoint {
         logger.debug("basePathExternal: {}", basePathExternal);
 
         if (map == null) {
-            logger.error(RED + "map is null" + RESET_COLOR);
+            logger.warn("map is null");
             return null;
         }
 
@@ -410,13 +403,13 @@ public class YamlDocumentEntryPoint {
         logger.debug("basePathExternal: {}", basePathExternal);
 
         if (inner == null) {
-            logger.error(RED + "inner is null" + RESET_COLOR);
+            logger.warn("inner is null");
             return;
         }
 
         inner.forEach(entry -> {
             if (entry == null) {
-                logger.error(RED + "entry is null" + RESET_COLOR);
+                logger.warn("entry is null");
                 return;
             }
 
@@ -440,6 +433,7 @@ public class YamlDocumentEntryPoint {
         mainYamlDocument.dumpYaml();
     }
 
+    // START - DEPRECATED SECTION- DEPRECATED SECTION - DEPRECATED SECTION - DEPRECATED SECTION
     public void executeCommand (ActionEnum actionEnum,
                                 String sectionName,
                                 String sectionValue,
@@ -466,6 +460,17 @@ public class YamlDocumentEntryPoint {
                 keyName,
                 keyValue,
                 continueSearching);
+    }
+    // END - DEPRECATED SECTION- DEPRECATED SECTION - DEPRECATED SECTION - DEPRECATED SECTION
+
+    public ActionResult performAction (Action action,
+                                       String sectionType,
+                                       String sectionIdentifier) {
+        logger.debug("==> Method: YamlDocumentEntryPoint.performAction");
+        logger.debug("action: {}", action.getClass().getName());
+        logger.debug("sectionType: {}", sectionType);
+        logger.debug("sectionIdentifier: {}", sectionIdentifier);
+        return mainYamlDocument.performAction (action, sectionType, sectionIdentifier);
     }
 
     public void makeResourcesLocal () {

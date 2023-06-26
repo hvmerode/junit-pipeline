@@ -41,7 +41,7 @@ public class ActionDeleteSectionByProperty implements Action {
 
         boolean foundType = false;
         if (actionResult.l3 instanceof ArrayList) {
-            logger.debug("l1 is instance of ArrayList");
+            logger.debug("l3 is instance of ArrayList");
 
             // Run through the elements of the list and remove the section
             ArrayList<Object> list = (ArrayList<Object>) actionResult.l3;
@@ -66,6 +66,7 @@ public class ActionDeleteSectionByProperty implements Action {
                             // Found the right property with the correct value
                             logger.info("Skip section type \'{}\' with propertyName \'{}\' and propertyValue \'{}\'", sectionType, property, propertyValue);
                             list.remove(index);
+                            actionResult.actionExecuted = true;
                             return;
                         }
                     }

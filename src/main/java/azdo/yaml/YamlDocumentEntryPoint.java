@@ -433,36 +433,10 @@ public class YamlDocumentEntryPoint {
         mainYamlDocument.dumpYaml();
     }
 
-    // START - DEPRECATED SECTION- DEPRECATED SECTION - DEPRECATED SECTION - DEPRECATED SECTION
-    public void executeCommand (ActionEnum actionEnum,
-                                String sectionName,
-                                String sectionValue,
-                                String identifierName,
-                                String identifierValue,
-                                String keyName,
-                                String keyValue,
-                                boolean continueSearching) {
-        logger.debug("==> Method: YamlDocumentEntryPoint.executeCommand");
-        logger.debug("actionEnum: {}", actionEnum);
-        logger.debug("sectionName: {}", sectionName);
-        logger.debug("sectionValue: {}", sectionValue);
-        logger.debug("identifierName: {}", identifierName);
-        logger.debug("identifierValue: {}", identifierValue);
-        logger.debug("keyName: {}", keyName);
-        logger.debug("keyValue: {}", keyValue);
-        logger.debug("continueSearching: {}", continueSearching);
-
-        mainYamlDocument.executeCommand(actionEnum,
-                sectionName,
-                sectionValue,
-                identifierName,
-                identifierValue,
-                keyName,
-                keyValue,
-                continueSearching);
-    }
-    // END - DEPRECATED SECTION- DEPRECATED SECTION - DEPRECATED SECTION - DEPRECATED SECTION
-
+    /******************************************************************************************
+     Forward the action to the main yaml document. The main yaml document delegates it again
+     to all underlying templates.
+     ******************************************************************************************/
     public ActionResult performAction (Action action,
                                        String sectionType,
                                        String sectionIdentifier) {
@@ -471,6 +445,18 @@ public class YamlDocumentEntryPoint {
         logger.debug("sectionType: {}", sectionType);
         logger.debug("sectionIdentifier: {}", sectionIdentifier);
         return mainYamlDocument.performAction (action, sectionType, sectionIdentifier);
+    }
+
+    /******************************************************************************************
+     Forward the action to the main yaml document.
+     ******************************************************************************************/
+    public void overrideLiteral (String literalToReplace, String newValue, boolean replaceAll) {
+        logger.debug("==> Method: YamlDocumentEntryPoint.overrideLiteral");
+        logger.debug("literalToReplace: {}", literalToReplace);
+        logger.debug("newValue: {}", newValue);
+        logger.debug("continueSearching: {}", replaceAll);
+
+        mainYamlDocument.overrideLiteral(literalToReplace, newValue, replaceAll);
     }
 
     public void makeResourcesLocal () {

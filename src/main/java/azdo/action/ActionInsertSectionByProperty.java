@@ -79,18 +79,17 @@ public class ActionInsertSectionByProperty  implements Action {
                             logger.debug("Found the right type: {}", sectionType);
                             foundType = true;
                         }
-                        if (propertyValue.equals(entry.getKey())) {
-                            logger.info("TestTestTestTestTestTestTest");
-                        }
                         if (property.equals(entry.getKey()) && propertyValue.equals(entry.getValue()) && foundType) {
                             // Found the right property with the correct value
                             if (insertBefore) {
                                 logger.info("Insert the new section before section \'{}\' with \'{}\' = \'{}\'", sectionType, property, propertyValue);
                                 list.add(index, sectionToInsert);
+                                actionResult.actionExecuted = true;
                             }
                             else {
                                 logger.info("Insert the new section after section \'{}\' with \'{}\' = \'{}\'", sectionType, property, propertyValue);
                                 list.add(index + 1, sectionToInsert);
+                                actionResult.actionExecuted = true;
                             }
                             return;
                         }

@@ -21,10 +21,6 @@ public class PipelineUnit {
 
         // Initialize the pipeline (resource path is default)
         pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/pipeline_test.yml");
-
-        // Add commands to the bundle. These commands are executed for every test, so you only have to do it once
-        // Always replace template-steps.yml with a mock template
-        pipeline.commandBundle.overrideLiteral("templates/steps/template-steps.yml", "templates/steps/template-mock.yml");
     }
     @Test
     @Order(1)
@@ -33,17 +29,6 @@ public class PipelineUnit {
         logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
         logger.debug("Perform unittest: test1");
         logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-
-        pipeline.overrideTemplateParameter("aNiceParam", "aNiceValue");
-        pipeline.overrideLiteral("This is step 1 of file template-steps.yml with", "This is", true);
-        pipeline.overrideLiteral("project <Templates>", "project <Templates> !!!!!!");
-        pipeline.overrideParameterDefault("aNiceParam", "aNiceDefault");
-        pipeline.overrideParameterDefault("param_1", "xxx");
-        pipeline.overrideParameterDefault("sleep", "5");
-        pipeline.overrideVariable("test", "replaced");
-        pipeline.overrideVariable("aws_connection", "9999999999");
-        pipeline.overrideVariable("aws_region", "eu-west-1");
-        pipeline.skipJob("ScriptJob");
 
         String inlineScript = "echo \"This is a mock script\"\n" +
                 "echo \"This is line 2\"";
@@ -88,18 +73,15 @@ public class PipelineUnit {
         logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
         try {
-            // TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST
-            //pipeline.skipStage("ExecuteScriptStage");
-            //pipeline.skipStage("DeployStage");
-            //pipeline.overrideVariable("jobVar", "666");
-            //pipeline.overrideVariable("aws_connection", "999");
-            //pipeline.skipStageByDisplayName("The executeScriptStage");
-            //pipeline.skipSection("template", "templates/stages/template-stages.yml");
-            //pipeline.overrideParameterDefault("environment", "prod");
-
-            //pipeline.setVariableBeforeStep ("AWSShellScript@1", "aws_connection", "666");
-            pipeline.setVariableBeforeStepByDisplayName ("DeployStage job_xd script", "aws_connection", "666");
-            // TESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTESTTEST
+            pipeline.overrideParameterDefault("sleep", "5");
+            pipeline.overrideTemplateParameter("aNiceParam", "replaced_parameter");
+            pipeline.overrideVariable("jobVar", "replacedJobVar");
+            pipeline.overrideLiteral("Job_2.Task_3: Sleep some seconds", "Sleep");
+            pipeline.skipSectionSearchByTypeAndIdentifier("template", "test-template.yml@external2");
+            pipeline.overrideVariable("aws_region", "eu-west-1");
+            pipeline.skipJobSearchByIdentifier("Job_XD");
+            pipeline.setVariableBeforeStepSearchByIdentifier ("AWSShellScript@1", "aws_connection", "42");
+//            pipeline.setVariableBeforeStepSearchByDisplayName ("DeployStage job_xe AWSShellScript", "aws_connection", "42");
 
             // Create a hook to perform an action just before starting the pipeline
             class TestHook extends Hook {
@@ -108,8 +90,6 @@ public class PipelineUnit {
                     logger.debug("Executes hook with an argument");
                 }
             }
-            //pipeline.skipStage("ExecuteScriptStage");
-            //pipeline.skipStage("DeployStage");
 
             // Create a list with hooks and pass it to the startPipeline
             // Note: The startPipeline has a dryRun = true setting, meaning that it does not start the pipeline in AzUre DevOps

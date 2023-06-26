@@ -41,8 +41,8 @@ variables:
 stages:
   - template: templates/stages/template-stages.yml
     parameters:
-      aNiceParam: param_1_value
-      template: test_param_with_name_template
+      aNiceParam: parameter_of_template-stages.yml
+      template: test_parameter_with_name_template
 
   - stage: ExecuteScriptStage
     displayName: 'The executeScriptStage'

@@ -113,17 +113,7 @@ in the repository. The __junit-pipeline__ frameworks takes these templates into 
 > The __junit-pipeline__ framework leaves these templates untouched.
 
 <br></br>
-#### Define a command bundle ####
-It is perfectly possible to repeat a certain command in every unit test, but if you, for example, want to
-execute a certain task in all tests, it is also possible to add it to a command bundle. You only define it
-once and it is executed in all unit tests. For example, adding a command that skips a task or replaces it with a mock script. 
-In the example below, the yamlTemplate _template-steps_1.yml_ is replaced by
-_template-mock.yml_ for every unit test.
-```java
-pipeline.commandBundle.overrideLiteral("templates/steps/yamlTemplate-steps_1.yml", "templates/steps/yamlTemplate-mock.yml");
-```
 
-<br></br>
 #### Hooks ####
 Before the pipeline code is pushed to the Azure DevOps unit test project, and started, it is possible to execute
 custom code. This code is provided as a list of 'hooks'. The unit test file _PipelineUnit.java_ shows an example; _test 3_.\
@@ -447,6 +437,8 @@ pipeline.getRunResult()
 ### New features ##
 ***
 * Test on Linux; some filesystem methods in Utils may not work properly.
+* Add an assert step; check a variable on a certain value using a condition. Exit with 1 if the condition is not met.
+  * This step can be added before or after a certain step using a pipeline method.
 * Log YAML line numbers in method _Utils.validatePipelineFile()_ according to [yaml-line-numbers.md](https://github.com/networknt/json-schema-validator/blob/master/doc/yaml-line-numbers.md)
 * Add option to pipeline.mockStep to display a name (the inline script shows as CmdLine in Azure DevOps).
 * Add option to continue on error for all steps.

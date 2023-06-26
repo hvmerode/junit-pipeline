@@ -221,458 +221,6 @@ public class YamlDocument {
         }
     }
 
-
-    // START - DEPRECATED SECTION- DEPRECATED SECTION - DEPRECATED SECTION - DEPRECATED SECTION
-    // START - DEPRECATED SECTION- DEPRECATED SECTION - DEPRECATED SECTION - DEPRECATED SECTION
-    /******************************************************************************************
-     If a specific section is found, the framework executes a actionEnum within that section.
-     ******************************************************************************************/
-    public void executeCommand (ActionEnum actionEnum,
-                                String sectionName,
-                                String sectionValue,
-                                String identifierName,
-                                String identifierValue,
-                                String keyName,
-                                String keyValue,
-                                boolean continueSearching) {
-        logger.debug("==> Method: YamlDocument.executeCommand");
-
-        if (actionEnum == ActionEnum.replaceLiteral) {
-            logger.debug("Action replace literal <{}> with <{}>", keyName, keyValue);
-            replaceLiteral(keyName, keyValue, continueSearching);
-        }
-        else {
-            findSectionAndExecuteCommand(actionEnum,
-                    yamlMap,
-                    sectionName,
-                    sectionValue,
-                    identifierName,
-                    identifierValue,
-                    keyName,
-                    keyValue,
-                    false,
-                    continueSearching);
-        }
-
-        // Execute the command in the template files
-        executeCommandTemplates(actionEnum,
-                sectionName,
-                sectionValue,
-                identifierName,
-                identifierValue,
-                keyName,
-                keyValue,
-                continueSearching);
-    }
-
-    /*
-       If a specific section is found, the framework executes a actionEnum within that section.
-     */
-    public void executeCommandTemplates (ActionEnum actionEnum,
-                                         String sectionName,
-                                         String sectionValue,
-                                         String identifierName,
-                                         String identifierValue,
-                                         String keyName,
-                                         String keyValue,
-                                         boolean continueSearching) {
-        logger.debug("==> Method: YamlDocument.executeCommandTemplates");
-
-        // Execute the command in the yamlTemplate files
-        int index = 0;
-        int size = yamlTemplateList.size();
-        YamlTemplate yamlTemplate;
-        for (index = 0; index < size; index++) {
-            yamlTemplate = yamlTemplateList.get(index);
-            yamlTemplate.executeCommand(actionEnum,
-                    sectionName,
-                    sectionValue,
-                    identifierName,
-                    identifierValue,
-                    keyName,
-                    keyValue,
-                    continueSearching);
-        }
-    }
-
-    /*
-       Parses the yaml document until a specific section is found. A section is either a type,
-       such as variables, parameters, stages, or a type in combination with a section name, for
-       example, stage: myStage
-       If the section is found, it tries to execute a actionEnum, given the specific arguments.
-       This method is performing recursion by calling itself to search for sections deeper in the
-       yaml structure.
-     */
-    public void findSectionAndExecuteCommand(ActionEnum actionEnum,
-                                             Map<String, Object> section,
-                                             String sectionName,
-                                             String sectionValue,
-                                             String identifierName,
-                                             String identifierValue,
-                                             String keyName,
-                                             String keyValue,
-                                             boolean sectionFound,
-                                             boolean continueSearching) {
-
-        logger.debug("==> Method: YamlDocument.findSectionAndExecuteCommand: ");
-        logger.debug("actionEnum: {}", actionEnum);
-        logger.debug("sectionName: {}", sectionName);
-        logger.debug("sectionValue: {}", sectionValue);
-        logger.debug("identifierName: {}", identifierName);
-        logger.debug("identifierValue: {}", identifierValue);
-        logger.debug("keyName: {}", keyName);
-        logger.debug("sectionFound: {}", sectionFound);
-        logger.debug("keyValue: {}", keyValue);
-        logger.debug("continueSearching: {}", continueSearching);
-
-        if (section == null)
-            return;
-
-        // Find the section
-        Map<String, Object> inner = section;
-        for (Map.Entry<String, Object> entry : inner.entrySet()) {
-            logger.debug("Key = {}, Value = {}, Class = {}", entry.getKey(), entry.getValue(), entry.getValue().getClass());
-
-            // Check whether the section is found. If true, the next actions are performed on this section
-            sectionFound = isSectionFound (entry, sectionName, sectionValue);
-
-            // If section is found, try to execute the actionEnum
-            if (sectionFound) {
-                String s = "";
-                if (! (sectionName == null || sectionName.isEmpty()))
-                    s = sectionName;
-                else if (! (sectionValue == null || sectionValue.isEmpty()))
-                    s = sectionValue;
-                logger.debug("Execute actionEnum in section <{}>", s);
-
-                // Variable 'entry' contains the section segment
-                switch (actionEnum) {
-                    case replaceValue:
-                        if (identifierName.isEmpty() && identifierValue.isEmpty())
-                            replaceValue(entry, keyName, keyValue);
-                        else
-                            replaceValue(entry, identifierName, identifierValue, keyName, keyValue);
-                        return;
-                    case delete:
-                        logger.debug("Skip section <{}> with name <{}>", keyName, keyValue);
-                        skipSection(entry, keyName, keyValue);
-                        return;
-                    case mock:
-                        logger.debug("Mock section in <{}> with name <{}>", s, keyName);
-                        mockSection(entry, s, keyName, keyValue);
-                        return;
-                }
-            }
-
-            // Go a level deeper
-            if (entry.getValue() instanceof Map) {
-                findSectionAndExecuteCommand(actionEnum, (Map<String, Object>) entry.getValue(),
-                        sectionName,
-                        sectionValue,
-                        identifierName,
-                        identifierValue,
-                        keyName,
-                        keyValue,
-                        sectionFound,
-                        continueSearching);
-            }
-            if (entry.getValue() instanceof ArrayList) {
-                findInnerSectionAndExecuteCommand(actionEnum, (ArrayList<Object>) entry.getValue(),
-                        sectionName,
-                        sectionValue,
-                        identifierName,
-                        identifierValue,
-                        keyName,
-                        keyValue,
-                        sectionFound,
-                        continueSearching);
-            }
-        }
-    }
-
-    /*
-       Check whether a section is present in a map entry
-     */
-    private boolean isSectionFound (Map.Entry<String, Object> entry,
-                                    String sectionName,
-                                    String sectionValue) {
-        if (sectionName.equals(entry.getKey())) {
-            if (sectionValue == null || sectionValue.isEmpty()) {
-                logger.debug("Found section: {}", sectionName);
-                return true;
-            } else {
-                if (sectionValue.equals(entry.getValue())) {
-                    logger.debug("Found section: {}", sectionValue);
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /*
-       Parses the yaml document until a certain section is found. Similar to findSection, but it has an
-       ArrayList instead of a Map as section argument.
-     */
-    public void findInnerSectionAndExecuteCommand(ActionEnum actionEnum,
-                                                  ArrayList<Object> section,
-                                                  String sectionName,
-                                                  String sectionValue,
-                                                  String identifierName,
-                                                  String identifierValue,
-                                                  String keyName,
-                                                  String keyValue,
-                                                  boolean sectionFound,
-                                                  boolean continueSearching) {
-        logger.debug("==> Method: YamlDocument.findInnerSectionAndExecuteCommand: ");
-        logger.debug("actionEnum: {}", actionEnum);
-        logger.debug("sectionName: {}", sectionName);
-        logger.debug("sectionValue: {}", sectionValue);
-        logger.debug("identifierName: {}", identifierName);
-        logger.debug("identifierValue: {}", identifierValue);
-        logger.debug("keyName: {}", keyName);
-        logger.debug("sectionFound: {}", sectionFound);
-        logger.debug("keyValue: {}", keyValue);
-        logger.debug("continueSearching: {}", continueSearching);
-
-        if (section == null)
-            return;
-
-        section.forEach(entry -> {
-            logger.debug("Section = {}, Class = {}", entry, entry.getClass());
-
-            // If inner sections are found, go a level deeper
-            if (entry instanceof Map) {
-                findSectionAndExecuteCommand(actionEnum, (Map<String, Object>)entry,
-                        sectionName,
-                        sectionValue,
-                        identifierName,
-                        identifierValue,
-                        keyName,
-                        keyValue,
-                        sectionFound,
-                        continueSearching);
-            }
-            if (entry instanceof ArrayList) {
-                findInnerSectionAndExecuteCommand(actionEnum, (ArrayList<Object>)entry,
-                        sectionName,
-                        sectionValue,
-                        identifierName,
-                        identifierValue,
-                        keyName,
-                        keyValue,
-                        sectionFound,
-                        continueSearching);
-            }
-        });
-    }
-
-    /******************************************************************************************
-     Replace a string, identified by keyName, with a string, identified by keyValue
-     ******************************************************************************************/
-    public void replaceLiteral(String findLiteral, String replaceLiteral, boolean continueSearching) {
-        logger.debug("==> Method: YamlDocument.replaceLiteral");
-        logger.debug("findLiteral: {}", findLiteral);
-        logger.debug("replaceLiteral: {}", replaceLiteral);
-        logger.debug("continueSearching: {}", continueSearching);
-
-        Yaml yaml = new Yaml();
-        String s = yaml.dump(yamlMap);
-        if (continueSearching)
-            s = s.replace(findLiteral, replaceLiteral);
-        else
-            s = s.replaceFirst(Pattern.quote(findLiteral), replaceLiteral);
-        yamlMap = (Map) yaml.load(s);
-    }
-
-    /******************************************************************************************
-     Replace the value of a keyName/keyValue pair in the yaml.
-     ******************************************************************************************/
-    private void replaceValue(Map.Entry<String, Object> section,
-                              String keyName,
-                              String keyValue) {
-        logger.debug("==> Method: YamlDocument.replaceValue");
-        logger.debug("keyName: {}", keyName);
-        logger.debug("keyValue: {}", keyValue);
-
-        // First check whether the  value of this section must be replaced
-        if (keyName.equals(section.getKey())) {
-            section.setValue(keyValue);
-        }
-        else {
-            // Run trough the elements of the entry and replace the value of a keyName with keyValue
-            if (section.getValue() instanceof ArrayList) {
-                ArrayList<Object> list = (ArrayList<Object>) section.getValue();
-                int index = 0;
-                int size = list.size();
-                for (index = 0; index < size; index++) {
-                    logger.debug("Element = {}, Class = {}", list.get(index), list.get(index).getClass());
-
-                    // If it is a Map, it contains key/value; iterate trough them to detect whether the key/value pair exists
-                    if (list.get(index) instanceof Map) {
-                        Map<String, Object> map = (Map<String, Object>) list.get(index);
-                        for (Map.Entry<String, Object> entry : map.entrySet()) {
-                            // Check the key/value pairs of which the value needs to be replaced
-                            if (keyName.equals(entry.getKey())) {
-                                logger.debug("Found <{}> with value <{}>", entry.getKey(), entry.getValue());
-                                logger.debug("Replace with value: {}", keyValue);
-                                entry.setValue(keyValue);
-                                return;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /******************************************************************************************
-     Replace a value in the yaml. The construct is:
-     s:
-     - n1: value_n1
-     k1: value_n1_k1
-     k2: value_n1_k2
-     k3: value_n1_k3
-     - n2_: value_n2
-     k1: value_n2_k1
-     k2: value_n2_k2
-
-     Assume the following arguments:
-     section is 's'
-     identifierName is 'n1'
-     identifierValue is value_n1
-     name is 'k3'
-     value is 'myReplacedValue'
-
-     After execution of this method, the value 'value_n1_k3' of k3 of section 's' and sectionName
-     name pair 'n1/value_n1' is replaced with 'myReplacedValue'
-     ******************************************************************************************/
-    private void replaceValue(Map.Entry<String, Object> section,
-                              String identifierName,
-                              String identifierValue,
-                              String keyName,
-                              String keyValue) {
-
-        logger.debug("==> Method: YamlDocument.replaceValue");
-        logger.debug("identifierName: {}", identifierName);
-        logger.debug("identifierValue: {}", identifierValue);
-        logger.debug("keyName: {}", keyName);
-        logger.debug("keyValue: {}", keyValue);
-
-        // Run trough the elements of the entry and replace the value of a keyName with keyValue
-        boolean foundName = false;
-        if (section.getValue() instanceof ArrayList) {
-            ArrayList<Object> list = (ArrayList<Object>)section.getValue();
-            int index = 0;
-            int size = list.size();
-            for (index = 0; index < size; index++) {
-                logger.debug("Element = {}, Class = {}", list.get(index), list.get(index).getClass());
-
-                // If it is a Map, it contains key/value; iterate trough them to detect whether the key/value pair exists
-                if (list.get(index) instanceof Map) {
-                    Map<String, Object> map = (Map<String, Object>)list.get(index);
-                    for (Map.Entry<String, Object> entry : map.entrySet()) {
-                        if (identifierName.equals(entry.getKey()) && identifierValue.equals(entry.getValue())) {
-                            // We found the name, but iterate a bit more to find the name type
-                            logger.debug("Found name: {}", identifierName);
-                            foundName = true;
-                        }
-                        if (foundName) {
-                            // Check the key/value pairs of which the value needs to be replaced
-                            if (keyName.equals(entry.getKey())) {
-                                logger.debug("Found <{}> with value <{}>", entry.getKey(), entry.getValue());
-                                logger.debug("Replace with value: {}", keyValue);
-                                entry.setValue(keyValue);
-                                return;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /******************************************************************************************
-     Skip a section in the yaml. This can be a specific stage, a specific job, or a specific step.
-     It does not disable the stage, job, or step but completely removes it from the modified pipeline.
-     ******************************************************************************************/
-    private void skipSection (Map.Entry<String, Object> section, String keyName, String value) {
-        logger.debug("==> Method: YamlDocument.skipSection");
-        logger.debug("key: {}", keyName);
-        logger.debug("value: {}", value);
-
-        // Run trough the elements of the list and replace the section with key/value
-        if (section.getValue() instanceof ArrayList) {
-            ArrayList<Object> list = (ArrayList<Object>)section.getValue();
-            int index = 0;
-            int size = list.size();
-            for (index = 0; index < size; index++) {
-                logger.debug("Element = {}, Class = {}", list.get(index), list.get(index).getClass());
-
-                // If it is a Map, it contains key/value; iterate trough them to detect whether the key/value pair exists
-                if (list.get(index) instanceof Map) {
-                    Map<String, Object> map = (Map<String, Object>)list.get(index);
-                    for (Map.Entry<String, Object> entry : map.entrySet()) {
-
-                        // Check whether the entry has the given key and value
-                        // Delete the entry from the list if this is the case
-                        if (keyName.equals(entry.getKey()) && value.equals(entry.getValue())) {
-                            logger.debug("Skip: {}", value);
-                            list.remove(index);
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /******************************************************************************************
-     TODO
-     ******************************************************************************************/
-    private void mockSection(Map.Entry<String, Object> section, String sectionName, String id, String inlineScript){
-        logger.debug("==> Method: YamlDocument.mockSection");
-        logger.debug("s: {}", sectionName);
-        logger.debug("id: {}", id);
-        logger.debug("inlineScript: {}", inlineScript);
-
-        String subType = "task";
-        if ("stages".equals(sectionName))
-            subType = "stage";
-        else if ("jobs".equals(sectionName))
-            subType = "job";
-
-        // Run trough the elements of the list and mock the one with key/value
-        if (section.getValue() instanceof ArrayList) {
-            ArrayList<Object> list = (ArrayList<Object>)section.getValue();
-            int index = 0;
-            int size = list.size();
-            for (index = 0; index < size; index++) {
-                logger.debug("Element = {}, Class = {}", list.get(index), list.get(index).getClass());
-
-                // If it is a Map, it contains key/value; iterate trough them to detect whether the key/value pair exists
-                if (list.get(index) instanceof Map) {
-                    Map<String, Object> map = (Map<String, Object>)list.get(index);
-                    for (Map.Entry<String, Object> entry : map.entrySet()) {
-
-                        // Check whether the entry has the given subtype (stage, job, task) and key (id of the subtype)
-                        // Replace the entry from the list with the
-                        if (subType.equals(entry.getKey()) && id.equals(entry.getValue())) {
-                            logger.debug("Mock: <{}> with name <{}>", subType, id);
-                            LinkedHashMap<String, String> mock = new LinkedHashMap<>();
-                            mock.put ("script", inlineScript);
-                            list.remove(index);
-                            list.add(index, mock);
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    // END - DEPRECATED SECTION- DEPRECATED SECTION - DEPRECATED SECTION - DEPRECATED SECTION
-
-
     /******************************************************************************************
      Create a list of all templates.
      ******************************************************************************************/
@@ -962,8 +510,7 @@ public class YamlDocument {
                     logger.debug("Found a sectionType with the key: {}", key);
 
                     if (!action.needsSectionIdentifier()) {
-                        doAction (actionResult, action, entry);
-                        //return actionResult;
+                        actionResult = doAction (actionResult, action, entry);
                     }
 
                     // Check whether value equals to sectionIdentifier
@@ -971,18 +518,17 @@ public class YamlDocument {
                         logger.debug("And the stringValue also equals the value: {}", stringValue);
 
                         if (action.needsSectionIdentifier()) {
-                            doAction (actionResult, action, entry);
+                            //actionResult.l3 = actionResult.l2;
+                            //actionResult.l2 = actionResult.l1;
+                            actionResult = doAction (actionResult, action, entry);
                         }
-
-                        return actionResult;
                     }
                 }
                 if (sectionType.equals(stringValue)) {
                     logger.debug("Found a sectionType with the value: {}", stringValue);
 
                     if (!action.needsSectionIdentifier()) {
-                        doAction (actionResult, action, entry);
-                        //return actionResult;
+                        actionResult = doAction (actionResult, action, entry);
                     }
 
                     // Check whether key equals to sectionIdentifier
@@ -990,17 +536,18 @@ public class YamlDocument {
                         logger.debug("And the stringValue also equals the key: {}", key);
 
                         if (action.needsSectionIdentifier()) {
-                            doAction (actionResult, action, entry);
+                            //actionResult.l3 = actionResult.l2;
+                            //actionResult.l2 = actionResult.l1;
+                            actionResult = doAction (actionResult, action, entry);
                         }
-
-                        return actionResult;
                     }
                 }
 
+                if (actionResult.actionExecuted)
+                    return actionResult;
+
                 // Go a level deeper
-                ActionResult pac = goALevelDeeper (entry.getValue(), entry, action, sectionType, sectionIdentifier);
-                if (pac != null && pac.found)
-                    return pac;
+                actionResult = goALevelDeeper (actionResult, entry, action, sectionType, sectionIdentifier);
             }
         }
 
@@ -1009,51 +556,54 @@ public class YamlDocument {
             logger.debug("l1 is instance of arraylist...");
             ArrayList<Object> list = (ArrayList<Object>) l1;
             if (list.isEmpty())
-                return null;
+                return actionResult;
 
             int size = list.size();
             logger.debug("list.size(): {}", list.size());
             for (int i = 0; i < size; i++) {
-                actionResult.l1 = list.get(i);
+                actionResult.l3 = actionResult.l2;
                 actionResult.l2 = list;
+                actionResult.l1 = list.get(i);
                 logger.debug("list.get(i): {}", list.get(i));
-                performActionOnThis (actionResult,
+                actionResult = performActionOnThis (actionResult,
                         action,
                         sectionType,
                         sectionIdentifier);
+
+                // Break out of the loop
+                // The action is executed and the list may contain less (after a delete action) or more (after an insert) entries
+                if (actionResult.actionExecuted)
+                    break;
             }
         }
 
         return actionResult;
     };
 
-    private void doAction (ActionResult actionResult,
-                           Action action,
-                           Map.Entry<String, Object> entry) {
+    private ActionResult doAction (ActionResult actionResult,
+                                   Action action,
+                                   Map.Entry<String, Object> entry) {
         actionResult.l3 = actionResult.l2;
         actionResult.l2 = actionResult.l1;
         actionResult.l1 = entry.getValue();
-        actionResult.found = true;
         action.execute(actionResult);
+        return actionResult;
     }
 
-    private ActionResult goALevelDeeper (Object l1,
+    private ActionResult goALevelDeeper (ActionResult actionResult,
                                          Map.Entry<String, Object> entry,
                                          Action action,
                                          String sectionType,
                                          String sectionIdentifier) {
         logger.debug("==> Method: YamlDocument.goALevelDeeper");
 
-        ActionResult pac = new ActionResult();
-        pac.l1 = l1;
-        pac.l2 = entry.getValue();
-        logger.debug("pac.parent {}", pac.l1);
-        logger.debug("pac.child {}", pac.l2);
-        pac = performActionOnThis (pac,
+        actionResult.l1 = entry.getValue();
+        actionResult = performActionOnThis (actionResult,
                 action,
                 sectionType,
                 sectionIdentifier);
-        return pac;
+
+        return actionResult;
     }
 
     public ActionResult performActionOnTemplates (Action action,
@@ -1072,5 +622,35 @@ public class YamlDocument {
                     sectionIdentifier);
         }
         return null;
+    }
+
+    /******************************************************************************************
+     Replace a string, identified by keyName, with a string, identified by keyValue
+     ******************************************************************************************/
+    public void overrideLiteral (String literalToReplace, String newValue, boolean replaceAll) {
+        logger.debug("==> Method: YamlDocument.replaceLiteral");
+        logger.debug("literalToReplace: {}", literalToReplace);
+        logger.debug("newValue: {}", newValue);
+        logger.debug("continueSearching: {}", replaceAll);
+
+        Yaml yaml = new Yaml();
+        String s = yaml.dump(yamlMap);
+        if (s.contains(literalToReplace))
+            logger.info("Override literal \'{}\' with \'{}\' in file \'{}\'", literalToReplace, newValue, targetOutputFile);
+
+        if (replaceAll)
+            s = s.replace(literalToReplace, newValue);
+        else
+            s = s.replaceFirst(Pattern.quote(literalToReplace), newValue);
+        yamlMap = (Map) yaml.load(s);
+
+        // Execute the command in the yamlTemplate files
+        int index = 0;
+        int size = yamlTemplateList.size();
+        YamlTemplate yamlTemplate;
+        for (index = 0; index < size; index++) {
+            yamlTemplate = yamlTemplateList.get(index);
+            yamlTemplate.overrideLiteral(literalToReplace, newValue, replaceAll);
+        }
     }
 }

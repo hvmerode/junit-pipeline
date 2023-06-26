@@ -52,7 +52,7 @@ public class ActionInsertSection implements Action {
         }
 
         if (actionResult.l3 instanceof ArrayList) {
-            logger.debug("l1 is instance of ArrayList");
+            logger.debug("l3 is instance of ArrayList");
 
             // Run through the elements of the list and insert the new section
             ArrayList<Object> list = (ArrayList<Object>) actionResult.l3;
@@ -73,10 +73,12 @@ public class ActionInsertSection implements Action {
                             if (insertBefore) {
                                 logger.info("Insert the new section before section \'{}\' with identifier \'{}\'", sectionType, sectionIdentifier);
                                 list.add(index, sectionToInsert);
+                                actionResult.actionExecuted = true;
                             }
                             else {
                                 logger.info("Insert the new section after section \'{}\' with identifier \'{}\'", sectionType, sectionIdentifier);
                                 list.add(index + 1, sectionToInsert);
+                                actionResult.actionExecuted = true;
                             }
                             return;
                         }

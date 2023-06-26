@@ -101,9 +101,10 @@ public class YamlDocument {
             yamlMap = yaml.load(inputStream);
             logger.debug("YamlMap: {}", yamlMap);
         } catch (Exception e) {
+            // This is a warning and not an error
+            // Reason is that it may find a false-positive template file
             logger.warn("Cannot find file {}", sourceInputFile);
             logger.debug(DEMARCATION);
-            if (continueOnError) return null; else System. exit(1);
         }
 
         logger.debug("-----------------------------------------------------------------");

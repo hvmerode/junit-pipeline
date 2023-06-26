@@ -127,8 +127,10 @@ remove the file that includes the pipeline unit tests, if you don't want it to r
 <br></br>
 
 #### Define unit test ####
-The __junit-pipeline__ library contains a set of commands - used in unit tests - to manipulate the pipeline. Let's 
-go over them:
+The __junit-pipeline__ library contains a set of methods - used in unit tests - to manipulate the pipeline. Let's 
+go over a few of them:
+> Note, that this is only a subset of the methods available.
+
 <br></br>
 
 ```java
@@ -179,9 +181,9 @@ results in:
 
 ***
 ```java
-public void skipStage(String stageName)
+public void skipStageSearchByIdentifier(String stageIdentifier)
 ```
-<i>Skip a stage.        
+<i>Skip a stage.
 The result is, that the stage is completely removed from the output pipeline yaml file, which basically is
 the same as skipping it.
 
@@ -193,7 +195,7 @@ the same as skipping it.
 
 Calling in Java:
 ```java
-pipeline.skipStage("my_stage")
+pipeline.skipStageSearchByIdentifier("my_stage")
 ```
 ==> The stage with name "my_stage" is skipped
 </i>
@@ -202,12 +204,31 @@ pipeline.skipStage("my_stage")
 
 ***
 ```java
-public void skipJob(String jobName)
+public void skipStageSearchByDisplayName (String displayValue)
+```
+<i>It is also possible to skip a stage, based on its displayName.
+
+<u>Example</u>:
+<pre>
+- stage: my_stage
+  displayName: 'This is my stage'
+</pre>
+
+Calling in Java:
+```java
+pipeline.skipStageSearchByDisplayName("This is my stage")
+```
+==> The stage with displayName "This is my stage" is skipped
+</i>
+<br>
+<br>
+
+***
+```java
+public void skipJobSearchByIdentifier(String jobIdentifier)
 ```
 <i>
-Skip a job.
-The result is, that the job is completely removed from the output pipeline yaml file, which basically is
-the same as skipping it.
+Skip a job. This is similar to the skipStageSearchByIdentifier() method but for jobs.
 
 <u>Example</u>:
 <pre>
@@ -294,7 +315,7 @@ This results in:
 
 ***
 ```java
-public void overrideParameterDefault(String parameterName, String value)
+public void overrideParameterDefault(String parameterName, String defaultValue)
 ```
 <i>
 Replace the default value of a parameter in the 'parameters' section.
@@ -330,7 +351,7 @@ results in:
 
 ***
 ```java
-public void overrideLiteral(String findLiteral, String replaceLiteral, boolean replaceAll)
+public void overrideLiteral(String literalToReplace, String newValue, boolean replaceAll)
 ```
 <i>
 Override (or overwrite) any arbitrary string in the yaml file.
@@ -392,6 +413,40 @@ If _replaceAll_ is 'false', the first occurence in both the main YAML and the te
 <br>
 
 ***
+```java
+public void setVariableBeforeStepSearchByDisplayName (String displayValue, String variableName, String value)
+```
+<i>
+This is method is used to manipulate variables at runtime. Just before a certain  step is executed (identified by its displayName),
+the provided (new) value of the variable is set.
+
+<u>Example</u>:
+<pre>
+- task: AzureRMWebAppDeployment@4
+  displayName: Azure App Service Deploy
+  inputs:
+    appType: webAppContainer
+    ConnectedServiceName: $(azureSubscriptionEndpoint)
+    WebAppName: $(WebAppName)
+    DockerNamespace: $(DockerNamespace)
+    DockerRepository: $(DockerRepository)
+    DockerImageTag: $(Build.BuildId)
+</pre>
+
+After applying
+```java
+pipeline.setVariableBeforeStepSearchByDisplayName ("Azure App Service Deploy", "WebAppName", "newName")
+```
+a script is inserted just before the AzureRMWebAppDeployment@4. When running the pipeline, the value of 
+"WebAppName" is set with the value "newName"
+<pre>
+script: echo '##vso[task.setvariable variable=WebAppName]newName';
+</pre>
+</i>
+<br>
+
+
+***
 #### Start unit tests and retrieve the result ####
 The startPipeline method has a few representations:
 * _startPipeline()_ - Starts the pipeline with the default branch (in most cases, this is the _master_ branch).
@@ -430,8 +485,9 @@ pipeline.getRunResult()
 ***
 * An Azure DevOps "on..failure" / "on..success" construction is translated to "true..failure" / "true..success". It may be an issue in snakeyaml.
   * Temporary fix is by adding a FindReplaceInFile hook that replaces the "true:" string with an "on:" string.
-* A task with an input parameter 'yamlTemplate:' is handled as if it is a yamlTemplate (although it isn't); processing is still fine though, but it should not 
-  be treated as a yamlTemplate.
+* A task with an input parameter 'template:' is handled as if it is a yamlTemplate (although it isn't); processing 
+  is still fine though (gives a warning), but it should not be treated as a yamlTemplate. Alternative is to change the 
+  warning and give the recommendation that, although it is correct, it may lead to confusion.
 <br></br>
 
 ### New features ##

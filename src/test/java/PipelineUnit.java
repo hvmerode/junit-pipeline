@@ -32,7 +32,10 @@ public class PipelineUnit {
 
         String inlineScript = "echo \"This is a mock script\"\n" +
                 "echo \"This is line 2\"";
-        pipeline.mockStep("AWSShellScript@1", inlineScript);
+        pipeline.mockStepSearchByIdentifier("AWSShellScript@1", inlineScript);
+        pipeline.skipStageSearchByIdentifier("Stage_B");
+        pipeline.skipStageSearchByIdentifier("ExecuteScriptStage");
+        pipeline.assertEqualsSearchStepByDisplayName ("DeployStage job_xd script", "myVar", "donotfail", true);
 
         try {
             pipeline.startPipeline();
@@ -53,7 +56,7 @@ public class PipelineUnit {
 
         String inlineScript = "echo \"This is a mock script\"\n" +
                 "echo \"This is line 2\"";
-        pipeline.mockStep("AWSShellScript@1", inlineScript);
+        pipeline. mockStepSearchByIdentifier("AWSShellScript@1", inlineScript);
 
         try {
             pipeline.startPipeline("myFeature");
@@ -80,8 +83,8 @@ public class PipelineUnit {
             pipeline.skipSectionSearchByTypeAndIdentifier("template", "test-template.yml@external2");
             pipeline.overrideVariable("aws_region", "eu-west-1");
             pipeline.skipJobSearchByIdentifier("Job_XD");
-            pipeline.setVariableBeforeStepSearchByIdentifier ("AWSShellScript@1", "aws_connection", "42");
-//            pipeline.setVariableBeforeStepSearchByDisplayName ("DeployStage job_xe AWSShellScript", "aws_connection", "42");
+            pipeline.setVariableSearchStepByIdentifier ("AWSShellScript@1", "aws_connection", "42");
+            pipeline.setVariableSearchStepByDisplayName ("ExecuteScriptStage job_xc script", "myVar", "myReplacedValue");
 
             // Create a hook to perform an action just before starting the pipeline
             class TestHook extends Hook {

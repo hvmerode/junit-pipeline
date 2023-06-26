@@ -84,7 +84,7 @@ public class YamlDocument {
             // This typically happens if a parameter is called 'template'
             logger.warn("sourceInputFile is null; this may be a false-positive");
             if (this instanceof YamlTemplate)
-                logger.warn("This is a template with name: {}", templateName);
+                logger.warn("This concerns a template with name: {}", templateName);
             logger.debug("-----------------------------------------------------------------");
             logger.debug("End YamlDocument.readYaml");
             logger.debug("-----------------------------------------------------------------");
@@ -190,7 +190,7 @@ public class YamlDocument {
             // This may be a false-positive, so don't exit
             logger.warn("sourceInputFile is null; this may be a false-positive");
             if (this instanceof YamlTemplate)
-                logger.warn("This is a template with name: {}", templateName);
+                logger.warn("This concerns a template with name: {}", templateName);
             logger.debug("");
 
             return;

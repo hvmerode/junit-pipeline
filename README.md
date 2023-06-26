@@ -131,6 +131,8 @@ go over a few of them:
 
 <br></br>
 
+***
+***
 ```java
 public void mockStep(String stepValue, String inlineScript)
 ```
@@ -178,6 +180,7 @@ results in:
 <br>
 
 ***
+***
 ```java
 public void skipStageSearchByIdentifier(String stageIdentifier)
 ```
@@ -201,6 +204,7 @@ pipeline.skipStageSearchByIdentifier("my_stage")
 <br>
 
 ***
+***
 ```java
 public void skipStageSearchByDisplayName (String displayValue)
 ```
@@ -221,6 +225,7 @@ pipeline.skipStageSearchByDisplayName("This is my stage")
 <br>
 <br>
 
+***
 ***
 ```java
 public void skipJobSearchByIdentifier(String jobIdentifier)
@@ -243,6 +248,7 @@ pipeline.skipJob("my_job")
 <br>
 <br>
 
+***
 ***
 ```java
 public void overrideVariable(String variableName, String value)
@@ -284,6 +290,7 @@ This method does not replace variables defined in a Library (variable group).
 <br>
 
 ***
+***
 ```java
 public void overrideTemplateParameter(String parameterName, String value)
 ```
@@ -310,6 +317,7 @@ This results in:
 </i>
 <br>
 
+***
 ***
 ```java
 public void overrideParameterDefault(String parameterName, String defaultValue)
@@ -347,6 +355,7 @@ results in:
 <br>
 
 ***
+***
 ```java
 public void overrideLiteral(String literalToReplace, String newValue, boolean replaceAll)
 ```
@@ -382,6 +391,7 @@ If _replaceAll_ is 'false' the first occurence of literal in both the main YAML 
 <br>
 
 ***
+***
 ```java
 public void overrideCurrentBranch(String newBranchName, boolean replaceAll)
 ```
@@ -410,12 +420,14 @@ If _replaceAll_ is 'false', the first occurence in both the main YAML and the te
 <br>
 
 ***
+***
 ```java
-public void setVariableBeforeStepSearchByDisplayName (String displayValue, String variableName, String value)
+public void setVariableSearchStepByIdentifier (String stepIdentifier, String variableName, String value, boolean insertBefore)
 ```
 <i>
-This is method is used to manipulate variables at runtime. Just before a certain  step is executed (identified by its displayName),
-the provided (new) value of the variable is set.
+This is method is used to manipulate variables at runtime. Just before or after a certain step - identified by its 
+displayName - is executed, the provided (new) value of the variable is set. Argument 'insertBefore' determines whether the
+value is set just before execution of a step, or just after execution of a step.
 
 <u>Example</u>:
 <pre>
@@ -434,15 +446,37 @@ After applying
 ```java
 pipeline.setVariableBeforeStepSearchByDisplayName ("Azure App Service Deploy", "WebAppName", "newName")
 ```
-a script is inserted just before the AzureRMWebAppDeployment@4. When running the pipeline, the value of 
-"WebAppName" is set with the value "newName"
+a script is inserted just before the AzureRMWebAppDeployment@4 (note, that 'insertBefore' is omitted; default is 'true').
+When running the pipeline, the value of "WebAppName" is set with the value "newName"
 <pre>
 script: echo '##vso[task.setvariable variable=WebAppName]newName';
 </pre>
 </i>
 <br>
 
+***
+***
+```java
+public void assertEqualsSearchStepByDisplayName (String displayValue, String variableName, String compareValue, boolean insertBefore)
+```
+<i>
+The assertEqualsSearchStepByDisplayName() method validates a variable during runtime of the pipeline. If the 
+variable - with 'variableName' - is equal to 'compareValue', the pipeline aborts. The assertion is performed just 
+before the execution of the step, identifier by the displayName'.
 
+<u>Example</u>:
+After calling 
+```java
+pipeline.assertEqualsSearchStepByDisplayName ("Deploy the app", "myVar", "myValue")
+```
+the variable 'myVar' value is compared with 'myValue', just before the step with displayName 
+"Deploy the app" is executed. If you want to validate just after execution of the step, call
+assertEqualsSearchStepByDisplayName ("Deploy the app", "myVar", "myValue", false). 
+</i>
+<br>
+<br>
+
+***
 ***
 #### Start unit tests and retrieve the result ####
 The startPipeline method has a few representations:

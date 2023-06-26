@@ -64,7 +64,7 @@ public class ActionDeleteSectionByProperty implements Action {
 
                         if (property.equals(entry.getKey()) && propertyValue.equals(entry.getValue()) && foundType) {
                             // Found the right property with the correct value
-                            logger.info("Skip section type \'{}\' with propertyName \'{}\' and propertyValue \'{}\'", sectionType, property, propertyValue);
+                            logger.info("Skip section type \'{}\' with property \'{}\': \'{}\'", sectionType, property, propertyValue);
                             list.remove(index);
                             actionResult.actionExecuted = true;
                             return;

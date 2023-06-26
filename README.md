@@ -89,7 +89,7 @@ Example:
 <dependency>
   <groupId>io.github.hvmerode</groupId>
   <artifactId>junit-pipeline</artifactId>
-  <version>1.0.1</version>
+  <version>1.1.0</version>
 </dependency>
 ```
 
@@ -109,8 +109,6 @@ The _junit_pipeline_my.properties_ file in this example contains my personal pro
 The file _./pipeline/pipeline_test.yml_ is the main pipeline file. It can be stored in any folder of the code repository.
 Its path is relative to the root of the repository. The main pipeline file may contain references to other yamlTemplate files
 in the repository. The __junit-pipeline__ frameworks takes these templates into account in pipeline manipulation.
-> Note, that templates in other repositories (identified with an @ behind the yamlTemplate name) are used just as-is. 
-> The __junit-pipeline__ framework leaves these templates untouched.
 
 <br></br>
 
@@ -310,7 +308,6 @@ This results in:
     tag: 2.1.0
 </pre>
 </i>
-<br>
 <br>
 
 ***

@@ -10,5 +10,5 @@ steps:
     echo 'This is parameter ${{ parameters.param_1 }}'
   displayName: template-steps.yml script
 - script: |
-    echo 'This is step 2 of file template-steps.yml with parameter ${{ parameters.param_2 }}'
+    echo 'This is step 2 of file template-steps.yml'
   displayName: template-steps.yml script

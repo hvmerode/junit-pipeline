@@ -2,6 +2,9 @@ parameters:
 - name: aNiceParam
   type: string
   default: aNiceDefault
+- name: template
+  type: string
+  default: "default_name_of_template_param"
 stages:
 - stage: Stage_B
   displayName: template-stages.yml stage

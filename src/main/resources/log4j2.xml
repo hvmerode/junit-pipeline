@@ -6,8 +6,11 @@
         </Console>
     </Appenders>
     <Loggers>
-        <Root level="DEBUG">
+        <!-- Set the level to DEBUG to also show the debug logging -->
+        <Root level="INFO">
             <AppenderRef ref="Console"/>
         </Root>
+        <!-- Suppress the logging of the json-schema-validator -->
+        <Logger name="com.networknt" level="OFF"/>
     </Loggers>
 </Configuration>

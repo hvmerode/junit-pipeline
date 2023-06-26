@@ -3,13 +3,9 @@
 
 package azdo.yaml;
 
-import azdo.utils.AzDoUtils;
-import azdo.utils.GitUtils;
-import azdo.utils.PropertyUtils;
-import azdo.utils.Utils;
+import azdo.action.Action;
+import azdo.utils.*;
 import org.eclipse.jgit.api.Git;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Map;
@@ -20,7 +16,7 @@ import java.util.Map;
    and the YamlDocument class that represents the main YAML pipeline file.
 */
 public class YamlDocumentEntryPoint {
-    private static Logger logger = LoggerFactory.getLogger(YamlDocumentEntryPoint.class);
+    private static Log logger = Log.getLogger();
 
     // Refers to the main pipeline file, which is the entrypoint of the pipeline.
     private YamlDocument mainYamlDocument;
@@ -40,6 +36,11 @@ public class YamlDocumentEntryPoint {
     private String sourceBasePathExternal = "";
     private String targetBasePathExternal = "";
 
+    // The source- and target repository names refer to the name of the main repository (the source) and its
+    // corresponding repository in the Azure DevOps test project.
+    private String sourceRepositoryName = "";
+    private String targetRepositoryName = "";
+
     // List of repositories, defined in the resources section in the main pipeline file.
     ArrayList<RepositoryResource> repositoryList = null;
 
@@ -47,11 +48,15 @@ public class YamlDocumentEntryPoint {
     public YamlDocumentEntryPoint (String sourcePath,
                                    String targetPath,
                                    String sourceBasePathExternal,
-                                   String targetBasePathExternal) {
+                                   String targetBasePathExternal,
+                                   String sourceRepositoryName,
+                                   String targetRepositoryName) {
         this.sourcePath = sourcePath;
         this.targetPath = targetPath;
         this.sourceBasePathExternal = sourceBasePathExternal;
         this.targetBasePathExternal = targetBasePathExternal;
+        this.sourceRepositoryName = sourceRepositoryName;
+        this.targetRepositoryName = targetRepositoryName;
     }
 
     /*
@@ -114,7 +119,10 @@ public class YamlDocumentEntryPoint {
                 targetPath,
                 sourceBasePathExternal,
                 targetBasePathExternal,
-                repositoryList);
+                sourceRepositoryName,
+                targetRepositoryName,
+                repositoryList,
+                properties.isContinueOnError());
     }
 
     /*
@@ -122,16 +130,17 @@ public class YamlDocumentEntryPoint {
        This map is kept in memory. In addition, it creates YAML maps from template files.
      */
     @SuppressWarnings("java:S1192")
-    public Map<String, Object> read (String mainPipelineFile) {
+    public Map<String, Object> read (String mainPipelineFile, boolean continueOnError) {
         logger.debug("==> Method: YamlDocumentEntryPoint.read");
         logger.debug("mainPipelineFile: {}", mainPipelineFile);
 
         // First read the main YAML file
-        //Path mainPipelinePath = Paths.get(mainPipelineFile);
-        //mainPipelinePath = mainPipelinePath.normalize();
-        //mainPipelineFile = mainPipelinePath.toString();
-        mainYamlDocument = new YamlDocument(mainPipelineFile, sourcePath, targetPath);
-        Map<String, Object> yamlMap = mainYamlDocument.readYaml();
+        mainYamlDocument = new YamlDocument(mainPipelineFile,
+                sourcePath,
+                targetPath,
+                sourceRepositoryName,
+                targetRepositoryName);
+        Map<String, Object> yamlMap = mainYamlDocument.readYaml(continueOnError);
 
         return yamlMap;
     }
@@ -192,6 +201,10 @@ public class YamlDocumentEntryPoint {
                                        ArrayList<String> commitPatternList) {
         logger.debug("==> Method: YamlDocumentEntryPoint.commitAndPushAllCode (second method signature)");
 
+        // Return if there is nothing to push
+        if (repositoryResourceList == null)
+            return;
+
         repositoryResourceList.forEach(repository -> {
             commitAndPushAllCode (repository, azdoUser, azdoPat, commitPatternList);
         });
@@ -215,6 +228,10 @@ public class YamlDocumentEntryPoint {
 
     public void copyAllSourceFiles (String excludeList) {
         logger.debug("==> Method: YamlDocumentEntryPoint.copyAllSourceFiles (first method signature)");
+
+        // Return if there is nothing to copy
+        if (repositoryList == null)
+            return;
 
         repositoryList.forEach(repository -> {
             copyAllSourceFiles (repository, excludeList);
@@ -296,7 +313,7 @@ public class YamlDocumentEntryPoint {
         logger.debug("basePathExternal: {}", basePathExternal);
 
         if (map == null) {
-            logger.debug("map is null");
+            logger.warn("map is null");
             return null;
         }
 
@@ -386,13 +403,13 @@ public class YamlDocumentEntryPoint {
         logger.debug("basePathExternal: {}", basePathExternal);
 
         if (inner == null) {
-            logger.debug("inner is null");
+            logger.warn("inner is null");
             return;
         }
 
         inner.forEach(entry -> {
             if (entry == null) {
-                logger.debug("entry is null");
+                logger.warn("entry is null");
                 return;
             }
 
@@ -416,32 +433,30 @@ public class YamlDocumentEntryPoint {
         mainYamlDocument.dumpYaml();
     }
 
-    public void executeCommand (ActionEnum actionEnum,
-                                String sectionName,
-                                String sectionValue,
-                                String identifierName,
-                                String identifierValue,
-                                String keyName,
-                                String keyValue,
-                                boolean continueSearching) {
-        logger.debug("==> Method: YamlDocumentEntryPoint.executeCommand");
-        logger.debug("actionEnum: {}", actionEnum);
-        logger.debug("sectionName: {}", sectionName);
-        logger.debug("sectionValue: {}", sectionValue);
-        logger.debug("identifierName: {}", identifierName);
-        logger.debug("identifierValue: {}", identifierValue);
-        logger.debug("keyName: {}", keyName);
-        logger.debug("keyValue: {}", keyValue);
-        logger.debug("continueSearching: {}", continueSearching);
+    /******************************************************************************************
+     Forward the action to the main yaml document. The main yaml document delegates it again
+     to all underlying templates.
+     ******************************************************************************************/
+    public ActionResult performAction (Action action,
+                                       String sectionType,
+                                       String sectionIdentifier) {
+        logger.debug("==> Method: YamlDocumentEntryPoint.performAction");
+        logger.debug("action: {}", action.getClass().getName());
+        logger.debug("sectionType: {}", sectionType);
+        logger.debug("sectionIdentifier: {}", sectionIdentifier);
+        return mainYamlDocument.performAction (action, sectionType, sectionIdentifier);
+    }
 
-        mainYamlDocument.executeCommand(actionEnum,
-                sectionName,
-                sectionValue,
-                identifierName,
-                identifierValue,
-                keyName,
-                keyValue,
-                continueSearching);
+    /******************************************************************************************
+     Forward the action to the main yaml document.
+     ******************************************************************************************/
+    public void overrideLiteral (String literalToReplace, String newValue, boolean replaceAll) {
+        logger.debug("==> Method: YamlDocumentEntryPoint.overrideLiteral");
+        logger.debug("literalToReplace: {}", literalToReplace);
+        logger.debug("newValue: {}", newValue);
+        logger.debug("continueSearching: {}", replaceAll);
+
+        mainYamlDocument.overrideLiteral(literalToReplace, newValue, replaceAll);
     }
 
     public void makeResourcesLocal () {

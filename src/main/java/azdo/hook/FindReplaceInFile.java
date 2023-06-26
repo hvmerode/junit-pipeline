@@ -3,13 +3,8 @@
 
 package azdo.hook;
 
-import azdo.junit.AzDoPipeline;
+import azdo.utils.Log;
 import azdo.utils.Utils;
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /* Hook, to find and replace all literals in a given file.
  */
@@ -18,7 +13,7 @@ public class FindReplaceInFile extends Hook {
     private String findString;
     private String replaceString;
     private boolean replaceAll;
-    private static Logger logger = LoggerFactory.getLogger(FindReplaceInFile.class);
+    private static Log logger = Log.getLogger();
     public FindReplaceInFile(String fullQualifiedFileName,
                              String findString,
                              String replaceString,

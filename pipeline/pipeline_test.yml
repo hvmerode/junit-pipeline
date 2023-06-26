@@ -41,13 +41,17 @@ variables:
 stages:
   - template: templates/stages/template-stages.yml
     parameters:
-      aNiceParam: param_1_value
+      aNiceParam: parameter_of_template-stages.yml
+      template: test_parameter_with_name_template
 
   - stage: ExecuteScriptStage
-    displayName: 'ExecuteScriptStage'
+    displayName: 'The executeScriptStage'
     condition: always()
     jobs:
       - job: Job_XA
+        variables:
+          - name: jobVar
+            value: original_value_Job_XA
         displayName: ExecuteScriptStage job_xa
         pool:
           vmImage: 'ubuntu-latest'
@@ -69,6 +73,9 @@ stages:
               param_1: param_1_value
               param_2: param_2_value
       - job: Job_XC
+        variables:
+          - name: jobVar
+            value: original_value_Job_XC
         displayName: ExecuteScriptStage job_xc
         pool:
           vmImage: 'ubuntu-latest'
@@ -85,7 +92,7 @@ stages:
 
   - stage: DeployStage
     condition: eq(variables['Build.SourceBranchName'], 'master')
-    displayName: 'DeployStage'
+    displayName: 'The deployStage'
     jobs:
       - job: Job_XD
         displayName: DeployStage job_xd

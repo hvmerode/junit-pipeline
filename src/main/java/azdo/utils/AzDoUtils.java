@@ -1,8 +1,6 @@
 package azdo.utils;
 
 import azdo.junit.RunResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -16,7 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class AzDoUtils {
-    private static Logger logger = LoggerFactory.getLogger(AzDoUtils.class);
+    private static Log logger = Log.getLogger();
     private static final String BRACKET_OPEN_NEXTLINE = "{\n";
     private static final String BRACKET_CLOSE = "}";
     private static final String DOUBLE_QUOTE = "\"";
@@ -400,8 +398,8 @@ public class AzDoUtils {
                 runResult.status = RunResult.Status.timeout;
             }
             logger.debug("Buildnumber: {}", buildNumber);
-            logger.debug("Status response: {}", runResult.status.toString());
-            logger.debug("Status response: {}", runResult.status.toString());
+            logger.debug("Status: {}", runResult.status.toString());
+            logger.debug("Result: {}", runResult.result.toString());
         }
 
         return runResult;

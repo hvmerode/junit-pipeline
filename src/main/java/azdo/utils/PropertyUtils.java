@@ -3,9 +3,6 @@
 
 package azdo.utils;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,11 +10,13 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 public class PropertyUtils {
-    private static Logger logger = LoggerFactory.getLogger(PropertyUtils.class);
+    private static Log logger = Log.getLogger();
 
     // Source
     private Properties properties;
     private String sourcePath;
+
+    private String sourceRepositoryName;
     private String sourceBasePathExternal;
 
     // Target
@@ -53,10 +52,11 @@ public class PropertyUtils {
     private String projectApi = "/projects";
     private String projectApiVersion = "api-version=7.0";
 
-    // Miscellanious
+    // Miscellaneous
     private String commitPattern;
     ArrayList<String> commitPatternList;
-    private String repositoryName;
+    private String targetRepositoryName;
+    private boolean continueOnError = false;
 
     @SuppressWarnings("java:S1192")
     public PropertyUtils(String propertyFile) {
@@ -75,13 +75,14 @@ public class PropertyUtils {
             // Source
             sourcePath = getStringProperty(properties, "source.path", sourcePath);
             sourceBasePathExternal = getStringProperty(properties, "source.base.path.external", sourceBasePathExternal);
+            sourceRepositoryName = getStringProperty(properties, "source.repository.name", sourceRepositoryName);
 
             // Target
             targetOrganization = getStringProperty(properties, "target.organization", targetOrganization);
             targetProject = getStringProperty(properties, "target.project", targetProject);
             targetPath = getStringProperty(properties, "target.path", targetPath);
             targetBasePathExternal = getStringProperty(properties, "target.base.path.external", targetBasePathExternal);
-            repositoryName = getStringProperty(properties, "target.repository.name", repositoryName);
+            targetRepositoryName = getStringProperty(properties, "target.repository.name", targetRepositoryName);
             pipelinePathRepository = getStringProperty(properties, "repository.pipeline.path", pipelinePathRepository);
             azdoUser = getStringProperty(properties, "azdo.user", azdoUser, false);
             azdoPat = getStringProperty(properties, "azdo.pat", azdoPat, false);
@@ -116,10 +117,13 @@ public class PropertyUtils {
             projectApi = getStringProperty(properties, "project.api", projectApi);
             projectApiVersion = getStringProperty(properties, "project.api.version", projectApiVersion);
 
+            // Miscellaneous
+            continueOnError = getBooleanProperty(properties, "error.continue", continueOnError);
+
             // Derived properties
             azdoBaseUrl="https://dev.azure.com/" + targetOrganization;
             logger.debug("Derived azdoBaseUrl: {}", azdoBaseUrl);
-            uriTargetRepository = azdoBaseUrl + "/" + targetProject + "/_git/" + repositoryName;
+            uriTargetRepository = azdoBaseUrl + "/" + targetProject + "/_git/" + targetRepositoryName;
             uriTargetRepository = Utils.encodePath(uriTargetRepository);
             logger.debug("Derived uriTargetRepository: {}", uriTargetRepository);
             azdoEndpoint = azdoBaseUrl + "/" + targetProject + "/_apis";
@@ -131,7 +135,7 @@ public class PropertyUtils {
             logger.debug("");
         }
         catch (FileNotFoundException e) {
-            logger.debug("File not found");
+            logger.debug("Property file not found");
         }
         catch (IOException e) {
             logger.debug("IOException");
@@ -171,10 +175,29 @@ public class PropertyUtils {
         return propertyValue;
     }
 
+    private boolean getBooleanProperty (Properties properties, String propertyName, boolean propertyValue) {
+        return getBooleanProperty (properties, propertyName, propertyValue, true);
+    }
+
+    private boolean getBooleanProperty (Properties properties, String propertyName, boolean propertyValue, boolean showValueInLog) {
+        String p = properties.getProperty(propertyName);
+        if (p != null && !p.isEmpty()) {
+            propertyValue = Boolean.parseBoolean(p);
+        }
+        if (showValueInLog)
+            logger.debug("{}: {}", propertyName, propertyValue);
+        else
+            logger.debug("{}: *****************", propertyName);
+
+        return propertyValue;
+    }
+
     public String getSourcePath() { return sourcePath; }
     public String getTargetProject() {
         return targetProject;
     }
+    public String getTargetRepositoryName() { return targetRepositoryName; }
+    public String getSourceRepositoryName() { return sourceRepositoryName; }
     public String getTargetOrganization() {
         return targetOrganization;
     }
@@ -211,8 +234,8 @@ public class PropertyUtils {
         return projectApiVersion;
     }
 
-    // Miscellanious
+    // Miscellaneous
     public String getCommitPattern() { return commitPattern; }
     public ArrayList<String> getCommitPatternList() { return commitPatternList; }
-    public String getRepositoryName() { return repositoryName; }
+    public boolean isContinueOnError() { return continueOnError; }
 }

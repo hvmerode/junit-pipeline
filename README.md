@@ -53,8 +53,10 @@ The properties file is located in src/main/resources. It contains the properties
   You are not actively working in this repo.
 * __target.base.path.external__ - The location (local directory) containing external Git repositories; this location
   is used communicate with the Azure DevOps test project.
-* __target.repository.name__ - The name of the repository used in the Git repository used for testing. Example: If a repository is used 
+* __source.repository.name__ - The name of the main repository
+* __target.repository.name__ - The name of the repository used in the Git repository used for testing. Example: If a source repository is used 
   with the name "__myrepo__", the __target.repository.name__ used for testing the pipeline can be called "__myrepo-test__".
+  _target.repository.name_ may not be equal to _source.repository.name_. 
 * __azdo.user__ - User used in the Azure DevOps API calls. Can be the default name 'UserWithToken'.
 * __azdo.pat__ - The PAT (Personal Access Token) used in the Azure DevOps API calls.\
   See [Use personal access tokens](https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops&tabs=Windows) how to create a PAT.\
@@ -74,6 +76,9 @@ The properties file is located in src/main/resources. It contains the properties
 * __build.api.poll.timeout__ - The timeout value of polling the result of the pipeline run. If the final result is not retrieved yet, the polling stops after a number of seconds, defined by  __build.api.poll.timeout__.
 * __project.api__ - Name of the Azure DevOps base Project API; do not change this value.
 * __project.api.version__ - Version of the Azure DevOps Project API; only change if it is really needed (e.g., if a new version of the API is released).
+* __error.continue__ - If _true_, the junit-.pipeline framework continues after an error is detected 
+  (e.g., if the pipeline YAML file or a template file is incorrect). Note, that this can result in unpredictable results.
+  If _false_, the framework stops with the test as soon as an error is detected.
 > The property file is stored in the _resources_ folder.
 
 <br></br>
@@ -84,7 +89,7 @@ Example:
 <dependency>
   <groupId>io.github.hvmerode</groupId>
   <artifactId>junit-pipeline</artifactId>
-  <version>1.0.1</version>
+  <version>1.1.0</version>
 </dependency>
 ```
 
@@ -102,23 +107,11 @@ AzDoPipeline pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipe
 ```
 The _junit_pipeline_my.properties_ file in this example contains my personal properties.
 The file _./pipeline/pipeline_test.yml_ is the main pipeline file. It can be stored in any folder of the code repository.
-Its path is relative to the root of the repository. The main pipeline file may contain references to other template files
+Its path is relative to the root of the repository. The main pipeline file may contain references to other yamlTemplate files
 in the repository. The __junit-pipeline__ frameworks takes these templates into account in pipeline manipulation.
-> Note, that templates in other repositories (identified with an @ behind the template name) are used just as-is. 
-> The __junit-pipeline__ framework leaves these templates untouched.
 
 <br></br>
-#### Define a command bundle ####
-It is perfectly possible to repeat a certain command in every unit test, but if you, for example, want to
-execute a certain task in all tests, it is also possible to add it to a command bundle. You only define it
-once and it is executed in all unit tests. For example, adding a command that skips a task or replaces it with a mock script. 
-In the example below, the template _template-steps_1.yml_ is replaced by
-_template-mock.yml_ for every unit test.
-```java
-pipeline.commandBundle.overrideLiteral("templates/steps/template-steps_1.yml", "templates/steps/template-mock.yml");
-```
 
-<br></br>
 #### Hooks ####
 Before the pipeline code is pushed to the Azure DevOps unit test project, and started, it is possible to execute
 custom code. This code is provided as a list of 'hooks'. The unit test file _PipelineUnit.java_ shows an example; _test 3_.\
@@ -132,10 +125,14 @@ remove the file that includes the pipeline unit tests, if you don't want it to r
 <br></br>
 
 #### Define unit test ####
-The __junit-pipeline__ library contains a set of commands - used in unit tests - to manipulate the pipeline. Let's 
-go over them:
+The __junit-pipeline__ library contains a set of methods - used in unit tests - to manipulate the pipeline. Let's 
+go over a few of them:
+> Note, that this is only a subset of the methods available.
+
 <br></br>
 
+***
+***
 ```java
 public void mockStep(String stepValue, String inlineScript)
 ```
@@ -183,10 +180,11 @@ results in:
 <br>
 
 ***
+***
 ```java
-public void skipStage(String stageName)
+public void skipStageSearchByIdentifier(String stageIdentifier)
 ```
-<i>Skip a stage.        
+<i>Skip a stage.
 The result is, that the stage is completely removed from the output pipeline yaml file, which basically is
 the same as skipping it.
 
@@ -198,7 +196,7 @@ the same as skipping it.
 
 Calling in Java:
 ```java
-pipeline.skipStage("my_stage")
+pipeline.skipStageSearchByIdentifier("my_stage")
 ```
 ==> The stage with name "my_stage" is skipped
 </i>
@@ -206,13 +204,34 @@ pipeline.skipStage("my_stage")
 <br>
 
 ***
+***
 ```java
-public void skipJob(String jobName)
+public void skipStageSearchByDisplayName (String displayValue)
+```
+<i>It is also possible to skip a stage, based on its displayName.
+
+<u>Example</u>:
+<pre>
+- stage: my_stage
+  displayName: 'This is my stage'
+</pre>
+
+Calling in Java:
+```java
+pipeline.skipStageSearchByDisplayName("This is my stage")
+```
+==> The stage with displayName "This is my stage" is skipped
+</i>
+<br>
+<br>
+
+***
+***
+```java
+public void skipJobSearchByIdentifier(String jobIdentifier)
 ```
 <i>
-Skip a job.
-The result is, that the job is completely removed from the output pipeline yaml file, which basically is
-the same as skipping it.
+Skip a job. This is similar to the skipStageSearchByIdentifier() method but for jobs.
 
 <u>Example</u>:
 <pre>
@@ -229,6 +248,7 @@ pipeline.skipJob("my_job")
 <br>
 <br>
 
+***
 ***
 ```java
 public void overrideVariable(String variableName, String value)
@@ -270,15 +290,16 @@ This method does not replace variables defined in a Library (variable group).
 <br>
 
 ***
+***
 ```java
 public void overrideTemplateParameter(String parameterName, String value)
 ```
 <i>
-Replace the value of a parameter in a 'template' section.
+Replace the value of a parameter in a 'yamlTemplate' section.
 
 <u>Example</u>:
 <pre>
-- template: step/mytemplate.yml
+- yamlTemplate: step/mytemplate.yml
   parameters:
     tag: $(version)
 </pre>
@@ -289,17 +310,17 @@ pipeline.overrideTemplateParameter("tag", "2.1.0").
 ```        
 This results in:
 <pre>
-- template: step/mytemplate.yml
+- yamlTemplate: step/mytemplate.yml
   parameters:
     tag: 2.1.0
 </pre>
 </i>
 <br>
-<br>
 
 ***
+***
 ```java
-public void overrideParameterDefault(String parameterName, String value)
+public void overrideParameterDefault(String parameterName, String defaultValue)
 ```
 <i>
 Replace the default value of a parameter in the 'parameters' section.
@@ -334,8 +355,9 @@ results in:
 <br>
 
 ***
+***
 ```java
-public void overrideLiteral(String findLiteral, String replaceLiteral, boolean replaceAll)
+public void overrideLiteral(String literalToReplace, String newValue, boolean replaceAll)
 ```
 <i>
 Override (or overwrite) any arbitrary string in the yaml file.
@@ -369,6 +391,7 @@ If _replaceAll_ is 'false' the first occurence of literal in both the main YAML 
 <br>
 
 ***
+***
 ```java
 public void overrideCurrentBranch(String newBranchName, boolean replaceAll)
 ```
@@ -397,6 +420,64 @@ If _replaceAll_ is 'false', the first occurence in both the main YAML and the te
 <br>
 
 ***
+***
+```java
+public void setVariableSearchStepByIdentifier (String stepIdentifier, String variableName, String value, boolean insertBefore)
+```
+<i>
+This is method is used to manipulate variables at runtime. Just before or after a certain step - identified by its 
+displayName - is executed, the provided (new) value of the variable is set. Argument 'insertBefore' determines whether the
+value is set just before execution of a step, or just after execution of a step.
+
+<u>Example</u>:
+<pre>
+- task: AzureRMWebAppDeployment@4
+  displayName: Azure App Service Deploy
+  inputs:
+    appType: webAppContainer
+    ConnectedServiceName: $(azureSubscriptionEndpoint)
+    WebAppName: $(WebAppName)
+    DockerNamespace: $(DockerNamespace)
+    DockerRepository: $(DockerRepository)
+    DockerImageTag: $(Build.BuildId)
+</pre>
+
+After applying
+```java
+pipeline.setVariableBeforeStepSearchByDisplayName ("Azure App Service Deploy", "WebAppName", "newName")
+```
+a script is inserted just before the AzureRMWebAppDeployment@4 (note, that 'insertBefore' is omitted; default is 'true').
+When running the pipeline, the value of "WebAppName" is set with the value "newName"
+<pre>
+script: echo '##vso[task.setvariable variable=WebAppName]newName';
+</pre>
+</i>
+<br>
+
+***
+***
+```java
+public void assertEqualsSearchStepByDisplayName (String displayValue, String variableName, String compareValue, boolean insertBefore)
+```
+<i>
+The assertEqualsSearchStepByDisplayName() method validates a variable during runtime of the pipeline. If the 
+variable - with 'variableName' - is equal to 'compareValue', the pipeline aborts. The assertion is performed just 
+before the execution of the step, identifier by the displayName'.
+
+<u>Example</u>:
+After calling 
+```java
+pipeline.assertEqualsSearchStepByDisplayName ("Deploy the app", "myVar", "myValue")
+```
+the variable 'myVar' value is compared with 'myValue', just before the step with displayName 
+"Deploy the app" is executed. If you want to validate just after execution of the step, call
+assertEqualsSearchStepByDisplayName ("Deploy the app", "myVar", "myValue", false). 
+</i>
+<br>
+<br>
+
+***
+***
 #### Start unit tests and retrieve the result ####
 The startPipeline method has a few representations:
 * _startPipeline()_ - Starts the pipeline with the default branch (in most cases, this is the _master_ branch).
@@ -419,41 +500,48 @@ pipeline.getRunResult()
   test must wait before the previous one is completed.
 * Templates residing in external repositories (GitHub and other Azure DevOps projects) are taken into account, but:
   * The _ref_ parameter is not (yet) fully implemented. Only the format "refs/heads/branch" is supported; the pattern 
-  "refs/tags/tag" is not yet supported 
+    "refs/tags/tag" is not yet supported .
   * If a remote external repository is updated, the update is not automatically included in the test; first delete the 
     corresponding local directory; this enables the creation of q new clone of the external repository. For example, 
     if an external repository is called 'Templates', 2 local directories are created, 'Templates' and 'Templates-source'; 
     delete them both.
+  * An external GitHub repository is assumed to be public; no credentials are used to access the GitHub repository.
 * If the pipeline makes use of a resource in the test project for the first time, it needs manual approval first; for example, 
-  a variable group or an Environment. The Azure DevOps API returns an HTTP status 400. 
-* If unknown service connections are used, the updated pipeline code is not valid YAML anymore, or a manual approval on a resource
-is required, the AzDo API returns an HTTP status code 400.
+  a variable group or an Environment. The Azure DevOps API returns an HTTP status 400.
+* If unknown service connections are used, if the updated pipeline code is not valid YAML anymore, or if a manual approval 
+  of a resource is required, the AzDo API returns an HTTP status code 400.
 <br></br>
 
 ### Known bugs ##
 ***
 * An Azure DevOps "on..failure" / "on..success" construction is translated to "true..failure" / "true..success". It may be an issue in snakeyaml.
   * Temporary fix is by adding a FindReplaceInFile hook that replaces the "true:" string with an "on:" string.
-* A task with an input parameter 'template:' is handled as if it is a template (although it isn't); processing is still fine though, but it should not 
-  be treated as a template.
+* A task with an input parameter 'template:' is handled as if it is a yamlTemplate (although it isn't); processing 
+  is still fine though (gives a warning), but it should not be treated as a yamlTemplate. Alternative is to change the 
+  warning and give the recommendation that, although it is correct, it may lead to confusion.
 <br></br>
 
 ### New features ##
 ***
 * Test on Linux; some filesystem methods in Utils may not work properly.
+* Add an assert step; check a variable on a certain value using a condition. Exit with 1 if the condition is not met.
+  * This step can be added before or after a certain step using a pipeline method.
+* Log YAML line numbers in method _Utils.validatePipelineFile()_ according to [yaml-line-numbers.md](https://github.com/networknt/json-schema-validator/blob/master/doc/yaml-line-numbers.md)
 * Add option to pipeline.mockStep to display a name (the inline script shows as CmdLine in Azure DevOps).
 * Add option to continue on error for all steps.
-* Possibility to replace a step with a template file (the template file could serve as a mock file).
+* Possibility to replace a step with a yamlTemplate file (the yamlTemplate file could serve as a mock file).
 * Possibility to replace a step with another step.
 * Add unit tests to the junit-pipeline code itself.
 * Check/assert output variables of a step.
 * Add methods to add, update or remove conditions in stages or jobs. Use the _overrideLiteral_ method, if possible.
 * Support "refs/tags/tag" for external repositories with templates.
 * Check whether the output pipeline is a valid pipeline (valid yaml and valid Azure DevOps pipeline).
+  This is a 'nice-to-have'.
 
 ### Solved ##
 ***
-* ~~Only YAML templates in the same repository are taken into account. Templates in other repositories (identified with a @ behind the template name) are ignored.\
+* ~~Check whether the input pipeline and templates are a valid Azure DevOps pipeline YAML files~~
+* ~~Only YAML templates in the same repository are taken into account. Templates in other repositories (identified with a @ behind the yamlTemplate name) are ignored.\
   TODO: Option to incorporate other resources (repositories) and manipulate the templates in these repos also.~~
 * ~~Copying files from the main local repo to the test local repo involves exclusion of files, using an exclusion list. This list is currently hardcoded\
   and contains "idea, target, .git and class". This should be made configurable in the _junit_pipeline.properties_ file.~~

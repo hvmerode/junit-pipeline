@@ -4,9 +4,8 @@
 package azdo.hook;
 
 import azdo.junit.AzDoPipeline;
+import azdo.utils.Log;
 import azdo.utils.Utils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -14,7 +13,7 @@ import java.nio.file.Paths;
  */
 public class DeleteTargetFile extends Hook {
     private String fullQualifiedFileName;
-    private static Logger logger = LoggerFactory.getLogger(DeleteTargetFile.class);
+    private static Log logger = Log.getLogger();
     public DeleteTargetFile(String fullQualifiedFileName) {
         logger.debug("==> Class: DeleteTargetFile");
 

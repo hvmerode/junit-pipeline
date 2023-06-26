@@ -4,10 +4,9 @@
 package azdo.hook;
 
 import azdo.junit.AzDoPipeline;
+import azdo.utils.Log;
 import azdo.utils.PomUtils;
 import azdo.utils.Utils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /* Hook, to remove the dependency to the 'junit-pipeline' jar, before it is deployed to the AzDo test project.
    Normally, this dependency is stored in a repository or in Azure DevOps artifacts. When building the Maven
@@ -18,7 +17,7 @@ public class DeleteJUnitPipelineDependency extends Hook {
     private String pom;
     private String groupId;
     private String artifactId;
-    private static Logger logger = LoggerFactory.getLogger(DeleteJUnitPipelineDependency.class);
+    private static Log logger = Log.getLogger();
     public DeleteJUnitPipelineDependency (String pom, String groupId, String artifactId) {
         logger.debug("==> Class: DeleteJUnitPipelineDependency");
 

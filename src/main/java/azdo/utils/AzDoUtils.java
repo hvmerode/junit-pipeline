@@ -328,7 +328,8 @@ public class AzDoUtils {
                                            String azdoEndpoint,
                                            String azdoBuildApi,
                                            String azdoBuildApiVersion,
-                                           String pipelineId) {
+                                           String pipelineId,
+                                           boolean continueOnError) {
         logger.debug("==> Method: AzDoUtils.callRunResult");
         logger.debug("pollFrequency: {}", pollFrequency);
         logger.debug("timeout: {}", timeout);
@@ -365,6 +366,11 @@ public class AzDoUtils {
             yaml = new Yaml();
             if (response != null) {
                 Map<String, Object> yamlMap = yaml.load(response.body().toString());
+                if (yamlMap == null) {
+                    logger.error("Retrieving the pipeline result failed");
+                    if (continueOnError) return null; else System. exit(1);
+                }
+
                 logger.debug(RESPONSE_IS, yamlMap.toString());
                 if (yamlMap.get(JSON_ELEMENT_VALUE) instanceof ArrayList) {
                     ArrayList<Object> arr = (ArrayList<Object>) yamlMap.get(JSON_ELEMENT_VALUE);
@@ -397,9 +403,9 @@ public class AzDoUtils {
                 runResult.result = RunResult.Result.undetermined;
                 runResult.status = RunResult.Status.timeout;
             }
-            logger.debug("Buildnumber: {}", buildNumber);
-            logger.debug("Status: {}", runResult.status.toString());
-            logger.debug("Result: {}", runResult.result.toString());
+            logger.info("Buildnumber: {}", buildNumber);
+            logger.info("Status: {}", runResult.status.toString());
+            logger.info("Result: {}", runResult.result.toString());
         }
 
         return runResult;

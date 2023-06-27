@@ -78,7 +78,7 @@ public class PipelineUnit {
         try {
             pipeline.overrideParameterDefault("sleep", "5");
             pipeline.overrideTemplateParameter("aNiceParam", "replaced_parameter");
-            pipeline.overrideVariable("jobVar", "replacedJobVar");
+            pipeline.overrideVariable("jobVar", "replacedJobVar"); // There 3 occurrences of jobVar
             pipeline.overrideLiteral("Job_2.Task_3: Sleep some seconds", "Sleep");
             pipeline.skipSectionSearchByTypeAndIdentifier("template", "test-template.yml@external2");
             pipeline.overrideVariable("aws_region", "eu-west-1");

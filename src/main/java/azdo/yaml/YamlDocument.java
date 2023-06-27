@@ -12,10 +12,8 @@ import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
-
 import static azdo.utils.Constants.*;
 
 /*
@@ -247,7 +245,7 @@ public class YamlDocument {
 
         // Inner could be null
         if (inner == null){
-            logger.warn("inner is null; the reason is probably because the file could not be read, so return");
+            logger.warn("inner is null; the reason is probably because the file could not be read.");
             return;
         }
 
@@ -318,7 +316,7 @@ public class YamlDocument {
 
         // Inner could be null
         if (inner == null){
-            logger.warn("inner is null; the reason is probably because the file could not be read, so return");
+            logger.warn("inner is null; the reason is probably because the file could not be read");
             return;
         }
 

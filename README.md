@@ -134,11 +134,11 @@ go over a few of them:
 ***
 ***
 ```java
-public void mockStep(String stepValue, String inlineScript)
+public void mockStepSearchByIdentifier (String stepIdentifier, String inlineScript)
 ```
 <i>
-The original step is replaced by a mock step. This is a step of the type 'script'. The argument 'inlineScript' is added to the mock.
-Depending on the job pool this can be a Powershell script (Windows) or a bash script (Linux).
+The original step is replaced by a mock step. This is a step of the type 'script'. The argument 'inlineScript' '
+is added to the mock. Depending on the job pool this can be a Powershell script (Windows) or a bash script (Linux).
 
 <u>Example</u>:
 <pre>
@@ -166,7 +166,7 @@ Depending on the job pool this can be a Powershell script (Windows) or a bash sc
 Calling in Java:
 ```java
 String inlineScript = "echo \"This is a mock script\"\n" + "echo \"Mock-and-roll\"";
-pipeline.mockStep("AWSShellScript@1", inlineScript);
+pipeline.mockStepSearchByIdentifier ("AWSShellScript@1", inlineScript);
 ```
 results in:
 <pre>
@@ -182,7 +182,7 @@ results in:
 ***
 ***
 ```java
-public void skipStageSearchByIdentifier(String stageIdentifier)
+public void skipStageSearchByIdentifier (String stageIdentifier)
 ```
 <i>Skip a stage.
 The result is, that the stage is completely removed from the output pipeline yaml file, which basically is
@@ -196,7 +196,7 @@ the same as skipping it.
 
 Calling in Java:
 ```java
-pipeline.skipStageSearchByIdentifier("my_stage")
+pipeline.skipStageSearchByIdentifier ("my_stage")
 ```
 ==> The stage with name "my_stage" is skipped
 </i>
@@ -206,29 +206,7 @@ pipeline.skipStageSearchByIdentifier("my_stage")
 ***
 ***
 ```java
-public void skipStageSearchByDisplayName (String displayValue)
-```
-<i>It is also possible to skip a stage, based on its displayName.
-
-<u>Example</u>:
-<pre>
-- stage: my_stage
-  displayName: 'This is my stage'
-</pre>
-
-Calling in Java:
-```java
-pipeline.skipStageSearchByDisplayName("This is my stage")
-```
-==> The stage with displayName "This is my stage" is skipped
-</i>
-<br>
-<br>
-
-***
-***
-```java
-public void skipJobSearchByIdentifier(String jobIdentifier)
+public void skipJobSearchByIdentifier (String jobIdentifier)
 ```
 <i>
 Skip a job. This is similar to the skipStageSearchByIdentifier() method but for jobs.
@@ -241,7 +219,7 @@ Skip a job. This is similar to the skipStageSearchByIdentifier() method but for 
 
 Calling in Java:
 ```java
-pipeline.skipJob("my_job")
+pipeline.skipJobSearchByIdentifier ("my_job")
 ```
 ==> The job with name "my_job" is skipped
 </i>
@@ -251,7 +229,32 @@ pipeline.skipJob("my_job")
 ***
 ***
 ```java
-public void overrideVariable(String variableName, String value)
+public void skipTemplateSearchByIdentifier (String templateIdentifier)
+```
+<i>
+Skip a template. This is similar to the skipStageSearchByIdentifier() method but for templates.
+
+<u>Example</u>:
+<pre>
+  - template: templates/stages/template-stages.yml
+    parameters:
+      parameter_1: value_1
+      parameter_2: value_2
+</pre>
+
+Calling in Java:
+```java
+pipeline.skipTemplateSearchByIdentifier ("templates/stages/template-stages.yml")
+```
+==> The template with identifier "templates/stages/template-stages.yml" is skipped
+</i>
+<br>
+<br>
+
+***
+***
+```java
+public void overrideVariable (String variableName, String value)
 ```
 <i>
 Replace the value of a variable in the 'variables' section. Two constructions are possible:
@@ -271,7 +274,7 @@ variables:
 
 Calling in Java:
 ```java
-pipeline.overrideVariable("myVar", "myNewValue")
+pipeline.overrideVariable ("myVar", "myNewValue")
 ```
 results in resp.
 <pre>
@@ -292,7 +295,7 @@ This method does not replace variables defined in a Library (variable group).
 ***
 ***
 ```java
-public void overrideTemplateParameter(String parameterName, String value)
+public void overrideTemplateParameter (String parameterName, String value)
 ```
 <i>
 Replace the value of a parameter in a 'yamlTemplate' section.
@@ -306,7 +309,7 @@ Replace the value of a parameter in a 'yamlTemplate' section.
 
 To replace the version with a fixed value (2.1.0), call:
 ```java
-pipeline.overrideTemplateParameter("tag", "2.1.0"). 
+pipeline.overrideTemplateParameter ("tag", "2.1.0"). 
 ```        
 This results in:
 <pre>
@@ -320,7 +323,7 @@ This results in:
 ***
 ***
 ```java
-public void overrideParameterDefault(String parameterName, String defaultValue)
+public void overrideParameterDefault (String parameterName, String defaultValue)
 ```
 <i>
 Replace the default value of a parameter in the 'parameters' section.
@@ -338,7 +341,7 @@ Replace the default value of a parameter in the 'parameters' section.
 
 Calling in Java:
 ```java
-pipeline.overrideParameterDefault("myNumber", "4") 
+pipeline.overrideParameterDefault ("myNumber", "4") 
 ```
 results in:
 <pre>
@@ -357,7 +360,7 @@ results in:
 ***
 ***
 ```java
-public void overrideLiteral(String literalToReplace, String newValue, boolean replaceAll)
+public void overrideLiteral (String literalToReplace, String newValue, boolean replaceAll)
 ```
 <i>
 Override (or overwrite) any arbitrary string in the yaml file.
@@ -393,7 +396,7 @@ If _replaceAll_ is 'false' the first occurence of literal in both the main YAML 
 ***
 ***
 ```java
-public void overrideCurrentBranch(String newBranchName, boolean replaceAll)
+public void overrideCurrentBranch (String newBranchName, boolean replaceAll)
 ```
 <i>
 Replace the current branch with a given branch name.
@@ -406,7 +409,7 @@ and(succeeded(), eq(variables['Build.SourceBranchName'], 'main'))
 
 After applying
 ```java
-pipeline.overrideCurrentBranch("myFeature")
+pipeline.overrideCurrentBranch ("myFeature")
 ```
 it becomes:
 <pre>
@@ -422,12 +425,15 @@ If _replaceAll_ is 'false', the first occurence in both the main YAML and the te
 ***
 ***
 ```java
-public void setVariableSearchStepByIdentifier (String stepIdentifier, String variableName, String value, boolean insertBefore)
+public void setVariableSearchStepByDisplayName (String displayValue, 
+        String variableName, 
+        String value, 
+        boolean insertBefore)
 ```
 <i>
 This is method is used to manipulate variables at runtime. Just before or after a certain step - identified by its 
-displayName - is executed, the provided (new) value of the variable is set. Argument 'insertBefore' determines whether the
-value is set just before execution of a step, or just after execution of a step.
+displayName - is executed, the provided (new) value of the variable is set. Argument 'insertBefore' determines whether 
+the value is set just before execution of a step, or just after execution of a step.
 
 <u>Example</u>:
 <pre>
@@ -444,7 +450,7 @@ value is set just before execution of a step, or just after execution of a step.
 
 After applying
 ```java
-pipeline.setVariableBeforeStepSearchByDisplayName ("Azure App Service Deploy", "WebAppName", "newName")
+pipeline.setVariableSearchStepByDisplayName ("Azure App Service Deploy", "WebAppName", "newName")
 ```
 a script is inserted just before the AzureRMWebAppDeployment@4 (note, that 'insertBefore' is omitted; default is 'true').
 When running the pipeline, the value of "WebAppName" is set with the value "newName"
@@ -457,12 +463,15 @@ script: echo '##vso[task.setvariable variable=WebAppName]newName';
 ***
 ***
 ```java
-public void assertEqualsSearchStepByDisplayName (String displayValue, String variableName, String compareValue, boolean insertBefore)
+public void assertEqualsSearchStepByDisplayName (String displayValue, 
+        String variableName, 
+        String compareValue, 
+        boolean insertBefore)
 ```
 <i>
 The assertEqualsSearchStepByDisplayName() method validates a variable during runtime of the pipeline. If the 
 variable - with 'variableName' - is equal to 'compareValue', the pipeline aborts. The assertion is performed just 
-before the execution of the step, identifier by the displayName'.
+before the execution of the step, identified by the displayName.
 
 <u>Example</u>:
 After calling 

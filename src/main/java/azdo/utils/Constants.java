@@ -2,6 +2,8 @@ package azdo.utils;
 
 public class Constants {
     // *************************************** Types in YAML files ***************************************
+    // *************************************** Sections ***************************************
+    public static final String SECTION_VARIABLES = "variables";
     public static final String SECTION_PARAMETERS = "parameters";
     public static final String SECTION_STAGE = "stage";
     public static final String SECTION_STAGES = "stages";
@@ -11,8 +13,14 @@ public class Constants {
     public static final String SECTION_TASK = "task";
     public static final String SECTION_SCRIPT = "script";
     public static final String SECTION_STEPS = "steps";
-    public static final String IDENTIFIER_NAME = "name";
+    public static final String SECTION_TEMPLATE = "template";
 
+    // *************************************** Other ***************************************
+    public static final String IDENTIFIER_NAME = "name";
+    public static final String DISPLAY_NAME = "displayName";
+    public static final String CONDITION = "condition";
+    public static final String OPERATOR_EQUALS = "eq";
+    public static final String OPERATOR_NOT_EQUALS = "ne";
 
     // *************************************** Colors ***************************************
     public static final String RED = "\u001B[31m";

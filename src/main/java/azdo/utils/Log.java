@@ -17,14 +17,22 @@ public class Log
     }
 
     // Singleton with double-checked locking
-    public static Log getLogger() {
-        if (instance == null) {
-            synchronized (Log.class) {
-                if (instance == null) {
-                    instance = new Log();
-                }
-            }
-        }
+//    public static Log getLogger() {
+//        if (instance == null) {
+//            synchronized (Log.class) {
+//                if (instance == null) {
+//                    instance = new Log();
+//                }
+//            }
+//        }
+//        return instance;
+//    }
+
+    // Not the fastest Singleton because of the synchronized in each getLogger() call, but runs fine
+    // on all platforms (compared to a double-checked locking solution)
+    public static synchronized Log getLogger() {
+        if (instance == null)
+            instance = new Log();
         return instance;
     }
 

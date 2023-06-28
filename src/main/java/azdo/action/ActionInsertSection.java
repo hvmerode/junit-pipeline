@@ -71,12 +71,12 @@ public class ActionInsertSection implements Action {
                         logger.debug("entry.getValue(): {}", entry.getValue());
                         if (sectionType.equals(entry.getKey()) && sectionIdentifier.equals(entry.getValue())) {
                             if (insertBefore) {
-                                logger.info("Insert the new section before section \'{}\' with identifier \'{}\'", sectionType, sectionIdentifier);
+                                logger.info("Insert a new section before section \'{}\' with identifier \'{}\'", sectionType, sectionIdentifier);
                                 list.add(index, sectionToInsert);
                                 actionResult.actionExecuted = true;
                             }
                             else {
-                                logger.info("Insert the new section after section \'{}\' with identifier \'{}\'", sectionType, sectionIdentifier);
+                                logger.info("Insert a new section after section \'{}\' with identifier \'{}\'", sectionType, sectionIdentifier);
                                 list.add(index + 1, sectionToInsert);
                                 actionResult.actionExecuted = true;
                             }

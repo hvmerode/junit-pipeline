@@ -487,6 +487,21 @@ assertEqualsSearchStepByDisplayName ("Deploy the app", "myVar", "myValue", false
 
 ***
 ***
+```java
+public void assertFileNotExistsSearchStepByDisplayName (String displayValue,
+        String fileName,
+        boolean insertBefore)
+```
+<i>
+The assertFileNotExistsSearchStepByDisplayName() method validates the existence of a file on the Azure DevOps agent, 
+during runtime of the pipeline. If the file is not present or empty, the pipeline aborts. The assertion is performed just 
+before the execution of the step, identified by the displayName.
+</i>
+<br>
+<br>
+
+***
+***
 #### Start unit tests and retrieve the result ####
 The startPipeline method has a few representations:
 * _startPipeline()_ - Starts the pipeline with the default branch (in most cases, this is the _master_ branch).
@@ -507,6 +522,8 @@ pipeline.getRunResult()
 ***
 * Tests cannot be executed in parallel. Because the target repository is updated for each test, the next
   test must wait before the previous one is completed.
+* Some of the methods add a script task to the yaml. Currently this is a bash type of script, so it is assumed that the
+  Azure DevOps agent is a Linux agent.
 * Templates residing in external repositories (GitHub and other Azure DevOps projects) are taken into account, but:
   * The _ref_ parameter is not (yet) fully implemented. Only the format "refs/heads/branch" is supported; the pattern 
     "refs/tags/tag" is not yet supported .
@@ -533,6 +550,8 @@ pipeline.getRunResult()
 ### New features ##
 ***
 * Test on Linux; some filesystem methods in Utils may not work properly.
+* Scripts added in some methods must be Azure DevOps agent agnostic; this means that inserted tasks must either be
+  Linux or Windows scripts. Currently, Linux agents are assumed.
 * Add an assert step; check a variable on a certain value using a condition. Exit with 1 if the condition is not met.
   * This step can be added before or after a certain step using a pipeline method.
 * Log YAML line numbers in method _Utils.validatePipelineFile()_ according to [yaml-line-numbers.md](https://github.com/networknt/json-schema-validator/blob/master/doc/yaml-line-numbers.md)

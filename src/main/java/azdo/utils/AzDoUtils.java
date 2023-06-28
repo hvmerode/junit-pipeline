@@ -13,6 +13,8 @@ import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import static azdo.utils.Constants.DEMARCATION;
+
 public class AzDoUtils {
     private static Log logger = Log.getLogger();
     private static final String BRACKET_OPEN_NEXTLINE = "{\n";
@@ -403,6 +405,7 @@ public class AzDoUtils {
                 runResult.result = RunResult.Result.undetermined;
                 runResult.status = RunResult.Status.timeout;
             }
+            logger.info(DEMARCATION);
             logger.info("Buildnumber: {}", buildNumber);
             logger.info("Status: {}", runResult.status.toString());
             logger.info("Result: {}", runResult.result.toString());

@@ -540,21 +540,23 @@ pipeline.getRunResult()
 ### New features ##
 ***
 * Test on Linux; some filesystem methods in Utils may not work properly.
+* If a new AzDoPipeline object is created with a different .yml file, the pipeline in Azure DevOps still uses
+  the original .yml file; the pipeline must use the provided file.
 * Scripts added in some methods must be Azure DevOps agent agnostic; this means that inserted tasks must either be
   Linux or Windows scripts. Currently, Linux agents are assumed.
-* Add an assert step; check a variable on a certain value using a condition. Exit with 1 if the condition is not met.
-  * This step can be added before or after a certain step using a pipeline method.
 * Log YAML line numbers in method _Utils.validatePipelineFile()_ according to [yaml-line-numbers.md](https://github.com/networknt/json-schema-validator/blob/master/doc/yaml-line-numbers.md)
 * Add option to pipeline.mockStep to display a name (the inline script shows as CmdLine in Azure DevOps).
 * Add option to continue on error for all steps.
 * Possibility to replace a step with a yamlTemplate file (the yamlTemplate file could serve as a mock file).
 * Possibility to replace a step with another step.
 * Add unit tests to the junit-pipeline code itself.
-* Check/assert output variables of a step.
 * Add methods to add, update or remove conditions in stages or jobs. Use the _overrideLiteral_ method, if possible.
 * Support "refs/tags/tag" for external repositories with templates.
 * Check whether the output pipeline is a valid pipeline (valid yaml and valid Azure DevOps pipeline).
   This is a 'nice-to-have'.
+* ~~Add an assert step; check a variable on a certain value using a condition. Exit with 1 if the condition is not met.~~
+  * ~~This step can be added before or after a certain step using a pipeline method.~~
+* ~~Check/assert output variables of a step.~~
 
 ### Solved ##
 ***

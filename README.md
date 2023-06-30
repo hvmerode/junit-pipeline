@@ -16,7 +16,7 @@ task is replaced by a script. Example code:
 ```java
 String inlineScript = "echo \"This is a mock script\"\n" +
 "echo \"Mock-and-roll\"";
-pipeline.mockStep("AWSShellScript@1", inlineScript);
+pipeline.mockStepSearchByIdentifier("AWSShellScript@1", inlineScript);
 ```
 To test the manipulated script, execute it like this:
 ```java
@@ -54,9 +54,9 @@ The properties file is located in src/main/resources. It contains the properties
 * __target.base.path.external__ - The location (local directory) containing external Git repositories; this location
   is used communicate with the Azure DevOps test project.
 * __source.repository.name__ - The name of the main repository
-* __target.repository.name__ - The name of the repository used in the Git repository used for testing. Example: If a source repository is used 
-  with the name "__myrepo__", the __target.repository.name__ used for testing the pipeline can be called "__myrepo-test__".
-  _target.repository.name_ may not be equal to _source.repository.name_. 
+* __target.repository.name__ - The name of the repository used in the Git repository used for testing. Example: If a source repository 
+ with the name "__myrepo__" is used, the __target.repository.name__ used for testing the pipeline can be called "__myrepo-test__".
+  _target.repository.name_ should preferably not be equal to _source.repository.name_. 
 * __azdo.user__ - User used in the Azure DevOps API calls. Can be the default name 'UserWithToken'.
 * __azdo.pat__ - The PAT (Personal Access Token) used in the Azure DevOps API calls.\
   See [Use personal access tokens](https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops&tabs=Windows) how to create a PAT.\
@@ -96,7 +96,8 @@ Example:
 <br></br>
 ### How to use it ##
 ***
-This repository already contains a sample unit test file called _PipelineUnit.java_. We take this file as an example.  
+This repository already contains a sample unit test file called _PipelineUnit.java_. We take this file as an example.
+If you want to check out a demo project, please take a look at '[hello-pipeline](https://github.com/hvmerode/hello-pipeline)'.
 <br></br>
 
 #### Create  ___AzDoPipeline___ object ####
@@ -105,7 +106,8 @@ be instantiated. Its constructor requires two arguments, a property file and the
 ```java
 AzDoPipeline pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/pipeline_test.yml");
 ```
-The _junit_pipeline_my.properties_ file in this example contains my personal properties.
+The _junit_pipeline_my.properties_ file in this example contains my personal properties, but you can use 
+the _junit_pipeline.properties_ file in the _resources_ folder and customize it to your needs.\
 The file _./pipeline/pipeline_test.yml_ is the main pipeline file. It can be stored in any folder of the code repository.
 Its path is relative to the root of the repository. The main pipeline file may contain references to other yamlTemplate files
 in the repository. The __junit-pipeline__ frameworks takes these templates into account in pipeline manipulation.
@@ -115,7 +117,7 @@ in the repository. The __junit-pipeline__ frameworks takes these templates into 
 #### Hooks ####
 Before the pipeline code is pushed to the Azure DevOps unit test project, and started, it is possible to execute
 custom code. This code is provided as a list of 'hooks'. The unit test file _PipelineUnit.java_ shows an example; _test 3_.\
-This repository also contains a few custom hooks:
+This repository also contains a few standard hooks:
 * _DeleteJUnitPipelineDependency_ - Deletes the __junit-pipeline__ dependency from the _pom.xml_, before it is pushed to the
 Azure DevOps unit test project.
 * _DeleteTargetFile_ - Deletes a single file before it is pushed to the Azure DevOps unit test project. It can be used to
@@ -198,7 +200,7 @@ Calling in Java:
 ```java
 pipeline.skipStageSearchByIdentifier ("my_stage")
 ```
-==> The stage with name "my_stage" is skipped
+==> The stage with identifier "my_stage" is skipped
 </i>
 <br>
 <br>
@@ -221,7 +223,7 @@ Calling in Java:
 ```java
 pipeline.skipJobSearchByIdentifier ("my_job")
 ```
-==> The job with name "my_job" is skipped
+==> The job with identifier "my_job" is skipped
 </i>
 <br>
 <br>
@@ -257,15 +259,8 @@ pipeline.skipTemplateSearchByIdentifier ("templates/stages/template-stages.yml")
 public void overrideVariable (String variableName, String value)
 ```
 <i>
-Replace the value of a variable in the 'variables' section. Two constructions are possible:
+Replace the value of a variable in the 'variables' section:
 
-<u>Construction 1</u>:
-<pre>
-variables:
-myVar : myValue
-</pre>
-
-<u>Construction 2</u>:
 <pre>
 variables:
 - name: myVar
@@ -276,12 +271,7 @@ Calling in Java:
 ```java
 pipeline.overrideVariable ("myVar", "myNewValue")
 ```
-results in resp.
-<pre>
-variables:
-myVar : myNewValue
-</pre>
-
+results in:
 <pre>
 variables:
 - name: myVar
@@ -470,17 +460,32 @@ public void assertEqualsSearchStepByDisplayName (String displayValue,
 ```
 <i>
 The assertEqualsSearchStepByDisplayName() method validates a variable during runtime of the pipeline. If the 
-variable - with 'variableName' - is equal to 'compareValue', the pipeline aborts. The assertion is performed just 
-before the execution of the step, identified by the displayName.
+value of the variable - with 'variableName' - is equal to 'compareValue', the pipeline aborts. 
+The assertion is performed just before or after the execution of the step, identified by the 'displayName'.
 
-<u>Example</u>:
+<u>Example</u>:\
 After calling 
 ```java
-pipeline.assertEqualsSearchStepByDisplayName ("Deploy the app", "myVar", "myValue")
+pipeline.assertEqualsSearchStepByDisplayName ("Deploy the app", "myVar", "123")
 ```
-the variable 'myVar' value is compared with 'myValue', just before the step with displayName 
+the value of variable 'myVar' is compared with '123', just before the step with displayName 
 "Deploy the app" is executed. If you want to validate just after execution of the step, call
-assertEqualsSearchStepByDisplayName ("Deploy the app", "myVar", "myValue", false). 
+assertEqualsSearchStepByDisplayName ("Deploy the app", "myVar", "123", false). 
+</i>
+<br>
+<br>
+
+***
+***
+```java
+public void assertFileNotExistsSearchStepByDisplayName (String displayValue,
+        String fileName,
+        boolean insertBefore)
+```
+<i>
+The assertFileNotExistsSearchStepByDisplayName() method validates the existence of a file on the Azure DevOps agent, 
+during runtime of the pipeline. If the file is not present or empty, the pipeline aborts. The assertion is performed just 
+before or after the execution of the step, identified by the 'displayName'.
 </i>
 <br>
 <br>
@@ -507,6 +512,8 @@ pipeline.getRunResult()
 ***
 * Tests cannot be executed in parallel. Because the target repository is updated for each test, the next
   test must wait before the previous one is completed.
+* Some of the methods add a script task to the yaml. Currently this is a bash type of script, so it is assumed that the
+  Azure DevOps agent is a Linux agent.
 * Templates residing in external repositories (GitHub and other Azure DevOps projects) are taken into account, but:
   * The _ref_ parameter is not (yet) fully implemented. Only the format "refs/heads/branch" is supported; the pattern 
     "refs/tags/tag" is not yet supported .
@@ -533,19 +540,23 @@ pipeline.getRunResult()
 ### New features ##
 ***
 * Test on Linux; some filesystem methods in Utils may not work properly.
-* Add an assert step; check a variable on a certain value using a condition. Exit with 1 if the condition is not met.
-  * This step can be added before or after a certain step using a pipeline method.
+* If a new AzDoPipeline object is created with a different .yml file, the pipeline in Azure DevOps still uses
+  the original .yml file; the pipeline must use the provided file.
+* Scripts added in some methods must be Azure DevOps agent agnostic; this means that inserted tasks must either be
+  Linux or Windows scripts. Currently, Linux agents are assumed.
 * Log YAML line numbers in method _Utils.validatePipelineFile()_ according to [yaml-line-numbers.md](https://github.com/networknt/json-schema-validator/blob/master/doc/yaml-line-numbers.md)
 * Add option to pipeline.mockStep to display a name (the inline script shows as CmdLine in Azure DevOps).
 * Add option to continue on error for all steps.
 * Possibility to replace a step with a yamlTemplate file (the yamlTemplate file could serve as a mock file).
 * Possibility to replace a step with another step.
 * Add unit tests to the junit-pipeline code itself.
-* Check/assert output variables of a step.
 * Add methods to add, update or remove conditions in stages or jobs. Use the _overrideLiteral_ method, if possible.
 * Support "refs/tags/tag" for external repositories with templates.
 * Check whether the output pipeline is a valid pipeline (valid yaml and valid Azure DevOps pipeline).
   This is a 'nice-to-have'.
+* ~~Add an assert step; check a variable on a certain value using a condition. Exit with 1 if the condition is not met.~~
+  * ~~This step can be added before or after a certain step using a pipeline method.~~
+* ~~Check/assert output variables of a step.~~
 
 ### Solved ##
 ***

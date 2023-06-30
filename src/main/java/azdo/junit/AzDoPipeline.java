@@ -35,7 +35,8 @@ public class AzDoPipeline {
     private static final String EXCLUDEFILESLIST = "\\excludedfileslist.txt";
 
     @SuppressWarnings("java:S1192")
-    public AzDoPipeline(String propertyFile, String pipelineFile) {
+    public AzDoPipeline(String propertyFile,
+                        String pipelineFile) {
         logger.debug("==> Object: AzDoPipeline");
         logger.debug("propertyFile {}:", propertyFile);
         logger.debug("pipelineFile {}:", pipelineFile);
@@ -126,13 +127,17 @@ public class AzDoPipeline {
     public void startPipeline(String branchName) throws IOException {
         startPipeline(branchName, null, false);
     }
-    public void startPipeline(String branchName, boolean dryRun) throws IOException {
+    public void startPipeline(String branchName,
+                              boolean dryRun) throws IOException {
         startPipeline(branchName, null, dryRun);
     }
-    public void startPipeline(String branchName, List<Hook> hooks) throws IOException {
+    public void startPipeline(String branchName,
+                              List<Hook> hooks) throws IOException {
         startPipeline(branchName, hooks, false);
     }
-    public void startPipeline(String branchName, List<Hook> hooks, boolean dryRun) throws IOException {
+    public void startPipeline(String branchName,
+                              List<Hook> hooks,
+                              boolean dryRun) throws IOException {
         logger.debug("==> Method: AzDoPipeline.startPipeline");
         logger.debug("branchName: {}", branchName);
         logger.debug("dryRun {}:", dryRun);
@@ -335,7 +340,8 @@ public class AzDoPipeline {
      can be used to skip the stage ('pool', if you want).
      @see  azdo.action.ActionDeleteSectionByProperty
      ******************************************************************************************/
-    public void skipStageSearchByProperty (String property, String propertyValue) {
+    public void skipStageSearchByProperty (String property,
+                                           String propertyValue) {
         logger.debug("==> Method: AzDoPipeline.skipStageSearchByProperty");
         logger.debug("property: {}", property);
         logger.debug("propertyValue: {}", propertyValue);
@@ -446,7 +452,8 @@ public class AzDoPipeline {
      This is the generalized version of all other skip-methods.
      @see  azdo.action.ActionDeleteSectionByProperty
      ******************************************************************************************/
-    public void skipSectionSearchByTypeAndIdentifier (String sectionType, String sectionIdentifier) {
+    public void skipSectionSearchByTypeAndIdentifier (String sectionType,
+                                                      String sectionIdentifier) {
         logger.debug("==> Method: AzDoPipeline.skipSectionSearchByTypeAndIdentifier");
         logger.debug("sectionType: {}", sectionType); // SECTION_STAGE, SECTION_JOB, SECTION_TASK
         logger.debug("sectionIdentifier: {}", sectionIdentifier);
@@ -462,7 +469,9 @@ public class AzDoPipeline {
      example SECTION_JOB or SECTION_TASK). Searching can be done using any property of the section.
      @see  azdo.action.ActionDeleteSectionByProperty
      ******************************************************************************************/
-    public void skipSectionSearchByProperty (String sectionType, String property, String propertyValue) {
+    public void skipSectionSearchByProperty (String sectionType,
+                                             String property,
+                                             String propertyValue) {
         logger.debug("==> Method: AzDoPipeline.skipSectionSearchByProperty");
         logger.debug("sectionType: {}", sectionType);
         logger.debug("property: {}", property);
@@ -478,10 +487,13 @@ public class AzDoPipeline {
      Inserts a yaml section (step) before or after a given step.
      @see azdo.action.ActionInsertSection
      ******************************************************************************************/
-    public void insertSectionSearchStepByIdentifier (String stepIdentifier, Map<String, Object> stepToInsert) {
+    public void insertSectionSearchStepByIdentifier (String stepIdentifier,
+                                                     Map<String, Object> stepToInsert) {
         insertSectionSearchStepByIdentifier (stepIdentifier, stepToInsert, true); // Default is to insert before a step
     }
-    public void insertSectionSearchStepByIdentifier (String stepIdentifier, Map<String, Object> stepToInsert, boolean insertBefore) {
+    public void insertSectionSearchStepByIdentifier (String stepIdentifier,
+                                                     Map<String, Object> stepToInsert,
+                                                     boolean insertBefore) {
         logger.debug("==> Method: AzDoPipeline.insertSectionSearchStepByIdentifier");
         logger.debug("stepIdentifier: {}", stepIdentifier); // Can be a Maven@3 task
         logger.debug("stepToInsert: {}", stepToInsert);
@@ -509,7 +521,8 @@ public class AzDoPipeline {
 
      This method does not replace variables defined in a Library.
      ******************************************************************************************/
-    public void overrideVariable (String variableName, String value) {
+    public void overrideVariable (String variableName,
+                                  String value) {
         logger.debug("==> Method: AzDoPipeline.overrideVariable");
         logger.debug("variableName: {}", variableName);
         logger.debug("value: {}", value);
@@ -529,7 +542,9 @@ public class AzDoPipeline {
      This step is found using the "stepIdentifier". The value of "stepIdentifier" is
      for example, "Maven@03". The methods searches for the first instance of a "Maven@03" task.
      ******************************************************************************************/
-    public void setVariableSearchStepByIdentifier (String stepIdentifier, String variableName, String value) {
+    public void setVariableSearchStepByIdentifier (String stepIdentifier,
+                                                   String variableName,
+                                                   String value) {
         setVariableSearchStepByIdentifier (stepIdentifier, variableName, value, true); // Default is to set the value before a step
     }
 
@@ -557,10 +572,15 @@ public class AzDoPipeline {
      Set the variable at runtime, just as the previous method, but search the step using the
      displayName. The step can be of any type "step", SECTION_TASK, or SECTION_SCRIPT.
      ******************************************************************************************/
-    public void setVariableSearchStepByDisplayName (String displayValue, String variableName, String value) {
+    public void setVariableSearchStepByDisplayName (String displayValue,
+                                                    String variableName,
+                                                    String value) {
         setVariableSearchStepByDisplayName (displayValue, variableName, value, true); // Default is to set the value before a step
     }
-    public void setVariableSearchStepByDisplayName (String displayValue, String variableName, String value, boolean insertBefore) {
+    public void setVariableSearchStepByDisplayName (String displayValue,
+                                                    String variableName,
+                                                    String value,
+                                                    boolean insertBefore) {
         logger.debug("==> Method: AzDoPipeline.setVariableSearchStepByDisplayName");
         logger.debug("displayValue: {}", displayValue); // Can be something like "Execute this step"
         logger.debug("variableName: {}", variableName);
@@ -595,7 +615,8 @@ public class AzDoPipeline {
        parameters:
          tag: 2.1.0
      ******************************************************************************************/
-    public void overrideTemplateParameter(String parameterName, String value) {
+    public void overrideTemplateParameter(String parameterName,
+                                          String value) {
         logger.debug("==> Method: AzDoPipeline.overrideTemplateParameter");
         logger.debug("parameterName: {}", parameterName);
         logger.debug("value: {}", value);
@@ -635,7 +656,8 @@ public class AzDoPipeline {
        - 8
        - 16
      ******************************************************************************************/
-    public void overrideParameterDefault (String parameterName, String defaultValue) {
+    public void overrideParameterDefault (String parameterName,
+                                          String defaultValue) {
         logger.debug("==> Method: AzDoPipeline.overrideParameterDefault");
         logger.debug("parameterName: {}", parameterName);
         logger.debug("defaultValue: {}", defaultValue);
@@ -668,7 +690,9 @@ public class AzDoPipeline {
          appName: samplewebapp
      ******************************************************************************************/
 
-    public void overrideLiteral (String literalToReplace, String newValue, boolean replaceAll) {
+    public void overrideLiteral (String literalToReplace,
+                                 String newValue,
+                                 boolean replaceAll) {
         logger.debug("==> Method: AzDoPipeline.overrideLiteral");
         logger.debug("literalToReplace: {}", literalToReplace);
         logger.debug("value: {}", newValue);
@@ -693,7 +717,8 @@ public class AzDoPipeline {
      if replaceAll is true, it replaces all occurences.
      If replaceAll is false, it only replaces the first occurence.
      ******************************************************************************************/
-    public void overrideCurrentBranch (String newBranchName, boolean replaceAll){
+    public void overrideCurrentBranch (String newBranchName,
+                                       boolean replaceAll) {
         logger.debug("==> Method: AzDoPipeline.overrideCurrentBranch");
         logger.debug("newBranchName: {}", newBranchName);
         logger.debug("replaceAll: {}", replaceAll);
@@ -714,7 +739,8 @@ public class AzDoPipeline {
      Replace the content of a step with an inline script. The step is searched using the
      'stepIdentifier', for example "AWSShellScript@1"
      ******************************************************************************************/
-    public void  mockStepSearchByIdentifier (String stepIdentifier, String inlineScript){
+    public void  mockStepSearchByIdentifier (String stepIdentifier,
+                                             String inlineScript){
         logger.debug("==> Method: YamlDocument. mockStepSearchByIdentifier");
         logger.debug("stepIdentifier: {}", stepIdentifier); // For example AWSShellScript@1
         logger.debug("inlineScript: {}", inlineScript);
@@ -732,7 +758,7 @@ public class AzDoPipeline {
      the pipeline. If the variable - with 'variableName' - is equal to 'compareValue', the
      pipeline aborts.
      The assertion is performed just before the execution of the step, identifier by the
-     displayName'.
+     'displayName'.
 
      Example:
      Calling assertEqualsSearchStepByDisplayName ("Deploy the app", "myVar", "myValue") means
@@ -741,45 +767,84 @@ public class AzDoPipeline {
      If you want to validate just after execution of the step, call
      assertEqualsSearchStepByDisplayName ("Deploy the app", "myVar", "myValue", false)
      ******************************************************************************************/
-    public void assertEqualsSearchStepByDisplayName (String displayValue, String variableName, String compareValue) {
+    public void assertEqualsSearchStepByDisplayName (String displayValue,
+                                                     String variableName,
+                                                     String compareValue) {
         assertEqualsSearchStepByDisplayName (displayValue, variableName, compareValue, true); // Default is to insert before a step
     }
 
-    public void assertEqualsSearchStepByDisplayName (String displayValue, String variableName, String compareValue, boolean insertBefore) {
+    public void assertEqualsSearchStepByDisplayName (String displayValue,
+                                                     String variableName,
+                                                     String compareValue,
+                                                     boolean insertBefore) {
         logger.debug("==> Method: AzDoPipeline.assertEqualsSearchStepByDisplayName");
         logger.debug("displayValue: {}", displayValue); // Can be something like "Execute this step"
         logger.debug("variableName: {}", variableName);
         logger.debug("compareValue: {}", compareValue);
         logger.debug("insertBefore: {}", insertBefore);
 
-        // Create a script that compares the value of a variable
-        Map<String, Object> stepToInsert = constructAssertStep(SECTION_VARIABLES, variableName, compareValue, OPERATOR_EQUALS);
+        assertVariableSearchStepByDisplayName (displayValue, variableName,compareValue, true, insertBefore);
+    }
 
-        // Call the performAction method; find the SECTION_TASK section with the displayName
-        // Other arguments besides SECTION_TASK and SECTION_SCRIPT are: powershell | pwsh | bash | checkout | download | downloadBuild | getPackage | publish | reviewApp
-        // These are not implemented
-        ActionInsertSectionByProperty actionTask = new ActionInsertSectionByProperty(SECTION_TASK, DISPLAY_NAME, displayValue, stepToInsert, insertBefore);
-        yamlDocumentEntryPoint.performAction (actionTask, SECTION_TASK, "");
+    /******************************************************************************************
+     The assertNotEqualsSearchStepByDisplayName() method validates a variable during runtime of
+     the pipeline. If the variable - with 'variableName' - is not equal to 'compareValue', the
+     pipeline aborts.
+     The assertion is performed just before the execution of the step, identifier by the
+     'displayName'.
+     ******************************************************************************************/
+    public void assertNotEqualsSearchStepByDisplayName (String displayValue,
+                                                        String variableName,
+                                                        String compareValue) {
+        assertNotEqualsSearchStepByDisplayName (displayValue, variableName, compareValue, true); // Default is to insert before a step
+    }
 
-        // It can even be a SECTION_SCRIPT with that displayName
-        ActionInsertSectionByProperty actionScript = new ActionInsertSectionByProperty(SECTION_SCRIPT, DISPLAY_NAME, displayValue, stepToInsert, insertBefore);
-        yamlDocumentEntryPoint.performAction (actionScript, SECTION_SCRIPT, "");
+    public void assertNotEqualsSearchStepByDisplayName (String displayValue,
+                                                        String variableName,
+                                                        String compareValue,
+                                                        boolean insertBefore) {
+        logger.debug("==> Method: AzDoPipeline.assertNotEqualsSearchStepByDisplayName");
+        logger.debug("displayValue: {}", displayValue); // Can be something like "Execute this step"
+        logger.debug("variableName: {}", variableName);
+        logger.debug("compareValue: {}", compareValue);
+        logger.debug("insertBefore: {}", insertBefore);
+
+        assertVariableSearchStepByDisplayName (displayValue, variableName,compareValue, false, insertBefore);
     }
 
     /******************************************************************************************
      Same as assertEqualsSearchStepByDisplayName() but it is compared to an empty value
      ******************************************************************************************/
-    public void assertEmptySearchStepByDisplayName (String displayValue, String variableName) {
+    public void assertEmptySearchStepByDisplayName (String displayValue,
+                                                    String variableName) {
         assertEmptySearchStepByDisplayName (displayValue, variableName, true); // Default is to insert before a step
     }
-    public void assertEmptySearchStepByDisplayName (String displayValue, String variableName, boolean insertBefore) {
+    public void assertEmptySearchStepByDisplayName (String displayValue,
+                                                    String variableName,
+                                                    boolean insertBefore) {
         logger.debug("==> Method: AzDoPipeline.assertEmptySearchStepByDisplayName");
         logger.debug("displayValue: {}", displayValue); // Can be something like "Execute this step"
         logger.debug("variableName: {}", variableName);
         logger.debug("insertBefore: {}", insertBefore);
 
+        assertVariableSearchStepByDisplayName (displayValue, variableName,"", true, insertBefore);
+    }
+
+    /******************************************************************************************
+     Private method used for the previous assert-if-variable-has-value methods.
+     ******************************************************************************************/
+    private void assertVariableSearchStepByDisplayName (String displayValue,
+                                                       String variableName,
+                                                       String compareValue,
+                                                       boolean equals,
+                                                       boolean insertBefore) {
+
         // Create a script that compares the value of a variable
-        Map<String, Object> stepToInsert = constructAssertStep(SECTION_VARIABLES, variableName, "", OPERATOR_EQUALS);
+        Map<String, Object> stepToInsert;
+        if (equals)
+            stepToInsert = constructAssertStep(SECTION_VARIABLES, variableName, compareValue, OPERATOR_EQUALS);
+        else
+            stepToInsert = constructAssertStep(SECTION_VARIABLES, variableName, compareValue, OPERATOR_NOT_EQUALS);
 
         // Call the performAction method; find the SECTION_TASK with the displayName
         // Other arguments besides SECTION_TASK and SECTION_SCRIPT are: powershell | pwsh | bash | checkout | download | downloadBuild | getPackage | publish | reviewApp
@@ -793,9 +858,60 @@ public class AzDoPipeline {
     }
 
     /******************************************************************************************
+     The assertFileNotExistsSearchStepByDisplayName() method validates at runtime the presence
+     of a certain file on the Azure DevOps agent. If the file does not exists, the pipeline
+     exists with an error.
+     ******************************************************************************************/
+    public void assertFileNotExistsSearchStepByDisplayName (String displayValue,
+                                                            String fileName) {
+        assertFileNotExistsSearchStepByDisplayName (displayValue, fileName, true); // Default is to insert before a step
+    }
+
+    public void assertFileNotExistsSearchStepByDisplayName (String displayValue,
+                                                            String fileName,
+                                                            boolean insertBefore) {
+        logger.debug("==> Method: AzDoPipeline.assertFileNotExistsSearchStepByDisplayName");
+        logger.debug("displayValue: {}", displayValue); // Can be something like "Execute this step"
+        logger.debug("fileName: {}", fileName);
+        logger.debug("insertBefore: {}", insertBefore);
+
+        // Create a script that checks on the existence of a file
+        Map<String, Object> assertStep = new LinkedHashMap<>();
+
+        // script
+        String echo = String.format("echo \"AssertFileNotExists: file '%s' is not present (or empty) on the Azure DevOps Agent\"\n", fileName);
+        String s = "if [ ! -f " + fileName + " ]; then\n" +
+                "    " + echo +
+                "    exit 1\n" +
+                "fi\n" +
+                "if [ ! -s " + fileName + " ]; then\n" +
+                "    " + echo +
+                "    exit 1\n" +
+                "fi\n";
+        assertStep.put(SECTION_SCRIPT, s);
+
+        // displayName
+        s = "AssertFileNotExists: " + fileName;
+        assertStep.put(DISPLAY_NAME, s);
+
+        // Call the performAction method; find the SECTION_TASK section with the displayName
+        // Other arguments besides SECTION_TASK and SECTION_SCRIPT are: powershell | pwsh | bash | checkout | download | downloadBuild | getPackage | publish | reviewApp
+        // These are not implemented
+        ActionInsertSectionByProperty actionTask = new ActionInsertSectionByProperty(SECTION_TASK, DISPLAY_NAME, displayValue, assertStep, insertBefore);
+        yamlDocumentEntryPoint.performAction (actionTask, SECTION_TASK, "");
+
+        // It can even be a SECTION_SCRIPT with that displayName
+        ActionInsertSectionByProperty actionScript = new ActionInsertSectionByProperty(SECTION_SCRIPT, DISPLAY_NAME, displayValue, assertStep, insertBefore);
+        yamlDocumentEntryPoint.performAction (actionScript, SECTION_SCRIPT, "");
+    }
+
+    /******************************************************************************************
      Construct a step with a condition that validates a variable
      ******************************************************************************************/
-    private Map<String, Object> constructAssertStep (String identifierType, String identifier, String compareValue, String operator) {
+    private Map<String, Object> constructAssertStep (String identifierType,
+                                                     String identifier,
+                                                     String compareValue,
+                                                     String operator) {
         Map<String, Object> assertStep = new LinkedHashMap<>();
 
         String operatorRepresentation = "";
@@ -808,9 +924,9 @@ public class AzDoPipeline {
 
         // script
         if (SECTION_VARIABLES.equals(identifierType))
-            s = String.format("echo AssertEquals: variable '%s' with value '$(%s)' is %s to '%s'\n", identifier, identifier, operatorRepresentation, compareValue);
+            s = String.format("echo \"AssertEquals: variable '%s' with value '$(%s)' is %s to '%s'\"\n", identifier, identifier, operatorRepresentation, compareValue);
         if (SECTION_PARAMETERS.equals(identifierType))
-            s = String.format("echo AssertEquals: parameter '%s' with value '${{ parameters.%s }}' is %s to '%s'\n", identifier, identifier, operatorRepresentation, compareValue);
+            s = String.format("echo \"AssertEquals: parameter '%s' with value '${{ parameters.%s }}' is %s to '%s'\"\n", identifier, identifier, operatorRepresentation, compareValue);
         s = s + "exit 1";
         assertStep.put(SECTION_SCRIPT, s);
 
@@ -835,6 +951,5 @@ public class AzDoPipeline {
     /******************************************************************************************
      TODO; Add methods:
      setVariableSearchTemplateByIdentifier (String templateIdentifier, String variableName, String value, boolean insertBefore)
-     setVariableSearchStepByDisplayName ()
     ******************************************************************************************/
 }

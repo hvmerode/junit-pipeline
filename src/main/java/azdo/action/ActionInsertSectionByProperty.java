@@ -82,12 +82,12 @@ public class ActionInsertSectionByProperty  implements Action {
                         if (property.equals(entry.getKey()) && propertyValue.equals(entry.getValue()) && foundType) {
                             // Found the right property with the correct value
                             if (insertBefore) {
-                                logger.info("Insert the new section before section \'{}\' with property \'{}\': \'{}\'", sectionType, property, propertyValue);
+                                logger.info("Insert a new section before section \'{}\' with property \'{}\': \'{}\'", sectionType, property, propertyValue);
                                 list.add(index, sectionToInsert);
                                 actionResult.actionExecuted = true;
                             }
                             else {
-                                logger.info("Insert the new section after section \'{}\' with property \'{}\': \'{}\'", sectionType, property, propertyValue);
+                                logger.info("Insert a new section after section \'{}\' with property \'{}\': \'{}\'", sectionType, property, propertyValue);
                                 list.add(index + 1, sectionToInsert);
                                 actionResult.actionExecuted = true;
                             }

@@ -85,6 +85,9 @@ public class PipelineUnit {
             pipeline.skipJobSearchByIdentifier("Job_XD");
             pipeline.setVariableSearchStepByIdentifier ("AWSShellScript@1", "aws_connection", "42");
             pipeline.setVariableSearchStepByDisplayName ("ExecuteScriptStage job_xc script", "myVar", "myReplacedValue");
+            pipeline.assertNotEqualsSearchStepByDisplayName("ExecuteScriptStage job_xa script", "jobVar", "replacedJobVar");
+            pipeline.assertEqualsSearchStepByDisplayName("ExecuteScriptStage job_xa script", "jobVar", "replacedJobVar");
+            pipeline.assertEmptySearchStepByDisplayName("ExecuteScriptStage job_xa script", "jobVar");
 
             // Create a hook to perform an action just before starting the pipeline
             class TestHook extends Hook {

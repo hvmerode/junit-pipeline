@@ -342,6 +342,45 @@ public class Utils {
         logger.debug(DEMARCATION);
     }
 
+    public static String relativize (String base, String fileName) {
+        logger.debug("==> Method: Utils.relativize");
+        logger.debug("base: {}", base);
+        logger.debug("fileName: {}", fileName);
+
+        String relative = "";
+        File baseFile = new File(base);
+        File fileNameFile = new File(fileName);
+        Path basePath = baseFile.toPath();
+        basePath = basePath.normalize();
+        Path fileNamePath = fileNameFile.toPath();
+        fileNamePath = fileNamePath.normalize();
+
+        Path newPath = fileNamePath;
+        try {
+            newPath = basePath.relativize(fileNamePath);
+            newPath = newPath.normalize();
+        }
+        catch (IllegalArgumentException e) {}
+
+        String newPathToString = newPath.toString();
+        newPathToString = newPathToString.replaceAll("\\\\","/");
+
+        logger.debug("newPath: {}", newPathToString);
+        return newPathToString;
+    }
+
+    public static String getFileNameWithoutPathAndExtension (String file, boolean removeAllExtensions) {
+        if (file == null || file.isEmpty()) {
+            return file;
+        }
+
+        File f = new File(file);
+        file = f.getName(); // Name with extension
+
+        String extPattern = "(?<!^)[.]" + (removeAllExtensions ? ".*" : "[^.]*$");
+        return file.replaceAll(extPattern, "");
+    }
+
     public static void wait(int ms)
     {
         try

@@ -61,8 +61,6 @@ The properties file is located in src/main/resources. It contains the properties
 * __azdo.pat__ - The PAT (Personal Access Token) used in the Azure DevOps API calls.\
   See [Use personal access tokens](https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops&tabs=Windows) how to create a PAT.\
   Make sure this PAT is authorized to clone repositories in other Azure DevOps projects in the organization (other than the test project). 
-* __repository.pipeline.path__ - The location of the main pipeline file in the repository (both in source and target).
-  It is used to assign the pipeline file when creating a new pipeline in Azure DevOps.
 * __git.commit.pattern__ - Defines the type of files pushed to the local- and remote test repo (this is a subset of the files from the main repo)
 * __pipelines.api__ - Name of the Azure DevOps base Pipeline API; do not change this value. 
 * __pipelines.api.runs__ - Name of a specific Azure DevOps Pipeline API; do not change this value.
@@ -89,7 +87,7 @@ Example:
 <dependency>
   <groupId>io.github.hvmerode</groupId>
   <artifactId>junit-pipeline</artifactId>
-  <version>1.1.0</version>
+  <version>1.1.1</version>
 </dependency>
 ```
 

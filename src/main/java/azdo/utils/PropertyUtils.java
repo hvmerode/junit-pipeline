@@ -24,7 +24,6 @@ public class PropertyUtils {
     private String targetBasePathExternal;
     private String targetOrganization;
     private String targetProject;
-    private String pipelinePathRepository;
     private String uriTargetRepository;
     private String azdoUser;
     private String azdoPat;
@@ -83,7 +82,6 @@ public class PropertyUtils {
             targetPath = getStringProperty(properties, "target.path", targetPath);
             targetBasePathExternal = getStringProperty(properties, "target.base.path.external", targetBasePathExternal);
             targetRepositoryName = getStringProperty(properties, "target.repository.name", targetRepositoryName);
-            pipelinePathRepository = getStringProperty(properties, "repository.pipeline.path", pipelinePathRepository);
             azdoUser = getStringProperty(properties, "azdo.user", azdoUser, false);
             azdoPat = getStringProperty(properties, "azdo.pat", azdoPat, false);
             targetExludeList = getStringProperty(properties, "target.excludelist", targetExludeList);
@@ -204,7 +202,6 @@ public class PropertyUtils {
     public String getSourceBasePathExternal() { return sourceBasePathExternal; }
     public String getTargetPath() { return targetPath; }
     public String getTargetBasePathExternal() { return targetBasePathExternal; }
-    public String getPipelinePathRepository() { return pipelinePathRepository; }
     public String getUriTargetRepository() { return uriTargetRepository; }
     public String getAzdoEndpoint() { return azdoEndpoint; }
     public String getTargetExludeList() { return targetExludeList; }

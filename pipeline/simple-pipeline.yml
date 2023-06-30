@@ -1,0 +1,14 @@
+# Build numbering format
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+trigger: none
+
+stages:
+  - stage: test
+    jobs:
+      - job: test
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - script: |
+              echo 'This is a TEST'

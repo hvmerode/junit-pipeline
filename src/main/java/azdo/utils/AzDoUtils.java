@@ -186,6 +186,7 @@ public class AzDoUtils {
                                                     String azdoPat,
                                                     String pipelinePath,
                                                     String pipelineName,
+                                                    String repositoryName,
                                                     String azdoEndpoint,
                                                     String azdoPipelinesApi,
                                                     String azdoPipelinesApiVersion,
@@ -193,9 +194,11 @@ public class AzDoUtils {
         logger.debug("==> Method: AzDoUtils.createPipelineIfNotExists");
         logger.debug("pipelinePath: {}", pipelinePath);
         logger.debug("pipelineName: {}", pipelineName);
+        logger.debug("repositoryName: {}", repositoryName);
         logger.debug("azdoEndpoint: {}", azdoEndpoint);
         logger.debug("azdoPipelinesApi: {}", azdoPipelinesApi);
         logger.debug("azdoPipelinesApiVersion: {}", azdoPipelinesApiVersion);
+        logger.debug("repositoryId: {}", repositoryId);
 
         String pipelineId = "";
         try {
@@ -212,15 +215,16 @@ public class AzDoUtils {
         }
 
         try {
-            logger.debug("Create a new pipeline if not existing");
             // Create a new pipeline if not existing
             if (pipelineId == null) {
+                logger.debug("The pipeline does not exist; create a new one with name \'{}\'", pipelineName);
 
                 // Create a pipeline
                 pipelineId = AzDoUtils.callCreatePipelineApi (azdoUser,
                         azdoPat,
                         pipelinePath,
                         pipelineName,
+                        repositoryName,
                         azdoEndpoint,
                         azdoPipelinesApi,
                         azdoPipelinesApiVersion,
@@ -418,14 +422,16 @@ public class AzDoUtils {
      */
     public static String callCreatePipelineApi (String azdoUser,
                                                 String azdoPat,
-                                                String path,
+                                                String pipelinePath,
+                                                String pipelineName,
                                                 String repositoryName,
                                                 String azdoEndpoint,
                                                 String azdoPipelinesApi,
                                                 String azdoPipelinesApiVersion,
                                                 String repositoryId) {
         logger.debug("==> Method: AzDoUtils.callCreatePipelineApi");
-        logger.debug("path: {}", path);
+        logger.debug("pipelinePath: {}", pipelinePath);
+        logger.debug("pipelineName: {}", pipelineName);
         logger.debug("repositoryName: {}", repositoryName);
         logger.debug("repositoryId: {}", repositoryId);
 
@@ -433,12 +439,12 @@ public class AzDoUtils {
         String http = azdoEndpoint +
                 azdoPipelinesApi +
                 "?" +
-                azdoPipelinesApiVersion;;
+                azdoPipelinesApiVersion;
         String json = BRACKET_OPEN_NEXTLINE +
-                TAB + DOUBLE_QUOTE + JSON_ELEMENT_NAME + DQUOTE_SCOL_DQUOTE + repositoryName + DOUBLE_QUOTE + COMMA_NEXTLINE +
+                TAB + DOUBLE_QUOTE + JSON_ELEMENT_NAME + DQUOTE_SCOL_DQUOTE + pipelineName + DOUBLE_QUOTE + COMMA_NEXTLINE +
                 TAB + DOUBLE_QUOTE + "configuration" + DOUBLE_QUOTE + ": " + BRACKET_OPEN_NEXTLINE +
                 TWO_TAB + DOUBLE_QUOTE + "type" + DQUOTE_SCOL_DQUOTE + "yaml" + DOUBLE_QUOTE + COMMA_NEXTLINE +
-                TWO_TAB + DOUBLE_QUOTE + "path" + DQUOTE_SCOL_DQUOTE + path + DOUBLE_QUOTE + COMMA_NEXTLINE +
+                TWO_TAB + DOUBLE_QUOTE + "path" + DQUOTE_SCOL_DQUOTE + pipelinePath + DOUBLE_QUOTE + COMMA_NEXTLINE +
                 TWO_TAB + DOUBLE_QUOTE + "repository" + DOUBLE_QUOTE + ": " + BRACKET_OPEN_NEXTLINE +
                 THREE_TAB + DOUBLE_QUOTE + JSON_ELEMENT_ID + DQUOTE_SCOL_DQUOTE + repositoryId + DOUBLE_QUOTE + COMMA_NEXTLINE +
                 THREE_TAB + DOUBLE_QUOTE + JSON_ELEMENT_NAME + DQUOTE_SCOL_DQUOTE + repositoryName + DOUBLE_QUOTE + COMMA_NEXTLINE +

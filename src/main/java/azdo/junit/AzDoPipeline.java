@@ -110,31 +110,56 @@ public class AzDoPipeline {
         logger.debug("");
     }
 
-    /* After the YAML files have been manipulated in the JUnit tests, the startPipeline method is called.
-       This method creates a new (target) YAML file, containing the manipulated settings in the local
-       target repository (associated with the Azure DeVOps test project).
-       The local repositories are committed and pushed to the remote repositories in the Azure DeVOps test project.
-       After all files are pushed, the pipeline in Azure Devops is called by means of an API.
-       The last step is to reload the original yaml file, so it can be used for the next test.
-       The startPipeline() method has different flavors, that allow to pass hooks or perform a dryrun (not starting the pipeline).
-     */
+    /******************************************************************************************
+    After the YAML files have been manipulated in the JUnit tests, the startPipeline method is called.
+    This method creates a new (target) YAML file, containing the manipulated settings in the local
+    target repository (associated with the Azure DeVOps test project).
+    The local repositories are committed and pushed to the remote repositories in the Azure DeVOps test project.
+    After all files are pushed, the pipeline in Azure Devops is called by means of an API.
+    The last step is to reload the original yaml file, so it can be used for the next test.
+    The startPipeline() method has different flavors, that allow to pass hooks or perform a dryrun (not starting the pipeline).
+    *******************************************************************************************/
     public void startPipeline() throws IOException {
         startPipeline(GitUtils.BRANCH_MASTER, null, false);
     }
+
+    /******************************************************************************************
+     @param dryRun - Does not start the pipeline in Azure DevOps
+     *******************************************************************************************/
     public void startPipeline(boolean dryRun) throws IOException {
         startPipeline(GitUtils.BRANCH_MASTER, null, dryRun);
     }
+
+    /******************************************************************************************
+     @param branchName - The branch from which the pipeline starts
+     *******************************************************************************************/
     public void startPipeline(String branchName) throws IOException {
         startPipeline(branchName, null, false);
     }
+
+    /******************************************************************************************
+     @param branchName - The branch from which the pipeline starts
+     @param dryRun - Does not start the pipeline in Azure DevOps
+     *******************************************************************************************/
     public void startPipeline(String branchName,
                               boolean dryRun) throws IOException {
         startPipeline(branchName, null, dryRun);
     }
+
+    /******************************************************************************************
+     @param branchName - The branch from which the pipeline starts
+     @param hooks - List of hooks to be executed locally before the pipeline starts
+     *******************************************************************************************/
     public void startPipeline(String branchName,
                               List<Hook> hooks) throws IOException {
         startPipeline(branchName, hooks, false);
     }
+
+    /******************************************************************************************
+     @param branchName - The branch from which the pipeline starts
+     @param hooks - List of hooks to be executed locally before the pipeline starts
+     @param dryRun - Does not start the pipeline in Azure DevOps
+     *******************************************************************************************/
     public void startPipeline(String branchName,
                               List<Hook> hooks,
                               boolean dryRun) throws IOException {
@@ -286,6 +311,9 @@ public class AzDoPipeline {
         logger.debug(DEMARCATION);
     }
 
+    /******************************************************************************************
+     @return - Returns the result from Azure DevOps of the pipeline run
+     *******************************************************************************************/
     public RunResult getRunResult() {
         return runResult;
     }
@@ -302,6 +330,7 @@ public class AzDoPipeline {
      Skip a stage.
      The result is, that the stage is completely removed from the output pipeline yaml file,
      which basically is the same as skipping it.
+     @param stageIdentifier - The identification of a stage
 
      Example:
      =========
@@ -309,7 +338,7 @@ public class AzDoPipeline {
        displayName: 'This is my stage'
 
      Call skipStageSearchByIdentifier("my_stage")
-     ==> The stage with identifier "my_stage" is skipped
+     Result: The stage with identifier "my_stage" is skipped
      ******************************************************************************************/
         public void skipStageSearchByIdentifier (String stageIdentifier) {
         logger.debug("==> Method: AzDoPipeline.skipStageSearchByIdentifier");
@@ -323,6 +352,7 @@ public class AzDoPipeline {
 
     /******************************************************************************************
      Skip a stage, but search it using the displayName
+     @param displayValue - The displayName of the stage in the pipeline
      ******************************************************************************************/
     public void skipStageSearchByDisplayName (String displayValue) {
         logger.debug("==> Method: AzDoPipeline.skipStageSearchByDisplayName");
@@ -338,6 +368,9 @@ public class AzDoPipeline {
     /******************************************************************************************
      Same as the previous one, but instead of a fixed property (displayName), another property
      can be used to skip the stage ('pool', if you want).
+     @param property - The name of the property of a stage; this can be "displayName", "pool", ...
+     @param propertyValue - The value of this property
+
      @see  azdo.action.ActionDeleteSectionByProperty
      ******************************************************************************************/
     public void skipStageSearchByProperty (String property,
@@ -358,6 +391,7 @@ public class AzDoPipeline {
      The result is, that the job is completely removed from the output pipeline yaml file,
      which basically is the same as skipping it. This is similar to the 'skipJobSearchByIdentifier()'
      method.
+     @param jobIdentifier - The identifier of a job
      ******************************************************************************************/
     public void skipJobSearchByIdentifier (String jobIdentifier) {
         logger.debug("==> Method: AzDoPipeline.skipJobSearchByIdentifier");
@@ -371,6 +405,7 @@ public class AzDoPipeline {
 
     /******************************************************************************************
      Skip a job, but search it using the displayName
+     @param displayValue - The value of the displayName property of a job
      ******************************************************************************************/
     public void skipJobSearchByDisplayName (String displayValue) {
         logger.debug("==> Method: AzDoPipeline.skipJobSearchByDisplayName");
@@ -385,13 +420,15 @@ public class AzDoPipeline {
 
     /******************************************************************************************
      Skip a step or task.
+     @param stepIdentifier - The identification of a step
+
      Example:
      =========
      - task: Maven@3
        displayName: 'Maven Package'
 
      Call skipStepSearchByIdentifier(SECTION_TASK, "Maven@3")
-     ==> The "Maven@3" task is skipped
+     Result: The "Maven@3" task is skipped
 
      Note, that finding a step using the stepIdentifier often does not provide a unique instance.
      If there are more instance of a step with the same identifier, use
@@ -411,6 +448,7 @@ public class AzDoPipeline {
 
     /******************************************************************************************
      Skip a step, but search it using the displayName
+     @param displayValue - The value of the displayName property of a step
      ******************************************************************************************/
     public void skipStepSearchByDisplayName (String displayValue) {
         logger.debug("==> Method: AzDoPipeline.skipStepSearchByDisplayName");
@@ -432,6 +470,8 @@ public class AzDoPipeline {
     /******************************************************************************************
      Skip a template with a specific identifier. This is similar to the
      skipStageSearchByIdentifier() method but for templates.
+     @param templateIdentifier - The identification of a template
+
      It is identical to skipSectionSearchByTypeAndIdentifier ("template", "template-identifier");
      The skipTemplateSearchByIdentifier() method is just for convenience.
      ******************************************************************************************/
@@ -450,6 +490,9 @@ public class AzDoPipeline {
      Same as SearchByIdentifier(), but now any type of section can be skipped (for example
      SECTION_JOB or SECTION_TASK). The section is searched using the 'sectionIdentifier'.
      This is the generalized version of all other skip-methods.
+     @param sectionType - Possible values ["stage", "job", "template", [task], ...]
+     @param sectionIdentifier - The identification of a section
+
      @see  azdo.action.ActionDeleteSectionByProperty
      ******************************************************************************************/
     public void skipSectionSearchByTypeAndIdentifier (String sectionType,
@@ -467,6 +510,10 @@ public class AzDoPipeline {
     /******************************************************************************************
      Same as the previous one, but instead of a SECTION_STAGE, any section can be defined (for
      example SECTION_JOB or SECTION_TASK). Searching can be done using any property of the section.
+     @param sectionType - Possible values ["stage", "job", "template", [task], ...]
+     @param property - The name of the property of a stage; this can be "displayName", "pool", ...
+     @param propertyValue - The value of this property
+
      @see  azdo.action.ActionDeleteSectionByProperty
      ******************************************************************************************/
     public void skipSectionSearchByProperty (String sectionType,
@@ -485,6 +532,9 @@ public class AzDoPipeline {
 
     /******************************************************************************************
      Inserts a yaml section (step) before or after a given step.
+     @param stepIdentifier - The identification of a step
+     @param stepToInsert - The actual step to insert. Representation is a Map
+
      @see azdo.action.ActionInsertSection
      ******************************************************************************************/
     public void insertSectionSearchStepByIdentifier (String stepIdentifier,
@@ -508,7 +558,11 @@ public class AzDoPipeline {
     }
 
     /******************************************************************************************
-     Replaces the value of a variable in the 'variables' section. Example:
+     Replaces the value of a variable in the 'variables' section.
+     @param variableName - The name of the variable as declared in the 'variables' section
+     @param value - The new value of the variable
+
+     Example
 
      variables:
      - name: myVar
@@ -541,6 +595,9 @@ public class AzDoPipeline {
      pre-processing the pipelines.
      This step is found using the "stepIdentifier". The value of "stepIdentifier" is
      for example, "Maven@03". The methods searches for the first instance of a "Maven@03" task.
+     @param stepIdentifier - The identification of a step
+     @param variableName - The name of the variable as declared in the 'variables' section
+     @param value - The new value of the variable
      ******************************************************************************************/
     public void setVariableSearchStepByIdentifier (String stepIdentifier,
                                                    String variableName,
@@ -571,6 +628,9 @@ public class AzDoPipeline {
     /******************************************************************************************
      Set the variable at runtime, just as the previous method, but search the step using the
      displayName. The step can be of any type "step", SECTION_TASK, or SECTION_SCRIPT.
+     @param displayValue - The value of the displayName property of a step
+     @param variableName - The name of the variable as declared in the 'variables' section
+     @param value - The new value of the variable
      ******************************************************************************************/
     public void setVariableSearchStepByDisplayName (String displayValue,
                                                     String variableName,
@@ -604,7 +664,11 @@ public class AzDoPipeline {
     }
 
     /******************************************************************************************
-     Replaces the value of a parameter in the 'template' section. Example:
+     Replaces the value of a parameter in the 'template' section.
+     @param parameterName - The name of the paramter as declared in the 'parameters' section of a template declaration
+     @param value - The new value of the parameter
+
+     Example:
      - template: step/mytemplate.yml
        parameters:
          tag: $(version)
@@ -631,6 +695,8 @@ public class AzDoPipeline {
 
     /******************************************************************************************
      Replaces the default value of a parameter in the 'parameters' section. Example:
+     @param parameterName - The name of the paramter as declared in the 'parameters' section
+     @param defaultValue - The new default value of the parameter
 
      parameters:
      - name: myNumber
@@ -676,6 +742,10 @@ public class AzDoPipeline {
 
     /******************************************************************************************
      Override (or overwrite) any arbitrary string in the yaml file.
+     @param literalToReplace - A substring of a yaml pipeline- or template definition
+     @param newValue - The substring is replaced by 'newValue'
+     @param replaceAll - Replace all occurences in all yaml files, including the templates
+
      - task: AzureWebApp@1
        displayName: Azure Web App Deploy
        inputs:
@@ -708,6 +778,9 @@ public class AzDoPipeline {
 
     /******************************************************************************************
      Replace the current branch with a given branch name.
+     @param newBranchName - New branch name that overrides an occurence of the current branch
+     @param replaceAll - Replace all occurences in all yaml files, including the templates
+
      Example: Assume the following condition:
      and(succeeded(), eq(variables['Build.SourceBranchName'], 'main'))
 
@@ -738,6 +811,8 @@ public class AzDoPipeline {
     /******************************************************************************************
      Replace the content of a step with an inline script. The step is searched using the
      'stepIdentifier', for example "AWSShellScript@1"
+     @param stepIdentifier - The identification of a step
+     @param inlineScript - The script
      ******************************************************************************************/
     public void  mockStepSearchByIdentifier (String stepIdentifier,
                                              String inlineScript){
@@ -759,6 +834,9 @@ public class AzDoPipeline {
      pipeline aborts.
      The assertion is performed just before the execution of the step, identifier by the
      'displayName'.
+     @param displayValue - The value of the displayName property of a step
+     @param variableName - The name of the variable as declared in the 'variables' section
+     @param compareValue - The value with which the variable or parameter is compared
 
      Example:
      Calling assertEqualsSearchStepByDisplayName ("Deploy the app", "myVar", "myValue") means
@@ -792,6 +870,9 @@ public class AzDoPipeline {
      pipeline aborts.
      The assertion is performed just before the execution of the step, identifier by the
      'displayName'.
+     @param displayValue - The value of the displayName property of a step
+     @param variableName - The name of the variable as declared in the 'variables' section
+     @param compareValue - The value with which the variable or parameter is compared
      ******************************************************************************************/
     public void assertNotEqualsSearchStepByDisplayName (String displayValue,
                                                         String variableName,
@@ -814,6 +895,8 @@ public class AzDoPipeline {
 
     /******************************************************************************************
      Same as assertEqualsSearchStepByDisplayName() but it is compared to an empty value
+     @param displayValue - The value of the displayName property of a step
+     @param variableName - The name of the variable as declared in the 'variables' section
      ******************************************************************************************/
     public void assertEmptySearchStepByDisplayName (String displayValue,
                                                     String variableName) {
@@ -832,6 +915,9 @@ public class AzDoPipeline {
 
     /******************************************************************************************
      Private method used for the previous assert-if-variable-has-value methods.
+     @param displayValue - The value of the displayName property of a step
+     @param variableName - The name of the variable as declared in the 'variables' section
+     @param compareValue - The value with which the variable or parameter is compared
      ******************************************************************************************/
     private void assertVariableSearchStepByDisplayName (String displayValue,
                                                        String variableName,
@@ -861,6 +947,8 @@ public class AzDoPipeline {
      The assertFileNotExistsSearchStepByDisplayName() method validates at runtime the presence
      of a certain file on the Azure DevOps agent. If the file does not exists, the pipeline
      exists with an error.
+     @param displayValue - The value of the displayName property of a step
+     @param fileName - The file name of the file of which its existence is checked
      ******************************************************************************************/
     public void assertFileNotExistsSearchStepByDisplayName (String displayValue,
                                                             String fileName) {
@@ -907,6 +995,10 @@ public class AzDoPipeline {
 
     /******************************************************************************************
      Construct a step with a condition that validates a variable
+     @param identifierType - Possible values ["variables", "parameters"]
+     @param identifier - The value of the identification
+     @param compareValue - The value with which the variable or parameter is compared
+     @param operator - Possible values ["eq", "ne"]
      ******************************************************************************************/
     private Map<String, Object> constructAssertStep (String identifierType,
                                                      String identifier,

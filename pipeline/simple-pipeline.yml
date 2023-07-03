@@ -3,6 +3,10 @@ name: $(Date:yyyyMMdd)$(Rev:.r)
 
 trigger: none
 
+variables:
+  - name: testVar
+    value: test
+
 stages:
   - stage: test
     jobs:
@@ -12,3 +16,4 @@ stages:
         steps:
           - script: |
               echo 'This is a TEST'
+            displayName: 'Testing, testing'

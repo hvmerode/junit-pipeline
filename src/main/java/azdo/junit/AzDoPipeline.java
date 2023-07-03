@@ -32,14 +32,27 @@ public class AzDoPipeline {
     String pipelineId = null;
     RunResult runResult = new RunResult();
     private YamlDocumentEntryPoint yamlDocumentEntryPoint;
+
+    public enum AgentOSEnum {LINUX, WINDOWS};
+
+    private AgentOSEnum agentOS = AgentOSEnum.LINUX; // Needed for OS-specific tasks
+
     private static final String EXCLUDEFILESLIST = "\\excludedfileslist.txt";
 
     @SuppressWarnings("java:S1192")
     public AzDoPipeline(String propertyFile,
                         String pipelineFile) {
+        this (propertyFile, pipelineFile, AgentOSEnum.LINUX);
+    }
+
+    public AzDoPipeline(String propertyFile,
+                        String pipelineFile,
+                        AgentOSEnum agentOS) {
         logger.debug("==> Object: AzDoPipeline");
         logger.debug("propertyFile {}:", propertyFile);
         logger.debug("pipelineFile {}:", pipelineFile);
+        logger.debug("agentOS {}:", agentOS);
+        this.agentOS = agentOS;
 
         // Validate the main pipeline file before any other action
         // If it is not valid, the test may fail
@@ -125,39 +138,39 @@ public class AzDoPipeline {
     The startPipeline() method has different flavors, that allow to pass hooks or perform a dryrun (not starting the pipeline).
     *******************************************************************************************/
     public void startPipeline() throws IOException {
-        startPipeline(GitUtils.BRANCH_MASTER, null, false);
+        startPipeline (GitUtils.BRANCH_MASTER, null, false);
     }
 
     /******************************************************************************************
      @param dryRun Does not start the pipeline in Azure DevOps
      *******************************************************************************************/
     public void startPipeline(boolean dryRun) throws IOException {
-        startPipeline(GitUtils.BRANCH_MASTER, null, dryRun);
+        startPipeline (GitUtils.BRANCH_MASTER, null, dryRun);
     }
 
     /******************************************************************************************
      @param branchName The branch from which the pipeline starts
      *******************************************************************************************/
-    public void startPipeline(String branchName) throws IOException {
-        startPipeline(branchName, null, false);
+    public void startPipeline (String branchName) throws IOException {
+        startPipeline (branchName, null, false);
     }
 
     /******************************************************************************************
      @param branchName The branch from which the pipeline starts
      @param dryRun Does not start the pipeline in Azure DevOps
      *******************************************************************************************/
-    public void startPipeline(String branchName,
+    public void startPipeline (String branchName,
                               boolean dryRun) throws IOException {
-        startPipeline(branchName, null, dryRun);
+        startPipeline (branchName, null, dryRun);
     }
 
     /******************************************************************************************
      @param branchName The branch from which the pipeline starts
      @param hooks List of hooks to be executed locally before the pipeline starts
      *******************************************************************************************/
-    public void startPipeline(String branchName,
+    public void startPipeline (String branchName,
                               List<Hook> hooks) throws IOException {
-        startPipeline(branchName, hooks, false);
+        startPipeline (branchName, hooks, false);
     }
 
     /******************************************************************************************
@@ -170,7 +183,7 @@ public class AzDoPipeline {
                               boolean dryRun) throws IOException {
         logger.debug("==> Method: AzDoPipeline.startPipeline");
         logger.debug("branchName: {}", branchName);
-        logger.debug("dryRun {}:", dryRun);
+        logger.debug("dryRun: {}", dryRun);
 
         logger.debug("");
         logger.debug(DEMARCATION);
@@ -495,7 +508,7 @@ public class AzDoPipeline {
      Same as SearchByIdentifier(), but now any type of section can be skipped (for example
      SECTION_JOB or SECTION_TASK). The section is searched using the 'sectionIdentifier'.
      This is the generalized version of all other skip-methods.
-     @param sectionType Possible values ["stage", "job", "template", [task], ...]
+     @param sectionType Possible values ["stage", "job", "template", "task", ...]
      @param sectionIdentifier The identification of a section
 
      @see  azdo.action.ActionDeleteSectionByProperty
@@ -515,7 +528,7 @@ public class AzDoPipeline {
     /******************************************************************************************
      Same as the previous one, but instead of a SECTION_STAGE, any section can be defined (for
      example SECTION_JOB or SECTION_TASK). Searching can be done using any property of the section.
-     @param sectionType Possible values ["stage", "job", "template", [task], ...]
+     @param sectionType Possible values ["stage", "job", "template", "task", ...]
      @param property The name of the property of a stage; this can be "displayName", "pool", ...
      @param propertyValue The value of this property
 
@@ -619,7 +632,15 @@ public class AzDoPipeline {
 
         // Create a script that sets the value of a variable
         Map<String, Object> stepToInsert = new LinkedHashMap<>();
-        String s = "echo '##vso[task.setvariable variable=" + variableName + "]" + value .toString() + "'";
+        String s;
+        if (agentOS == AgentOSEnum.LINUX) {
+            logger.debug("OS is Linux");
+            s = "\"echo ##vso[task.setvariable variable=" + variableName + "]" + value.toString() + "\"";
+        }
+        else {
+            logger.debug("OS is Windows");
+            s = "echo ##vso[task.setvariable variable=" + variableName + "]" + value.toString();
+        }
         stepToInsert.put(SECTION_SCRIPT, s);
 
         // Call the performAction method; find the SECTION_TASK section with the identifier
@@ -656,7 +677,15 @@ public class AzDoPipeline {
         // Other arguments besides SECTION_TASK and SECTION_SCRIPT are: powershell | pwsh | bash | checkout | download | downloadBuild | getPackage | publish | reviewApp
         // These are not implemented
         Map<String, Object> stepToInsert = new LinkedHashMap<>();
-        String s = "echo '##vso[task.setvariable variable=" + variableName + "]" + value .toString() + "'";
+        String s;
+        if (agentOS == AgentOSEnum.LINUX) {
+            logger.debug("OS is Linux");
+            s = "echo \"##vso[task.setvariable variable=" + variableName + "]" + value.toString() + "\"";
+        }
+        else {
+            logger.debug("OS is Windows");
+            s = "echo ##vso[task.setvariable variable=" + variableName + "]" + value.toString();
+        }
         stepToInsert.put(SECTION_SCRIPT, s);
 
         // Call the performAction method; find the SECTION_TASK section with the DISPLAY_NAME
@@ -811,6 +840,57 @@ public class AzDoPipeline {
 
     public void overrideCurrentBranch (String newBranchName) {
         overrideCurrentBranch(newBranchName, true);
+    }
+
+
+    /******************************************************************************************
+     Replace the identifier of a section (stage, job, vmImage, ...) with a new identifier value
+     @param sectionType Possible values ["stage", "job", "template", "task", ...]
+     @param sectionIdentifier The identification of a section
+     @param newSectionIdentifier The new identification of a section
+     ******************************************************************************************/
+    // TODO: Still to test
+    public void overrideSectionIdentifier (String sectionType,
+                                           String sectionIdentifier,
+                                           String newSectionIdentifier) {
+        logger.debug("==> Method: AzDoPipeline.overrideSectionIdentifier");
+        logger.debug("sectionType: {}", sectionType);
+        logger.debug("sectionIdentifier: {}", sectionIdentifier);
+        logger.debug("newSectionIdentifier: {}", newSectionIdentifier);
+
+        Map<String, Object> script = new LinkedHashMap<>();
+        script.put(sectionType, newSectionIdentifier);
+
+        // Call the performAction method; find the section with the Identifier and replace it
+        ActionUpdateSection action = new ActionUpdateSection(sectionType, sectionIdentifier, script);
+        yamlDocumentEntryPoint.performAction (action, SECTION_TASK, sectionIdentifier);
+    }
+
+    /******************************************************************************************
+     Find a section in the yaml, identified by a certain type (e.g. "pool", "stage", "task"),
+     and an identifier (can have a value or empty). If the section is found, the value of the
+     property is replaced by a new value ('propertyValue').
+     @param sectionType Possible values ["stage", "job", "template", "task", ...]
+     @param sectionIdentifier The identification of a section
+     @param property The name of the property of a stage; this can be "displayName", "pool", ...
+     @param propertyValue The new value of this property
+     ******************************************************************************************/
+    public void overrideSectionPropertySearchByTypeAndIdentifier (String sectionType,
+                                                                  String sectionIdentifier,
+                                                                  String property,
+                                                                  String propertyValue) {
+        logger.debug("==> Method: AzDoPipeline.overrideSectionPropertySearchByTypeAndIdentifier");
+        logger.debug("sectionType: {}", sectionType);
+        logger.debug("sectionIdentifier: {}", sectionIdentifier);
+        logger.debug("property: {}", property);
+        logger.debug("propertyValue: {}", propertyValue);
+
+        ActionOverrideElement action = new ActionOverrideElement (property,
+                propertyValue,
+                sectionType,
+                sectionIdentifier,
+        true);
+        yamlDocumentEntryPoint.performAction (action, sectionType, sectionIdentifier);
     }
 
     /******************************************************************************************
@@ -968,20 +1048,37 @@ public class AzDoPipeline {
         logger.debug("fileName: {}", fileName);
         logger.debug("insertBefore: {}", insertBefore);
 
-        // Create a script that checks on the existence of a file
+        // Create a Bash script or Powershell task that checks on the existence of a file
         Map<String, Object> assertStep = new LinkedHashMap<>();
-
-        // script
-        String echo = String.format("echo \"AssertFileNotExists: file '%s' is not present (or empty) on the Azure DevOps Agent\"\n", fileName);
-        String s = "if [ ! -f " + fileName + " ]; then\n" +
-                "    " + echo +
-                "    exit 1\n" +
-                "fi\n" +
-                "if [ ! -s " + fileName + " ]; then\n" +
-                "    " + echo +
-                "    exit 1\n" +
-                "fi\n";
-        assertStep.put(SECTION_SCRIPT, s);
+        String s;
+        if (agentOS == AgentOSEnum.LINUX) {
+            // Linux
+            logger.debug("OS is Linux");
+            String echo = String.format("echo \"AssertFileNotExists: file '%s' is not present (or empty) on the Azure DevOps Agent\"\n", fileName);
+            s = "if [ ! -f " + fileName + " ]; then\n" +
+                    "    " + echo +
+                    "    exit 1\n" +
+                    "fi\n" +
+                    "if [ ! -s " + fileName + " ]; then\n" +
+                    "    " + echo +
+                    "    exit 1\n" +
+                    "fi\n";
+            assertStep.put(SECTION_SCRIPT, s);
+        }
+        else {
+            // Windows
+            logger.debug("OS is Windows");
+            Map<String, Object> inputs = new LinkedHashMap<>();
+            assertStep.put(SECTION_TASK, "PowerShell@2");
+            inputs.put("targetType", "inline");
+            s = "$FilePath = \"" + fileName + "\"\n" +
+            "if (-not(Test-path $FilePath -PathType leaf)) {\n" +
+                    "    Write-Host \"AssertFileNotExists: file \'" + fileName + "\' is not present (or empty) on the Azure DevOps Agent\"\n" +
+                    "    exit 1\n" +
+                    "}";
+            inputs.put("script", s);
+            assertStep.put ("inputs", inputs);
+        }
 
         // displayName
         s = "AssertFileNotExists: " + fileName;

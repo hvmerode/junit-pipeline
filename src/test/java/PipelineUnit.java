@@ -29,7 +29,7 @@ public class PipelineUnit {
         logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
         // Initialize the pipeline
-        pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/simple-pipeline.yml");
+        pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/simple-pipeline.yml", AzDoPipeline.AgentOSEnum.WINDOWS);
 
         try {
             // Create a hook to perform an action just before starting the pipeline
@@ -45,7 +45,12 @@ public class PipelineUnit {
             // This is temporary, and only used for testing
             List<Hook> hookList = new ArrayList<>();
             hookList.add(new TestHook());
-            pipeline.startPipeline("master", hookList);
+
+            pipeline.overrideSectionPropertySearchByTypeAndIdentifier("pool", "", "vmImage", "windows-latest");
+            pipeline.setVariableSearchStepByDisplayName ("Testing, testing", "testVar", "myReplacedValue");
+            pipeline.assertNotEqualsSearchStepByDisplayName("Testing, testing", "testVar", "myReplacedValue", false);
+            pipeline.assertFileNotExistsSearchStepByDisplayName("Testing, testing", "test.txt", false);
+            pipeline.startPipeline("master", hookList, false);
         }
         catch (IOException e) {
             logger.debug("Exception occurred after the pipeline was started: {}", e);

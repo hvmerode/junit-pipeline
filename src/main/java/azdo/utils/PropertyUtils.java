@@ -15,9 +15,9 @@ public class PropertyUtils {
     // Source
     private Properties properties;
     private String sourcePath;
-
     private String sourceRepositoryName;
     private String sourceBasePathExternal;
+    private String sourceProject;
 
     // Target
     private String targetPath;
@@ -75,6 +75,7 @@ public class PropertyUtils {
             sourcePath = getStringProperty(properties, "source.path", sourcePath);
             sourceBasePathExternal = getStringProperty(properties, "source.base.path.external", sourceBasePathExternal);
             sourceRepositoryName = getStringProperty(properties, "source.repository.name", sourceRepositoryName);
+            sourceProject = getStringProperty(properties, "source.project", sourceProject); // Only used for AzDo project
 
             // Target
             targetOrganization = getStringProperty(properties, "target.organization", targetOrganization);
@@ -191,6 +192,9 @@ public class PropertyUtils {
     }
 
     public String getSourcePath() { return sourcePath; }
+    public String getSourceProject() {
+        return sourceProject;
+    }
     public String getTargetProject() {
         return targetProject;
     }

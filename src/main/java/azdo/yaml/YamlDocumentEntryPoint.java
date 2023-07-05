@@ -72,7 +72,11 @@ public class YamlDocumentEntryPoint {
         }
 
         // Get all repositories containing external templates from the resources section
-        repositoryList = getRepositoriesFromResources(yamlMap, properties.getTargetBasePathExternal());
+        // Use the source project if no project is defined in the resource; assumed it that the external repositories
+        // are from the orignal project if no project is defined.
+        repositoryList = getRepositoriesFromResources(yamlMap,
+                properties.getTargetBasePathExternal(),
+                properties.getSourceProject());
 
         // Run trough all repositories and determine whether they need to be cloned and pushed to the Azure DevOps test project
         repositoryList.forEach(repository -> {
@@ -135,11 +139,14 @@ public class YamlDocumentEntryPoint {
         logger.debug("mainPipelineFile: {}", mainPipelineFile);
 
         // First read the main YAML file
+        // Relativize if it contains the full path
+        mainPipelineFile = Utils.relativize(sourcePath, mainPipelineFile);
+        logger.info("mainPipelineFile: {}", mainPipelineFile);
         mainYamlDocument = new YamlDocument(mainPipelineFile,
                 sourcePath,
                 targetPath,
                 sourceRepositoryName,
-                targetRepositoryName);
+                targetRepositoryName); // <== TODO: Fix /(relativize) mainPipelineFile with sourcePath, if there is an overlap with sourcePath
         Map<String, Object> yamlMap = mainYamlDocument.readYaml(continueOnError);
 
         return yamlMap;
@@ -308,9 +315,12 @@ public class YamlDocumentEntryPoint {
     }
 
     // Get the repositories in the resources section from the main .yml file
-    private ArrayList<RepositoryResource> getRepositoriesFromResources(Map<String, Object> map, String basePathExternal) {
+    private ArrayList<RepositoryResource> getRepositoriesFromResources (Map<String, Object> map,
+                                                                        String basePathExternal,
+                                                                        String sourceProject) {
         logger.debug("==> Method: YamlDocumentEntryPoint.getRepositoriesFromResources (first method signature)");
         logger.debug("basePathExternal: {}", basePathExternal);
+        logger.debug("sourceProject: {}", sourceProject);
 
         if (map == null) {
             logger.warn("map is null");
@@ -318,14 +328,15 @@ public class YamlDocumentEntryPoint {
         }
 
         ArrayList<RepositoryResource> repositoryResourceList = new ArrayList<>();
-        getRepositoriesFromResources (map, repositoryResourceList, basePathExternal);
+        getRepositoriesFromResources (map, repositoryResourceList, basePathExternal, sourceProject);
         return repositoryResourceList;
     }
 
     // Get a list of repositories
     private void getRepositoriesFromResources (Map<String, Object> map,
                                                ArrayList<RepositoryResource> repositoryResourceList,
-                                               String basePathExternal) {
+                                               String basePathExternal,
+                                               String sourceProject) {
         logger.debug("==> Method: YamlDocumentEntryPoint.getRepositoriesFromResources (second method signature)");
         logger.debug("basePathExternal: {}", basePathExternal);
 
@@ -344,10 +355,10 @@ public class YamlDocumentEntryPoint {
             } else {
                 // Go a level deeper
                 if (entry.getValue() instanceof Map) {
-                    getRepositoriesFromResources((Map<String, Object>) entry.getValue(), repositoryResourceList, basePathExternal);
+                    getRepositoriesFromResources((Map<String, Object>) entry.getValue(), repositoryResourceList, basePathExternal, sourceProject);
                 }
                 if (entry.getValue() instanceof ArrayList) {
-                    getRepositoriesFromResources((ArrayList<Object>) entry.getValue(), repositoryResourceList, basePathExternal);
+                    getRepositoriesFromResources((ArrayList<Object>) entry.getValue(), repositoryResourceList, basePathExternal, sourceProject);
                 }
             }
 
@@ -369,6 +380,11 @@ public class YamlDocumentEntryPoint {
                         String[] parts = name.split("/");
                         project = parts[0];
                         name = parts[1];
+                    }
+                    if (project.isEmpty()) {
+                        // If the project is empty, it was not included in the name
+                        // In that case, assume the project of the main repository
+                        project = sourceProject;
                     }
 
                     repositoryResource.name = name;
@@ -398,7 +414,8 @@ public class YamlDocumentEntryPoint {
 
     private void getRepositoriesFromResources(ArrayList<Object> inner,
                                               ArrayList<RepositoryResource> repositoryResourceList,
-                                              String basePathExternal) {
+                                              String basePathExternal,
+                                              String sourceProject) {
         logger.debug("==> Method: YamlDocumentEntryPoint.getRepositoriesFromResources (third method signature)");
         logger.debug("basePathExternal: {}", basePathExternal);
 
@@ -415,10 +432,10 @@ public class YamlDocumentEntryPoint {
 
             // If inner sections are found, go a level deeper
             if (entry instanceof Map) {
-                getRepositoriesFromResources((Map<String, Object>)entry, repositoryResourceList, basePathExternal);
+                getRepositoriesFromResources((Map<String, Object>)entry, repositoryResourceList, basePathExternal, sourceProject);
             }
             if (entry instanceof ArrayList) {
-                getRepositoriesFromResources((ArrayList<Object>)entry, repositoryResourceList, basePathExternal);
+                getRepositoriesFromResources((ArrayList<Object>)entry, repositoryResourceList, basePathExternal, sourceProject);
             }
         });
     }

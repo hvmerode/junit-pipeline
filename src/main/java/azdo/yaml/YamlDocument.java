@@ -505,39 +505,41 @@ public class YamlDocument {
                 logger.debug("Key: {}", key);
                 logger.debug("Value: {}", stringValue);
 
-                if (sectionType.equals(key)) {
-                    logger.debug("Found a sectionType with the key: {}", key);
+                if (sectionType != null) {
+                    if (sectionType.equals(key)) {
+                        logger.debug("Found a sectionType with the key: {}", key);
 
-                    if (!action.needsSectionIdentifier()) {
-                        actionResult = doAction (actionResult, action, entry);
-                    }
+                        if (!action.needsSectionIdentifier()) {
+                            actionResult = doAction(actionResult, action, entry);
+                        }
 
-                    // Check whether value equals to sectionIdentifier
-                    if (sectionIdentifier != null && sectionIdentifier.equals(stringValue)) {
-                        logger.debug("And the stringValue also equals the value: {}", stringValue);
+                        // Check whether value equals to sectionIdentifier
+                        if (sectionIdentifier != null && sectionIdentifier.equals(stringValue)) {
+                            logger.debug("And the stringValue also equals the value: {}", stringValue);
 
-                        if (action.needsSectionIdentifier()) {
-                            //actionResult.l3 = actionResult.l2;
-                            //actionResult.l2 = actionResult.l1;
-                            actionResult = doAction (actionResult, action, entry);
+                            if (action.needsSectionIdentifier()) {
+                                //actionResult.l3 = actionResult.l2;
+                                //actionResult.l2 = actionResult.l1;
+                                actionResult = doAction(actionResult, action, entry);
+                            }
                         }
                     }
-                }
-                if (sectionType.equals(stringValue)) {
-                    logger.debug("Found a sectionType with the value: {}", stringValue);
+                    if (sectionType.equals(stringValue)) {
+                        logger.debug("Found a sectionType with the value: {}", stringValue);
 
-                    if (!action.needsSectionIdentifier()) {
-                        actionResult = doAction (actionResult, action, entry);
-                    }
+                        if (!action.needsSectionIdentifier()) {
+                            actionResult = doAction(actionResult, action, entry);
+                        }
 
-                    // Check whether key equals to sectionIdentifier
-                    if (sectionIdentifier.equals(key)) {
-                        logger.debug("And the stringValue also equals the key: {}", key);
+                        // Check whether key equals to sectionIdentifier
+                        if (sectionIdentifier.equals(key)) {
+                            logger.debug("And the stringValue also equals the key: {}", key);
 
-                        if (action.needsSectionIdentifier()) {
-                            //actionResult.l3 = actionResult.l2;
-                            //actionResult.l2 = actionResult.l1;
-                            actionResult = doAction (actionResult, action, entry);
+                            if (action.needsSectionIdentifier()) {
+                                //actionResult.l3 = actionResult.l2;
+                                //actionResult.l2 = actionResult.l1;
+                                actionResult = doAction(actionResult, action, entry);
+                            }
                         }
                     }
                 }

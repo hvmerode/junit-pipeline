@@ -146,7 +146,7 @@ public class YamlDocumentEntryPoint {
                 sourcePath,
                 targetPath,
                 sourceRepositoryName,
-                targetRepositoryName); // <== TODO: Fix /(relativize) mainPipelineFile with sourcePath, if there is an overlap with sourcePath
+                targetRepositoryName);
         Map<String, Object> yamlMap = mainYamlDocument.readYaml(continueOnError);
 
         return yamlMap;

@@ -18,10 +18,8 @@ public class PipelineUnit {
     @BeforeAll
     public static void setUpClass() {
         logger.debug("setUpClass");
-
-        // Initialize the pipeline (resource path is default)
-        pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/pipeline_test.yml");
     }
+
     @Test
     @Order(1)
     public void test1() {
@@ -29,6 +27,47 @@ public class PipelineUnit {
         logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
         logger.debug("Perform unittest: test1");
         logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+        // Initialize the pipeline
+        pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/simple-pipeline.yml", AzDoPipeline.AgentOSEnum.WINDOWS);
+
+        try {
+            // Create a hook to perform an action just before starting the pipeline
+            class TestHook extends Hook {
+                @Override
+                public void executeHook() {
+                    logger.debug("Executes hook with an argument");
+                }
+            }
+
+            // Create a list with hooks and pass it to the startPipeline
+            // Note: The startPipeline has a dryRun = true setting, meaning that it does not start the pipeline in AzUre DevOps
+            // This is temporary, and only used for testing
+            List<Hook> hookList = new ArrayList<>();
+            hookList.add(new TestHook());
+
+            pipeline.overrideSectionPropertySearchByTypeAndIdentifier("pool", "", "vmImage", "windows-latest");
+            pipeline.setVariableSearchStepByDisplayName ("Testing, testing", "testVar", "myReplacedValue");
+            pipeline.assertNotEqualsSearchStepByDisplayName("Testing, testing", "testVar", "myReplacedValue", false);
+            pipeline.assertFileNotExistsSearchStepByDisplayName("Testing, testing", "test.txt", false);
+            pipeline.startPipeline("master", hookList, false);
+        }
+        catch (IOException e) {
+            logger.debug("Exception occurred after the pipeline was started: {}", e);
+        }
+        Assertions.assertEquals (RunResult.Result.succeeded, pipeline.getRunResult().result);
+    }
+
+    @Test
+    @Order(2)
+    public void test2() {
+        logger.debug("");
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        logger.debug("Perform unittest: test2");
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+        // Initialize the pipeline
+        pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/pipeline-test.yml");
 
         String inlineScript = "echo \"This is a mock script\"\n" +
                 "echo \"This is line 2\"";
@@ -47,12 +86,15 @@ public class PipelineUnit {
     }
 
     @Test
-    @Order(2)
-    public void test2() {
+    @Order(3)
+    public void test3() {
         logger.debug("");
         logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-        logger.debug("Perform unittest: test2");
+        logger.debug("Perform unittest: test3");
         logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+        // Initialize the pipeline
+        pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/pipeline-test.yml");
 
         String inlineScript = "echo \"This is a mock script\"\n" +
                 "echo \"This is line 2\"";
@@ -68,12 +110,15 @@ public class PipelineUnit {
     }
 
     @Test
-    @Order(3)
-    public void test3() {
+    @Order(4)
+    public void test4() {
         logger.debug("");
         logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-        logger.debug("Perform unittest: test3");
+        logger.debug("Perform unittest: test4");
         logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+        // Initialize the pipeline
+        pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/pipeline-test.yml");
 
         try {
             pipeline.overrideParameterDefault("sleep", "5");
@@ -88,21 +133,7 @@ public class PipelineUnit {
             pipeline.assertNotEqualsSearchStepByDisplayName("ExecuteScriptStage job_xa script", "jobVar", "replacedJobVar");
             pipeline.assertEqualsSearchStepByDisplayName("ExecuteScriptStage job_xa script", "jobVar", "replacedJobVar");
             pipeline.assertEmptySearchStepByDisplayName("ExecuteScriptStage job_xa script", "jobVar");
-
-            // Create a hook to perform an action just before starting the pipeline
-            class TestHook extends Hook {
-                @Override
-                public void executeHook() {
-                    logger.debug("Executes hook with an argument");
-                }
-            }
-
-            // Create a list with hooks and pass it to the startPipeline
-            // Note: The startPipeline has a dryRun = true setting, meaning that it does not start the pipeline in AzUre DevOps
-            // This is temporary, and only used for testing
-            List<Hook> hookList = new ArrayList<>();
-            hookList.add(new TestHook());
-            pipeline.startPipeline("myFeature", hookList, true);
+            pipeline.startPipeline("myFeature", null, true);
         }
         catch (IOException e) {
             logger.debug("Exception occurred: {}", e);

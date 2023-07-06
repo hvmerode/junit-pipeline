@@ -61,8 +61,6 @@ The properties file is located in src/main/resources. It contains the properties
 * __azdo.pat__ - The PAT (Personal Access Token) used in the Azure DevOps API calls.\
   See [Use personal access tokens](https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops&tabs=Windows) how to create a PAT.\
   Make sure this PAT is authorized to clone repositories in other Azure DevOps projects in the organization (other than the test project). 
-* __repository.pipeline.path__ - The location of the main pipeline file in the repository (both in source and target).
-  It is used to assign the pipeline file when creating a new pipeline in Azure DevOps.
 * __git.commit.pattern__ - Defines the type of files pushed to the local- and remote test repo (this is a subset of the files from the main repo)
 * __pipelines.api__ - Name of the Azure DevOps base Pipeline API; do not change this value. 
 * __pipelines.api.runs__ - Name of a specific Azure DevOps Pipeline API; do not change this value.
@@ -89,7 +87,7 @@ Example:
 <dependency>
   <groupId>io.github.hvmerode</groupId>
   <artifactId>junit-pipeline</artifactId>
-  <version>1.1.0</version>
+  <version>1.1.1</version>
 </dependency>
 ```
 
@@ -540,10 +538,7 @@ pipeline.getRunResult()
 ### New features ##
 ***
 * Test on Linux; some filesystem methods in Utils may not work properly.
-* If a new AzDoPipeline object is created with a different .yml file, the pipeline in Azure DevOps still uses
-  the original .yml file; the pipeline must use the provided file.
-* Scripts added in some methods must be Azure DevOps agent agnostic; this means that inserted tasks must either be
-  Linux or Windows scripts. Currently, Linux agents are assumed.
+* Support "refs/tags/tag" and "refs/refname" for external repositories with templates.
 * Log YAML line numbers in method _Utils.validatePipelineFile()_ according to [yaml-line-numbers.md](https://github.com/networknt/json-schema-validator/blob/master/doc/yaml-line-numbers.md)
 * Add option to pipeline.mockStep to display a name (the inline script shows as CmdLine in Azure DevOps).
 * Add option to continue on error for all steps.
@@ -551,7 +546,6 @@ pipeline.getRunResult()
 * Possibility to replace a step with another step.
 * Add unit tests to the junit-pipeline code itself.
 * Add methods to add, update or remove conditions in stages or jobs. Use the _overrideLiteral_ method, if possible.
-* Support "refs/tags/tag" for external repositories with templates.
 * Check whether the output pipeline is a valid pipeline (valid yaml and valid Azure DevOps pipeline).
   This is a 'nice-to-have'.
 * ~~Add an assert step; check a variable on a certain value using a condition. Exit with 1 if the condition is not met.~~
@@ -560,6 +554,10 @@ pipeline.getRunResult()
 
 ### Solved ##
 ***
+* ~~Scripts added in some methods must be Azure DevOps agent agnostic; this means that inserted tasks must either be
+  Linux or Windows scripts. Currently, Linux agents are assumed.~~
+* ~~If a new AzDoPipeline object is created with a different .yml file, the pipeline in Azure DevOps still uses
+  the original .yml file; the pipeline must use the provided file.~~
 * ~~Check whether the input pipeline and templates are a valid Azure DevOps pipeline YAML files~~
 * ~~Only YAML templates in the same repository are taken into account. Templates in other repositories (identified with a @ behind the yamlTemplate name) are ignored.\
   TODO: Option to incorporate other resources (repositories) and manipulate the templates in these repos also.~~

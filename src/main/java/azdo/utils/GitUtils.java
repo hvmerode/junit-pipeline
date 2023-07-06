@@ -43,15 +43,15 @@ public class GitUtils {
 
         // Create the uri
         String azdoBaseUrl = "https://dev.azure.com/" + organization;
-        String uriTargetRepository = azdoBaseUrl + "/" + project + "/_git/" + repositoryName;
-        uriTargetRepository = Utils.encodePath (uriTargetRepository);
-        logger.debug("uriTargetRepository: {}", uriTargetRepository);
+        String uriSourceRepository = azdoBaseUrl + "/" + project + "/_git/" + repositoryName;
+        uriSourceRepository = Utils.encodePath (uriSourceRepository);
+        logger.debug("uriSourceRepository: {}", uriSourceRepository);
 
         // Clone the repo
         try {
             logger.debug("git.clone");
             git = Git.cloneRepository()
-                    .setURI(uriTargetRepository)
+                    .setURI(uriSourceRepository)
                     .setCloneAllBranches(true)
                     .setCredentialsProvider(credentialsProvider)
                     .setDirectory(new File(targetPath))
@@ -85,15 +85,15 @@ public class GitUtils {
 
         // Create the uri
         String baseUrl = "https://github.com";
-        String uriTargetRepository = baseUrl + "/" + project + "/" + repositoryName;
-        uriTargetRepository = Utils.encodePath (uriTargetRepository);
-        logger.debug("uriTargetRepository: {}", uriTargetRepository);
+        String uriSourceRepository = baseUrl + "/" + project + "/" + repositoryName;
+        uriSourceRepository = Utils.encodePath (uriSourceRepository);
+        logger.debug("uriSourceRepository: {}", uriSourceRepository);
 
         // Clone the repo
         try {
             logger.debug("git.clone");
             git = Git.cloneRepository()
-                    .setURI(uriTargetRepository)
+                    .setURI(uriSourceRepository)
                     .setCloneAllBranches(true)
                     .setDirectory(new File(targetPath))
                     .call();

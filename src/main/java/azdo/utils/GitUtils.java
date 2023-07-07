@@ -213,14 +213,15 @@ public class GitUtils {
                 checkout(git, branchName, createRemoteBranch);
                 Utils.wait (1000);
             } catch (Exception e) {
-                logger.debug("Exception occurred. Cannot checkout {}; try remote: {}", branchName, e.getMessage());
-                try {
-                    branchName = "origin/" + branchName;
-                    checkout(git, branchName, createRemoteBranch);
-                    Utils.wait (1000);
-                } catch (Exception eRemote) {
-                    logger.debug("Exception occurred. Cannot checkout {}; continue: {}", branchName, eRemote.getMessage());
-                }
+                logger.debug("Exception occurred. Cannot checkout {}; {}", branchName, e.getMessage());
+//                try {
+//                    logger.debug("Trying remote");
+//                    branchName = "origin/" + branchName;
+//                    checkout(git, branchName, createRemoteBranch);
+//                    Utils.wait(1000);
+//                } catch (Exception eRemote) {
+//                    logger.debug("Exception occurred. Cannot checkout {}; continue: {}", branchName, eRemote.getMessage());
+//                }
             }
         }
         return git;

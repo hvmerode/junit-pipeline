@@ -1,11 +1,16 @@
 package azdo.utils;
 
 import azdo.junit.RunResult;
+import org.eclipse.jgit.api.Git;
 import org.yaml.snakeyaml.Yaml;
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -146,6 +151,8 @@ public class AzDoUtils {
         try {
             // Create a new repository if not existing
             if (repositoryId == null) {
+                logger.debug("Repository {} does not exist; create it", repositoryName);
+
                 // Retrieve the project-id of the Azure DevOps project with a given name
                 String projectId = callGetProjectIdApi(azdoUser,
                         azdoPat,
@@ -163,6 +170,9 @@ public class AzDoUtils {
                         azdoGitApiRepositories,
                         repositoryName,
                         projectId);
+
+                // Initialize main branch with a README
+                initializeMaster (azdoUser, azdoPat, targetPath, repositoryName, organization, project);
             }
 
             // Always clone
@@ -178,6 +188,40 @@ public class AzDoUtils {
         }
 
         return repositoryId;
+    }
+
+    private static void initializeMaster (String azdoUser,
+                                          String azdoPat,
+                                          String targetPath,
+                                          String repositoryName,
+                                          String organization,
+                                          String project) {
+        logger.debug("Initialize main branch with a README");
+        Utils.createDirectory(targetPath);
+        GitUtils.cloneAzdoToLocal(targetPath,
+                repositoryName,
+                azdoUser,
+                azdoPat,
+                organization,
+                project);
+        Path newFilePath = Paths.get(targetPath + "/readme.md");
+        newFilePath = newFilePath.normalize();
+        try {
+            Files.createFile(newFilePath);
+        }
+        catch (IOException e) {
+            logger.debug("Cannot create a readme.md file");
+        }
+        Git git = GitUtils.createGit(targetPath);
+        GitUtils.checkout(git, targetPath, "master", true);
+        ArrayList<String> commitPatternList = new ArrayList<>();
+        commitPatternList.add(".md");
+        GitUtils.commitAndPush(git,
+                azdoUser,
+                azdoPat,
+                commitPatternList);
+        if (git != null)
+            git.close();
     }
 
     /* Create a new pipeline in Azure DevOps if it does not exist yet

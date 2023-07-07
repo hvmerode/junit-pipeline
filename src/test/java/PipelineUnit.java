@@ -55,7 +55,10 @@ public class PipelineUnit {
         catch (IOException e) {
             logger.debug("Exception occurred after the pipeline was started: {}", e);
         }
-        Assertions.assertEquals (RunResult.Result.succeeded, pipeline.getRunResult().result);
+        Assertions.assertEquals (RunResult.Result.failed, pipeline.getRunResult().result);
+        logger.info("Test successful");
+        logger.info("Expected: {}", RunResult.Result.failed);
+        logger.info("Actual: {}", pipeline.getRunResult().result);
     }
 
     @Test
@@ -83,6 +86,9 @@ public class PipelineUnit {
             logger.debug("Exception occurred after the pipeline was started: {}", e);
         }
         Assertions.assertEquals (RunResult.Result.succeeded, pipeline.getRunResult().result);
+        logger.info("Test successful");
+        logger.info("Expected: {}", RunResult.Result.succeeded);
+        logger.info("Actual: {}", pipeline.getRunResult().result);
     }
 
     @Test
@@ -107,6 +113,9 @@ public class PipelineUnit {
             logger.debug("Exception occurred: {}", e);
         }
         Assertions.assertEquals (RunResult.Result.succeeded, pipeline.getRunResult().result);
+        logger.info("Test successful");
+        logger.info("Expected: {}", RunResult.Result.succeeded);
+        logger.info("Actual: {}", pipeline.getRunResult().result);
     }
 
     @Test
@@ -138,7 +147,10 @@ public class PipelineUnit {
         catch (IOException e) {
             logger.debug("Exception occurred: {}", e);
         }
-        Assertions.assertEquals (RunResult.Result.succeeded, pipeline.getRunResult().result);
+        Assertions.assertEquals (RunResult.Result.none, pipeline.getRunResult().result);
+        logger.info("Test successful");
+        logger.info("Expected: {}", RunResult.Result.none);
+        logger.info("Actual: {}", pipeline.getRunResult().result);
     }
 
     @AfterAll

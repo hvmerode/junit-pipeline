@@ -207,7 +207,6 @@ public class AzDoPipeline {
         }
         catch (Exception e) {
             logger.debug("Exception occurred. Cannot clone repository to local: {}", e.getMessage());
-            return;
         }
 
         // If git object is invalid after the clone or if the repository was not cloned, recreate the git object again
@@ -245,7 +244,6 @@ public class AzDoPipeline {
         // and all in the same Azure DevOps project. This is independent whether the repositories are
         // originally from another Azure DeVOps project or from GithHub.
         yamlDocumentEntryPoint.makeResourcesLocal();
-
 
         /*******************************************************************************************
                                       Prepare for running the pipeline
@@ -1114,21 +1112,25 @@ public class AzDoPipeline {
         if (OPERATOR_NOT_EQUALS.equals(operator))
             operatorRepresentation = "not equal";
 
+        String actionDisplayName = "AssertEquals";
+        if (compareValue == null || compareValue.isEmpty())
+            actionDisplayName = "AssertEmpty";
+
         String s = "";
 
         // script
         if (SECTION_VARIABLES.equals(identifierType))
-            s = String.format("echo \"AssertEquals: variable '%s' with value '$(%s)' is %s to '%s'\"\n", identifier, identifier, operatorRepresentation, compareValue);
+            s = String.format("echo \"%s: variable '%s' with value '$(%s)' is %s to '%s'\"\n", actionDisplayName, identifier, identifier, operatorRepresentation, compareValue);
         if (SECTION_PARAMETERS.equals(identifierType))
-            s = String.format("echo \"AssertEquals: parameter '%s' with value '${{ parameters.%s }}' is %s to '%s'\"\n", identifier, identifier, operatorRepresentation, compareValue);
+            s = String.format("echo \"%s: parameter '%s' with value '${{ parameters.%s }}' is %s to '%s'\"\n", actionDisplayName, identifier, identifier, operatorRepresentation, compareValue);
         s = s + "exit 1";
         assertStep.put(SECTION_SCRIPT, s);
 
         // displayName
         if (SECTION_VARIABLES.equals(identifierType))
-            s = "AssertEquals variable " + identifier;
+            s = actionDisplayName + " variable " + identifier;
         if (SECTION_PARAMETERS.equals(identifierType))
-            s = "AssertEquals parameter " + identifier;
+            s = actionDisplayName + " parameter " + identifier;
         assertStep.put(DISPLAY_NAME, s);
 
         // condition

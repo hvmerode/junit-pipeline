@@ -554,6 +554,8 @@ pipeline.getRunResult()
 
 ### Solved ##
 ***
+* ~~If the first run of a pipeline is not 'master' but another branch, the pipeline does not run.
+  The first runs must be 'master'.~~
 * ~~Scripts added in some methods must be Azure DevOps agent agnostic; this means that inserted tasks must either be
   Linux or Windows scripts. Currently, Linux agents are assumed.~~
 * ~~If a new AzDoPipeline object is created with a different .yml file, the pipeline in Azure DevOps still uses

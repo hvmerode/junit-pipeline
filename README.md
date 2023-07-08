@@ -47,7 +47,6 @@ cloned copies of these repositories instead to the original ones, so external te
 <br></br>
 
 ## How to start
-***
 ### Create Azure DevOps test project ###
 Unfortunately, testing a pipeline within the IDE is not possible. You need an Azure DevOps unit test project for this. Create a test project
 using this link: [Create a project in Azure DevOps](https://learn.microsoft.com/en-us/azure/devops/organizations/projects/create-project)
@@ -105,7 +104,6 @@ Example:
 
 <br></br>
 ## How to use it ##
-***
 This repository already contains a sample unit test file called _PipelineUnit.java_. We take this file as an example.
 If you want to check out a demo project, please take a look at '[hello-pipeline](https://github.com/hvmerode/hello-pipeline)'.
 <br></br>
@@ -519,7 +517,6 @@ pipeline.getRunResult()
 <br></br>
 
 ## Known limitations ##
-***
 * Tests cannot be executed in parallel. Because the target repository is updated for each test, the next
   test must wait before the previous one is completed.
 
@@ -538,7 +535,6 @@ pipeline.getRunResult()
 <br></br>
 
 ## Known bugs ##
-***
 * An Azure DevOps "on..failure" / "on..success" construction is translated to "true..failure" / "true..success". It may be an issue in snakeyaml.
   * Temporary fix is by adding a FindReplaceInFile hook that replaces the "true:" string with an "on:" string.
 * A task with an input parameter 'template:' is handled as if it is a yamlTemplate (although it isn't); processing 
@@ -547,7 +543,6 @@ pipeline.getRunResult()
 <br></br>
 
 ## New features ##
-***
 * Test on Linux; some filesystem methods in Utils may not work properly.
 * Support "refs/tags/tag" and "refs/refname" for external repositories with templates.
 * Log YAML line numbers in method _Utils.validatePipelineFile()_ according to [yaml-line-numbers.md](https://github.com/networknt/json-schema-validator/blob/master/doc/yaml-line-numbers.md)
@@ -564,7 +559,6 @@ pipeline.getRunResult()
 * ~~Check/assert output variables of a step.~~
 
 ## Solved ##
-***
 * ~~Some of the methods add a script task to the yaml. Currently this is a bash type of script, so it is assumed that the
   Azure DevOps agent is a Linux agent.~~
 * ~~If the first run of a pipeline is not 'master' but another branch, the pipeline does not run.

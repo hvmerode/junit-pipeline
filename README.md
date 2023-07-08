@@ -4,7 +4,7 @@ Perform unit/integration test for pipelines (Azure DevOps)
 ## Introduction ##
 Unit testing CI/CD pipelines is a challenge. Test frameworks for pipelines are almost non-existent or at least 
 very scarce. Teams often develop pipelines using trial-and-error and they test along the way. 
-A lot of things can go wrong:
+Some of the challenges are:
 * During testing, a wrong version of an app was deployed by accident.
 * Code from a feature branch was accidentally tagged with a release version tag.
 * The number of commits is very high because of the trial-and-error nature of developing and testing pipelines.
@@ -12,6 +12,7 @@ A lot of things can go wrong:
 * Temporary disabled or commented code is not enabled / uncommented anymore.
 * The pipeline code contains switches or conditions specifically for testing the pipeline.
 * The overview with regular application pipeline runs is cluttered with a zillion test runs.
+* Asserts are difficult to incorporate in a pipeline, and if possible, it decreases readability.
  
 This library is used to perform unit- and integration tests on (YAML) pipelines. At the moment, only 
 Azure DevOps pipelines are supported.
@@ -139,7 +140,6 @@ go over a few of them:
 > Note, that this is only a subset of the methods available.
 
 <br></br>
-
 ***
 ***
 ```java

@@ -1,11 +1,23 @@
 # junit-pipeline
 Perform unit/integration test for pipelines (Azure DevOps)
 
-## Overview ##
-This library is used to perform unit- and integration tests on (YAML) pipelines. At the moment, only Azure DevOps pipelines are supported.
+## Introduction ##
+Unit testing CI/CD pipelines is a challenge. Test frameworks for pipelines are almost non-existent or at least 
+very scarce. Teams often develop pipelines using trial-and-error and they test along the way. 
+A lot of things can go wrong:
+* During testing, a wrong version of an app was deployed by accident.
+* Code from a feature branch was accidentally tagged with a release version tag.
+* The number of commits is very high because of the trial-and-error nature of developing and testing pipelines.
+* Temporary code, added to the pipeline specifically for testing is not removed.
+* Temporary disabled or commented code is not enabled / uncommented anymore.
+* The pipeline code contains switches or conditions specifically for testing the pipeline.
+* The overview with regular application pipeline runs is cluttered with a zillion test runs.
+ 
+This library is used to perform unit- and integration tests on (YAML) pipelines. At the moment, only 
+Azure DevOps pipelines are supported.
 <br></br>
 
-### How it works ###
+## How it works ##
 ***
 Assume that your application and pipeline code reside in a repository called "__myrepo__" in the Azure DevOps project "__MyApp__".
 Development on the (Java) app is straightforward. \
@@ -34,14 +46,14 @@ The ___junit-pipeline___ library takes care that the main pipeline refers to the
 cloned copies of these repositories instead to the original ones, so external templates can also be manipulated.
 <br></br>
 
-### How to start
+## How to start
 ***
-#### Create Azure DevOps test project ####
+### Create Azure DevOps test project ###
 Unfortunately, testing a pipeline within the IDE is not possible. You need an Azure DevOps unit test project for this. Create a test project
 using this link: [Create a project in Azure DevOps](https://learn.microsoft.com/en-us/azure/devops/organizations/projects/create-project)
 <br></br>
 
-#### Configure junit_pipeline.properties ####
+### Configure junit_pipeline.properties ###
 The properties file is located in src/main/resources. It contains the properties for your project. Some important properties:
 * __source.path__ - Contains the location (directory) of the main Git repository on your computer. This is the repository in which you develop your 
   app and the associated pipeline. In the example case, this repository is called "__myrepo__".
@@ -80,7 +92,7 @@ The properties file is located in src/main/resources. It contains the properties
 > The property file is stored in the _resources_ folder.
 
 <br></br>
-#### Update pom.xml ####
+### Update pom.xml ###
 After the properties file has been created, the __junit-pipeline__ library must be added to the _pom.xml_ of your project.
 Example:
 ```xml
@@ -92,13 +104,13 @@ Example:
 ```
 
 <br></br>
-### How to use it ##
+## How to use it ##
 ***
 This repository already contains a sample unit test file called _PipelineUnit.java_. We take this file as an example.
 If you want to check out a demo project, please take a look at '[hello-pipeline](https://github.com/hvmerode/hello-pipeline)'.
 <br></br>
 
-#### Create  ___AzDoPipeline___ object ####
+### Create  ___AzDoPipeline___ object ###
 Pipeline unit tests are defined in a unit test Java class. Before tests are executed, a new ___AzDoPipeline___ Java object must
 be instantiated. Its constructor requires two arguments, a property file and the main pipeline YAML file. Example:
 ```java
@@ -112,7 +124,7 @@ in the repository. The __junit-pipeline__ frameworks takes these templates into 
 
 <br></br>
 
-#### Hooks ####
+### Hooks ###
 Before the pipeline code is pushed to the Azure DevOps unit test project, and started, it is possible to execute
 custom code. This code is provided as a list of 'hooks'. The unit test file _PipelineUnit.java_ shows an example; _test 3_.\
 This repository also contains a few standard hooks:
@@ -124,7 +136,7 @@ remove the file that includes the pipeline unit tests, if you don't want it to r
   This hook can be used to fix some inconveniences in the target yaml files in the Azure DevOps test project. 
 <br></br>
 
-#### Define unit test ####
+### Define unit test ###
 The __junit-pipeline__ library contains a set of methods - used in unit tests - to manipulate the pipeline. Let's 
 go over a few of them:
 > Note, that this is only a subset of the methods available.
@@ -490,7 +502,7 @@ before or after the execution of the step, identified by the 'displayName'.
 
 ***
 ***
-#### Start unit tests and retrieve the result ####
+### Start unit tests and retrieve the result ###
 The startPipeline method has a few representations:
 * _startPipeline()_ - Starts the pipeline with the default branch (in most cases, this is the _master_ branch).
 * _startPipeline(String branchName)_ - Starts the pipeline with a given branch, for example a _feature_ branch.
@@ -506,12 +518,11 @@ pipeline.getRunResult()
 ```
 <br></br>
 
-### Known limitations ##
+## Known limitations ##
 ***
 * Tests cannot be executed in parallel. Because the target repository is updated for each test, the next
   test must wait before the previous one is completed.
-* Some of the methods add a script task to the yaml. Currently this is a bash type of script, so it is assumed that the
-  Azure DevOps agent is a Linux agent.
+
 * Templates residing in external repositories (GitHub and other Azure DevOps projects) are taken into account, but:
   * The _ref_ parameter is not (yet) fully implemented. Only the format "refs/heads/branch" is supported; the pattern 
     "refs/tags/tag" is not yet supported .
@@ -526,7 +537,7 @@ pipeline.getRunResult()
   of a resource is required, the AzDo API returns an HTTP status code 400.
 <br></br>
 
-### Known bugs ##
+## Known bugs ##
 ***
 * An Azure DevOps "on..failure" / "on..success" construction is translated to "true..failure" / "true..success". It may be an issue in snakeyaml.
   * Temporary fix is by adding a FindReplaceInFile hook that replaces the "true:" string with an "on:" string.
@@ -535,7 +546,7 @@ pipeline.getRunResult()
   warning and give the recommendation that, although it is correct, it may lead to confusion.
 <br></br>
 
-### New features ##
+## New features ##
 ***
 * Test on Linux; some filesystem methods in Utils may not work properly.
 * Support "refs/tags/tag" and "refs/refname" for external repositories with templates.
@@ -552,8 +563,10 @@ pipeline.getRunResult()
   * ~~This step can be added before or after a certain step using a pipeline method.~~
 * ~~Check/assert output variables of a step.~~
 
-### Solved ##
+## Solved ##
 ***
+* ~~Some of the methods add a script task to the yaml. Currently this is a bash type of script, so it is assumed that the
+  Azure DevOps agent is a Linux agent.~~
 * ~~If the first run of a pipeline is not 'master' but another branch, the pipeline does not run.
   The first runs must be 'master'.~~
 * ~~Scripts added in some methods must be Azure DevOps agent agnostic; this means that inserted tasks must either be

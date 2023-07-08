@@ -18,7 +18,6 @@ Azure DevOps pipelines are supported.
 <br></br>
 
 ## How it works ##
-***
 Assume that your application and pipeline code reside in a repository called "__myrepo__" in the Azure DevOps project "__MyApp__".
 Development on the (Java) app is straightforward. \
 With the ___junit-pipeline___ libray, it becomes possible to test the YAML pipeline code.

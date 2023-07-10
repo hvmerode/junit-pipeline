@@ -501,44 +501,49 @@ public class YamlDocument {
             String stringValue;
             for (Map.Entry<String, Object> entry : map.entrySet()) {
                 key = entry.getKey();
-                stringValue = entry.getValue().toString();
-                logger.debug("Key: {}", key);
-                logger.debug("Value: {}", stringValue);
+                if (entry.getValue() == null) {
+                    logger.debug("entry.getValue() is not for key: {}", key);
+                }
+                else {
+                    stringValue = entry.getValue().toString();
+                    logger.debug("Key: {}", key);
+                    logger.debug("Value: {}", stringValue);
 
-                if (sectionType != null) {
-                    if (sectionType.equals(key)) {
-                        logger.debug("Found a sectionType with the key: {}", key);
+                    if (sectionType != null) {
+                        if (sectionType.equals(key)) {
+                            logger.debug("Found a sectionType with the key: {}", key);
 
-                        if (!action.needsSectionIdentifier()) {
-                            actionResult = doAction(actionResult, action, entry);
-                        }
-
-                        // Check whether value equals to sectionIdentifier
-                        if (sectionIdentifier != null && sectionIdentifier.equals(stringValue)) {
-                            logger.debug("And the stringValue also equals the value: {}", stringValue);
-
-                            if (action.needsSectionIdentifier()) {
-                                //actionResult.l3 = actionResult.l2;
-                                //actionResult.l2 = actionResult.l1;
+                            if (!action.needsSectionIdentifier()) {
                                 actionResult = doAction(actionResult, action, entry);
                             }
+
+                            // Check whether value equals to sectionIdentifier
+                            if (sectionIdentifier != null && sectionIdentifier.equals(stringValue)) {
+                                logger.debug("And the stringValue also equals the value: {}", stringValue);
+
+                                if (action.needsSectionIdentifier()) {
+                                    //actionResult.l3 = actionResult.l2;
+                                    //actionResult.l2 = actionResult.l1;
+                                    actionResult = doAction(actionResult, action, entry);
+                                }
+                            }
                         }
-                    }
-                    if (sectionType.equals(stringValue)) {
-                        logger.debug("Found a sectionType with the value: {}", stringValue);
+                        if (sectionType.equals(stringValue)) {
+                            logger.debug("Found a sectionType with the value: {}", stringValue);
 
-                        if (!action.needsSectionIdentifier()) {
-                            actionResult = doAction(actionResult, action, entry);
-                        }
-
-                        // Check whether key equals to sectionIdentifier
-                        if (sectionIdentifier.equals(key)) {
-                            logger.debug("And the stringValue also equals the key: {}", key);
-
-                            if (action.needsSectionIdentifier()) {
-                                //actionResult.l3 = actionResult.l2;
-                                //actionResult.l2 = actionResult.l1;
+                            if (!action.needsSectionIdentifier()) {
                                 actionResult = doAction(actionResult, action, entry);
+                            }
+
+                            // Check whether key equals to sectionIdentifier
+                            if (sectionIdentifier.equals(key)) {
+                                logger.debug("And the stringValue also equals the key: {}", key);
+
+                                if (action.needsSectionIdentifier()) {
+                                    //actionResult.l3 = actionResult.l2;
+                                    //actionResult.l2 = actionResult.l1;
+                                    actionResult = doAction(actionResult, action, entry);
+                                }
                             }
                         }
                     }

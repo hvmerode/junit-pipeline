@@ -5,14 +5,15 @@ Perform unit/integration test for pipelines (Azure DevOps)
 Unit testing CI/CD pipelines is a challenge. Test frameworks for pipelines are almost non-existent or at least 
 very scarce. Teams often develop pipelines using trial-and-error and they test along the way. 
 Some of the challenges are:
-* During testing, a wrong version of an app was deployed by accident.
+* During testing the pipeline, a wrong version of an app was deployed by accident.
 * Code from a feature branch was accidentally tagged with a release version tag.
+* You need to wait for 15 minutes before the last step you just changed is executed.
 * The number of commits is very high because of the trial-and-error nature of developing and testing pipelines.
 * Temporary code, added to the pipeline specifically for testing is not removed.
 * Temporary disabled or commented code is not enabled / uncommented anymore.
 * The pipeline code contains switches or conditions specifically for testing the pipeline.
 * The overview with regular application pipeline runs is cluttered with a zillion test runs.
-* Asserts are difficult to incorporate in a pipeline, and if possible, it decreases readability.
+* Asserts are difficult to incorporate in a pipeline, and if possible, they decrease readability.
  
 This library is used to perform unit- and integration tests on (YAML) pipelines. At the moment, only 
 Azure DevOps pipelines are supported.
@@ -98,7 +99,7 @@ Example:
 <dependency>
   <groupId>io.github.hvmerode</groupId>
   <artifactId>junit-pipeline</artifactId>
-  <version>1.1.2</version>
+  <version>1.1.3</version>
 </dependency>
 ```
 
@@ -544,6 +545,15 @@ pipeline.getRunResult()
 ## New features ##
 * Test on Linux; some filesystem methods in Utils may not work properly.
 * Support "refs/tags/tag" and "refs/refname" for external repositories with templates.
+* Reset trigger to none; this prevents that pipelines are executed twice; one time because the repo is updated and
+  one time because it is explicitly started by the junit-pipeline framework.
+* Create local HTTP server that receives HTTP(S) requests send by the pipeline. 
+  The HTTP server runs on the Azure DevOps agent and intercepts requests from the pipeline (eg. sent using curl).
+  The override literal method should alter the endpoint defined in the pipeline.
+  This feature must also provide the option to return a specific HTTP status code and custom response.
+* Publish pipeline unit test report.
+* Dynamically create service connections, which refer to the locally running HTTP server.
+* Clone variable group from original Azure DevOps project into the Azure DevOps test project.
 * Log YAML line numbers in method _Utils.validatePipelineFile()_ according to [yaml-line-numbers.md](https://github.com/networknt/json-schema-validator/blob/master/doc/yaml-line-numbers.md)
 * Add option to pipeline.mockStep to display a name (the inline script shows as CmdLine in Azure DevOps).
 * Add option to continue on error for all steps.

@@ -7,7 +7,7 @@
     </Appenders>
     <Loggers>
         <!-- Set the level to DEBUG to also show the debug logging -->
-        <Root level="DEBUG">
+        <Root level="INFO">
             <AppenderRef ref="Console"/>
         </Root>
         <!-- Suppress the logging of the json-schema-validator -->

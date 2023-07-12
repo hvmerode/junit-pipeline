@@ -536,7 +536,7 @@ public class YamlDocument {
                             }
 
                             // Check whether key equals to sectionIdentifier
-                            if (sectionIdentifier.equals(key)) {
+                            if (sectionIdentifier != null && sectionIdentifier.equals(key)) {
                                 logger.debug("And the stringValue also equals the key: {}", key);
 
                                 if (action.needsSectionIdentifier()) {

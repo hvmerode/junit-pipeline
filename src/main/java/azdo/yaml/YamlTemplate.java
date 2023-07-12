@@ -16,7 +16,7 @@ public class YamlTemplate extends YamlDocument{
         EXTERNAL
     }
 
-    private static Log logger = Log.getLogger();
+    private static final Log logger = Log.getLogger();
     private InternalOrExternalTemplate internalOrExternalTemplate = InternalOrExternalTemplate.EXTERNAL;
     //private String templateName; // The template name as defined in the pipeline (without the @ postfix)
 
@@ -150,7 +150,7 @@ public class YamlTemplate extends YamlDocument{
             if (targetInputFilePath.equals(sourceInputFilePath))
             {
                 // Replace the repository name (replace the source repository with the target repository name)
-                // Only replace the first occurence
+                // Only replace the first occurrence
                 // TODO: Maybe better to replace the sourcePath with the targetPath?
                 logger.debug("Replace the repository name");
                 logger.debug("sourceInputFilePath is: {}", sourceInputFile);
@@ -171,7 +171,7 @@ public class YamlTemplate extends YamlDocument{
         logger.debug("alias: {}", alias);
         logger.debug("repositoryList: {}", repositoryList.toString());
 
-        RepositoryResource repositoryResource = null;
+        RepositoryResource repositoryResource;
         int size = repositoryList.size();
         for (int i = 0; i < size; i++) {
             repositoryResource = repositoryList.get(i);

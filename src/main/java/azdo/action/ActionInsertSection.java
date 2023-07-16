@@ -6,6 +6,7 @@ import azdo.yaml.ActionResult;
 import java.util.*;
 
 /******************************************************************************************
+ @deprecated
  This class is used to insert a section before or after another section. This section is
  searched using the 'sectionType' and 'sectionIdentifier'. For example:
  Assume, that 'sectionType' has the value "stage" and 'sectionIdentifier' has the value

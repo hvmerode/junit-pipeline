@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static azdo.junit.AzDoPipeline.BASH_COMMAND.*;
+
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class PipelineUnit {
     private static Log logger = Log.getLogger();
@@ -46,11 +48,11 @@ public class PipelineUnit {
             List<Hook> hookList = new ArrayList<>();
             hookList.add(new TestHook());
 
-            pipeline.overrideSectionPropertySearchByTypeAndIdentifier("pool", "", "vmImage", "windows-latest");
-            pipeline.setVariableSearchStepByDisplayName ("Testing, testing", "testVar", "myReplacedValue");
-            pipeline.assertNotEqualsSearchStepByDisplayName("Testing, testing", "testVar", "myReplacedValue", false);
-            pipeline.assertFileNotExistsSearchStepByDisplayName("Testing, testing", "test.txt", false);
-            pipeline.startPipeline("master", hookList, false);
+            pipeline.overrideSectionPropertySearchByTypeAndIdentifier("pool", "", "vmImage", "windows-latest")
+                    .setVariableSearchStepByDisplayName ("Testing, testing", "testVar", "myReplacedValue")
+                    .assertFileNotExistsSearchStepByDisplayName("Testing, testing", "test.txt", false)
+                    .assertNotEqualsSearchStepByDisplayName("Testing, testing", "testVar", "myReplacedValue", false)
+                    .startPipeline("master", hookList, false);
         }
         catch (IOException e) {
             logger.debug("Exception occurred after the pipeline was started: {}", e);
@@ -72,15 +74,14 @@ public class PipelineUnit {
         // Initialize the pipeline
         pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/pipeline-test.yml");
 
-        String inlineScript = "echo \"This is a mock script\"\n" +
-                "echo \"This is line 2\"";
-        pipeline.mockStepSearchByIdentifier("AWSShellScript@1", inlineScript);
-        pipeline.skipStageSearchByIdentifier("Stage_B");
-        pipeline.skipStageSearchByIdentifier("ExecuteScriptStage");
-        pipeline.assertEqualsSearchStepByDisplayName ("DeployStage job_xd script", "myVar", "donotfail", true);
-
         try {
-            pipeline.startPipeline();
+            String inlineScript = "echo \"This is a mock script\"\n" +
+                    "echo \"This is line 2\"";
+            pipeline.mockStepSearchByIdentifier("AWSShellScript@1", inlineScript)
+                    .skipStageSearchByIdentifier("Stage_B")
+                    .skipStageSearchByIdentifier("ExecuteScriptStage")
+                    .assertEqualsSearchStepByDisplayName ("DeployStage job_xd script", "myVar", "donotfail", true)
+                    .startPipeline();
         }
         catch (IOException e) {
             logger.debug("Exception occurred after the pipeline was started: {}", e);
@@ -102,12 +103,11 @@ public class PipelineUnit {
         // Initialize the pipeline
         pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/pipeline-test.yml");
 
-        String inlineScript = "echo \"This is a mock script\"\n" +
-                "echo \"This is line 2\"";
-        pipeline. mockStepSearchByIdentifier("AWSShellScript@1", inlineScript);
-
         try {
-            pipeline.startPipeline("myFeature");
+            String inlineScript = "echo \"This is a mock script\"\n" +
+                    "echo \"This is line 2\"";
+            pipeline.mockStepSearchByIdentifier("AWSShellScript@1", inlineScript)
+                    .startPipeline("myFeature");
         }
         catch (IOException e) {
             logger.debug("Exception occurred: {}", e);
@@ -130,19 +130,19 @@ public class PipelineUnit {
         pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/pipeline-test.yml");
 
         try {
-            pipeline.overrideParameterDefault("sleep", "5");
-            pipeline.overrideTemplateParameter("aNiceParam", "replaced_parameter");
-            pipeline.overrideVariable("jobVar", "replacedJobVar"); // There 3 occurrences of jobVar
-            pipeline.overrideLiteral("Job_2.Task_3: Sleep some seconds", "Sleep");
-            pipeline.skipSectionSearchByTypeAndIdentifier("template", "test-template.yml@external2");
-            pipeline.overrideVariable("aws_region", "eu-west-1");
-            pipeline.skipJobSearchByIdentifier("Job_XD");
-            pipeline.setVariableSearchStepByIdentifier ("AWSShellScript@1", "aws_connection", "42");
-            pipeline.setVariableSearchStepByDisplayName ("ExecuteScriptStage job_xc script", "myVar", "myReplacedValue");
-            pipeline.assertNotEqualsSearchStepByDisplayName("ExecuteScriptStage job_xa script", "jobVar", "replacedJobVar");
-            pipeline.assertEqualsSearchStepByDisplayName("ExecuteScriptStage job_xa script", "jobVar", "replacedJobVar");
-            pipeline.assertEmptySearchStepByDisplayName("ExecuteScriptStage job_xa script", "jobVar");
-            pipeline.startPipeline("myFeature", null, true);
+            pipeline.overrideParameterDefault("sleep", "5")
+                    .overrideTemplateParameter("aNiceParam", "replaced_parameter")
+                    .overrideVariable("jobVar", "replacedJobVar")
+                    .overrideLiteral("Job_2.Task_3: Sleep some seconds", "Sleep")
+                    .skipSectionSearchByTypeAndIdentifier("template", "test-template.yml@external2")
+                    .overrideVariable("aws_region", "eu-west-1")
+                    .skipJobSearchByIdentifier("Job_XD")
+                    .setVariableSearchStepByIdentifier ("AWSShellScript@1", "aws_connection", "42")
+                    .setVariableSearchStepByDisplayName ("ExecuteScriptStage job_xc script", "myVar", "myReplacedValue")
+                    .assertNotEqualsSearchStepByDisplayName("ExecuteScriptStage job_xa script", "jobVar", "replacedJobVar")
+                    .assertEqualsSearchStepByDisplayName("ExecuteScriptStage job_xa script", "jobVar", "replacedJobVar")
+                    .assertEmptySearchStepByDisplayName("ExecuteScriptStage job_xa script", "jobVar")
+                    .startPipeline("myFeature", null, true);
         }
         catch (IOException e) {
             logger.debug("Exception occurred: {}", e);
@@ -153,8 +153,29 @@ public class PipelineUnit {
         logger.info("Actual: {}", pipeline.getRunResult().result);
     }
 
-    @AfterAll
-    public static void tearDown() {
-        logger.debug("\ntearDown");
+    @Test
+    @Order(5)
+    public void test5() {
+        logger.debug("");
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        logger.debug("Perform unittest: test5");
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+        // Initialize the pipeline
+        pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/bash-mock.yml");
+
+        try {
+            pipeline.mockBashCommandSearchStepByDisplayName(CURL,"HTTP/2 501", "Curl step")
+                    .mockBashCommandSearchStepByDisplayName(WGET, "mock 100%[=================================================>]  15.01M  6.77MB/s    in 2.2s", "Wget step")
+                    .mockBashCommandSearchStepByDisplayName(FTP,  "", "Ftp step")
+                    .startPipeline();
+        }
+        catch (IOException e) {
+            logger.debug("Exception occurred: {}", e);
+        }
+        Assertions.assertEquals (RunResult.Result.succeeded, pipeline.getRunResult().result);
+        logger.info("Test successful");
+        logger.info("Expected: {}", RunResult.Result.succeeded);
+        logger.info("Actual: {}", pipeline.getRunResult().result);
     }
 }

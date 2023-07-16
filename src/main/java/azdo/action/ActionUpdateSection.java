@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 /******************************************************************************************
+ @deprecated
  This class is used to replace a section. This section is searched using 'sectionType'
  and 'sectionIdentifier'. For example:
  Assume, that 'sectionType' has the value "task", and 'sectionIdentifier' has the
@@ -45,7 +46,7 @@ public class ActionUpdateSection implements Action {
         if (actionResult.l3 instanceof ArrayList) {
             logger.debug("l1 is instance of ArrayList");
 
-            // Run through the elements of the list and remove the section
+            // Run through the elements of the list andupdate the section
             ArrayList<Object> list = (ArrayList<Object>) actionResult.l3;
             int index = 0;
             int size = list.size();
@@ -57,7 +58,7 @@ public class ActionUpdateSection implements Action {
                     for (Map.Entry<String, Object> entry : map.entrySet()) {
 
                         // Check whether the entry has the given key and value
-                        // Delete the entry from the list if this is the case
+                        // Update the entry from the list if this is the case
                         logger.debug("entry.getKey(): {}", entry.getKey());
                         logger.debug("entry.getValue(): {}", entry.getValue());
                         if (sectionType.equals(entry.getKey()) && sectionIdentifier.equals(entry.getValue())) {

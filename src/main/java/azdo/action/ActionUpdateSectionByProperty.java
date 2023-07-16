@@ -2,45 +2,27 @@ package azdo.action;
 
 import azdo.utils.Log;
 import azdo.yaml.ActionResult;
-
 import java.util.ArrayList;
 import java.util.Map;
 
 /******************************************************************************************
  @deprecated
- This class is used to insert a section before or after another section. This section is
- searched using the 'sectionType'
- and 'property'. For example:
- Assume, that 'sectionType' has the value "stage", 'property' has the value "displayName",
- and 'propertyValue' has the value "Execute this stage".
- If found, a section - defined by  'sectionToInsert' - is inserted before or after "mystage",
- depending on the value of 'insertBefore'.
-
- The variable 'sectionToInsert' is of type Map, because this is the way how a section is
- represented in a yaml object in Snakeyaml.
-
  ******************************************************************************************/
-public class ActionInsertSectionByProperty  implements Action {
+public class ActionUpdateSectionByProperty  implements Action {
     private static Log logger = Log.getLogger();
     private String sectionType; // Is "job", for example
     private String property; // The property of the section, for example "displayName"
     private String propertyValue; // The value of the property
-    private Map<String, Object> sectionToInsert; // The section in YAML inserted before or after the section found
+    private Map<String, Object> newSection; // The new section in YAML
 
-    // If 'true', the 'sectionToInsert' YAML string is inserted before the given section. If 'false',
-    // the 'sectionToInsert' YAML is inserted after the given section.
-    private boolean insertBefore = true;
-
-    public ActionInsertSectionByProperty (String sectionType,
+    public ActionUpdateSectionByProperty (String sectionType,
                                           String property,
                                           String propertyValue,
-                                          Map<String, Object> sectionToInsert,
-                                          boolean insertBefore) {
+                                          Map<String, Object> newSection) {
         this.sectionType = sectionType;
         this.property = property;
         this.propertyValue = propertyValue;
-        this.sectionToInsert = sectionToInsert;
-        this.insertBefore = insertBefore;
+        this.newSection = newSection;
     }
 
     public void execute (ActionResult actionResult) {
@@ -51,8 +33,7 @@ public class ActionInsertSectionByProperty  implements Action {
         logger.debug("sectionType: {}", sectionType);
         logger.debug("property: {}", property);
         logger.debug("propertyValue: {}", propertyValue);
-        logger.debug("sectionToInsert: {}", sectionToInsert);
-        logger.debug("insertBefore: {}", insertBefore);
+        logger.debug("newSection: {}", newSection);
 
         if (actionResult.l3 == null) {
             logger.debug("actionResult.l3 is null; return");
@@ -60,15 +41,14 @@ public class ActionInsertSectionByProperty  implements Action {
 
         boolean foundType = false;
         if (actionResult.l3 instanceof ArrayList) {
-            //logger.debug("l1 is instance of ArrayList");
+            logger.debug("l3 is instance of ArrayList");
 
-            // Run through the elements of the list and insert the section
+            // Run through the elements of the list and update the section
             ArrayList<Object> list = (ArrayList<Object>) actionResult.l3;
             int index = 0;
             int size = list.size();
             for (index = 0; index < size; index++) {
                 if (list.get(index) instanceof Map) {
-                    //logger.debug("list.get(index) is instance of ArrayList");
 
                     Map<String, Object> map = (Map<String, Object>) list.get(index);
                     for (Map.Entry<String, Object> entry : map.entrySet()) {
@@ -80,22 +60,18 @@ public class ActionInsertSectionByProperty  implements Action {
                             logger.debug("Found the right type: {}", sectionType);
                             foundType = true;
                         }
+
                         if (property.equals(entry.getKey()) && propertyValue.equals(entry.getValue()) && foundType) {
                             // Found the right property with the correct value
-                            if (insertBefore) {
-                                logger.info("Insert a new section before section \'{}\' with property \'{}\': \'{}\'", sectionType, property, propertyValue);
-                                list.add(index, sectionToInsert);
-                                actionResult.actionExecuted = true;
-                            }
-                            else {
-                                logger.info("Insert a new section after section \'{}\' with property \'{}\': \'{}\'", sectionType, property, propertyValue);
-                                list.add(index + 1, sectionToInsert);
-                                actionResult.actionExecuted = true;
-                            }
+                            logger.info("Replace section type \'{}\' with property \'{}\': \'{}\'", sectionType, property, propertyValue);
+                            list.remove(index);
+                            list.add(index, newSection);
+                            actionResult.actionExecuted = true;
                             return;
                         }
                     }
                 }
+
                 foundType = false;
             }
         }

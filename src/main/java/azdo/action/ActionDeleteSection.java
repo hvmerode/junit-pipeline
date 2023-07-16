@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 /******************************************************************************************
+ @deprecated
  This class is used to delete a section. This section is searched using 'sectionType'
  and 'sectionIdentifier'. For example:
  Assume, that 'sectionType' has the value "stage", and 'sectionIdentifier' has the

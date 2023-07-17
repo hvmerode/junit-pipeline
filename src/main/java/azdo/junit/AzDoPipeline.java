@@ -142,6 +142,7 @@ public class AzDoPipeline {
     After all files are pushed, the pipeline in Azure Devops is called by means of an API.
     The last step is to reload the original yaml file, so it can be used for the next test.
     The startPipeline() method has different flavors, that allow to pass hooks or perform a dryrun (not starting the pipeline).
+    @throws IOException
     *******************************************************************************************/
     public void startPipeline() throws IOException {
         startPipeline (GitUtils.BRANCH_MASTER, null, false);
@@ -149,6 +150,7 @@ public class AzDoPipeline {
 
     /******************************************************************************************
      @param dryRun Does not start the pipeline in Azure DevOps
+     @throws IOException
      *******************************************************************************************/
     public void startPipeline(boolean dryRun) throws IOException {
         startPipeline (GitUtils.BRANCH_MASTER, null, dryRun);
@@ -156,6 +158,7 @@ public class AzDoPipeline {
 
     /******************************************************************************************
      @param branchName The branch from which the pipeline starts
+     @throws IOException
      *******************************************************************************************/
     public void startPipeline (String branchName) throws IOException {
         startPipeline (branchName, null, false);
@@ -164,6 +167,7 @@ public class AzDoPipeline {
     /******************************************************************************************
      @param branchName The branch from which the pipeline starts
      @param dryRun Does not start the pipeline in Azure DevOps
+     @throws IOException
      *******************************************************************************************/
     public void startPipeline (String branchName,
                               boolean dryRun) throws IOException {
@@ -173,6 +177,7 @@ public class AzDoPipeline {
     /******************************************************************************************
      @param branchName The branch from which the pipeline starts
      @param hooks List of hooks to be executed locally before the pipeline starts
+     @throws IOException
      *******************************************************************************************/
     public void startPipeline (String branchName,
                               List<Hook> hooks) throws IOException {
@@ -183,6 +188,7 @@ public class AzDoPipeline {
      @param branchName The branch from which the pipeline starts
      @param hooks List of hooks to be executed locally before the pipeline starts
      @param dryRun Does not start the pipeline in Azure DevOps
+     @throws IOException
      *******************************************************************************************/
     public void startPipeline(String branchName,
                               List<Hook> hooks,
@@ -1039,7 +1045,7 @@ public class AzDoPipeline {
      @param command Bash command; this is an enum of supported bash commands that can be mocked
      @param commandOutput The value of the displayName property of a step
 
-     @implNote: The Bash@03, SSH@0, and CmdLine@2 tasks are not yet supported. Only bash scripts
+     Note: The Bash@03, SSH@0, and CmdLine@2 tasks are not yet supported. Only bash scripts
      included in a 'script' ir 'bash' step can be mocked.
      ******************************************************************************************/
     public AzDoPipeline mockBashCommandSearchStepByDisplayName (String displayValue,
@@ -1125,7 +1131,7 @@ public class AzDoPipeline {
      @param command Pwershell command; this is an enum of supported PS commands that can be mocked
      @param commandOutput The value of the displayName property of a step
 
-     @implNote: The PowerShell@2, and CmdLine@2 tasks are not yet supported. Only PS scripts
+     Note: The PowerShell@2, and CmdLine@2 tasks are not yet supported. Only PS scripts
      included in a 'pwsh' step can be mocked.
      ******************************************************************************************/
     public AzDoPipeline mockPowershellCommandSearchStepByDisplayName (String displayValue,

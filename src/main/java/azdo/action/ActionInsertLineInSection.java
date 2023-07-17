@@ -12,17 +12,17 @@ import java.util.Map;
  'property' == "displayName", and 'propertyValue' == "Deploy step".
  If the section is found, a new (script) line is added to the beginning of the section.
  If a script look like this:
- @<code>
+ {@code
  script: |
      echo "This is the first line"
- </code>
+ }
  and the ActionInsertLineInSection.execute() method is called with
  newLine == "echo \"And now this is the first line\"\n", the result becomes:
- @<code>
+ {@code
  script: |
      echo "And now this is the first line"
      echo "This is the first line"
- </code>
+ }
  ******************************************************************************************/
 public class ActionInsertLineInSection implements Action {
     private static Log logger = Log.getLogger();

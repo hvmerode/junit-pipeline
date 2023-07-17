@@ -99,7 +99,7 @@ Example:
 <dependency>
   <groupId>io.github.hvmerode</groupId>
   <artifactId>junit-pipeline</artifactId>
-  <version>1.1.3</version>
+  <version>1.1.4</version>
 </dependency>
 ```
 
@@ -547,10 +547,6 @@ pipeline.getRunResult()
 * Support "refs/tags/tag" and "refs/refname" for external repositories with templates.
 * Reset trigger to none; this prevents that pipelines are executed twice; one time because the repo is updated and
   one time because it is explicitly started by the junit-pipeline framework.
-* Create local HTTP server that receives HTTP(S) requests send by the pipeline. 
-  The HTTP server runs on the Azure DevOps agent and intercepts requests from the pipeline (eg. sent using curl).
-  The override literal method should alter the endpoint defined in the pipeline.
-  This feature must also provide the option to return a specific HTTP status code and custom response.
 * Publish pipeline unit test report.
 * Dynamically create service connections, which refer to the locally running HTTP server.
 * Clone variable group from original Azure DevOps project into the Azure DevOps test project.
@@ -563,11 +559,12 @@ pipeline.getRunResult()
 * Add methods to add, update or remove conditions in stages or jobs. Use the _overrideLiteral_ method, if possible.
 * Check whether the output pipeline is a valid pipeline (valid yaml and valid Azure DevOps pipeline).
   This is a 'nice-to-have'.
-* ~~Add an assert step; check a variable on a certain value using a condition. Exit with 1 if the condition is not met.~~
-  * ~~This step can be added before or after a certain step using a pipeline method.~~
-* ~~Check/assert output variables of a step.~~
 
 ## Solved ##
+* ~~Create local HTTP server that receives HTTP(S) requests send by the pipeline.
+  The HTTP server runs on the Azure DevOps agent and intercepts requests from the pipeline (eg. sent using curl).
+  The override literal method should alter the endpoint defined in the pipeline.
+  This feature must also provide the option to return a specific HTTP status code and custom response.~~
 * ~~Some of the methods add a script task to the yaml. Currently this is a bash type of script, so it is assumed that the
   Azure DevOps agent is a Linux agent.~~
 * ~~If the first run of a pipeline is not 'master' but another branch, the pipeline does not run.
@@ -587,6 +584,9 @@ pipeline.getRunResult()
 because cloning/checkout is not possible somehow~~
 * ~~The updated pipeline code is pushed to the _default branch_ in the test project (master); pushing to other branches is not possible.~~
 * ~~The project id of the Azure DevOps test project must be configured manually and is not (yet) derived automatically.~~
+* ~~Add an assert step; check a variable on a certain value using a condition. Exit with 1 if the condition is not met.~~
+  * ~~This step can be added before or after a certain step using a pipeline method.~~
+* ~~Check/assert output variables of a step.~~
 
 <br></br>
 Copyright (c) Henry van Merode.\

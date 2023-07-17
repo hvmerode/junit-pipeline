@@ -12,6 +12,8 @@ public class Constants {
     public static final String SECTION_STEP = "step";
     public static final String SECTION_TASK = "task";
     public static final String SECTION_SCRIPT = "script";
+    public static final String SECTION_POWERSHELL = "pwsh";
+    public static final String SECTION_BASH = "bash";
     public static final String SECTION_STEPS = "steps";
     public static final String SECTION_TEMPLATE = "template";
 

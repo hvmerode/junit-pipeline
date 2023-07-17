@@ -2,7 +2,6 @@ package azdo.action;
 
 import azdo.utils.Log;
 import azdo.yaml.ActionResult;
-
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -12,7 +11,7 @@ import java.util.Map;
  Assume, that 'sectionType' has the value "stage", and 'sectionIdentifier' has the
  value "mystage".
  The stage with the identifier "mystage" is searched in the yaml pipeline.
- If found, the stage section is deleted from the yaml if the action is DELETE_SECTION.
+ If found, the stage section is, for example, deleted from the yaml if the action is DELETE_SECTION.
  ******************************************************************************************/
 public class ActionOnSection implements Action {
     private static Log logger = Log.getLogger();
@@ -40,6 +39,11 @@ public class ActionOnSection implements Action {
         this.insertBefore = insertBefore;
     }
 
+    /******************************************************************************************
+     Perform an action on a section. The action properties are sey during creation of the object.
+     @param actionResult Contains parts of the YAML structure. It is used to search for the
+     section in the l3 structure.
+     ******************************************************************************************/
     public void execute (ActionResult actionResult)
     {
         logger.debug("==> Method ActionDeleteSection.execute");

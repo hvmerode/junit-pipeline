@@ -2,13 +2,28 @@ package azdo.action;
 
 import azdo.utils.Log;
 import azdo.yaml.ActionResult;
-
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static azdo.utils.Constants.SECTION_SCRIPT;
-
+/******************************************************************************************
+ This class is typically used to insert a line to the beginning of a script, although
+ it is made generic, and it can be also used fore other section types.
+ It searches a section using a 'property'  with a 'propertyValue', for example,
+ 'property' == "displayName", and 'propertyValue' == "Deploy step".
+ If the section is found, a new (script) line is added to the beginning of the section.
+ If a script look like this:
+ @<code>
+ script: |
+     echo "This is the first line"
+ </code>
+ and the ActionInsertLineInSection.execute() method is called with
+ newLine == "echo \"And now this is the first line\"\n", the result becomes:
+ @<code>
+ script: |
+     echo "And now this is the first line"
+     echo "This is the first line"
+ </code>
+ ******************************************************************************************/
 public class ActionInsertLineInSection implements Action {
     private static Log logger = Log.getLogger();
     private String sectionType; // Is "script", for example

@@ -450,9 +450,14 @@ public class YamlDocument {
                                        String sectionType,
                                        String sectionIdentifier) {
         logger.debug("==> Method: YamlDocument.performAction");
-        ActionResult ar = performActionOnThis (action, sectionType, sectionIdentifier);
-        performActionOnTemplates (action, sectionType, sectionIdentifier);
-        return ar;
+        ActionResult arMain = performActionOnThis (action, sectionType, sectionIdentifier);
+        ActionResult arTemplates = performActionOnTemplates (action, sectionType, sectionIdentifier);
+
+        // It must be clear whether the action is executed
+        if (arMain != null && arMain.actionExecuted)
+            return arMain;
+
+        return arTemplates;
     }
     private ActionResult performActionOnThis (Action action,
                                               String sectionType,

@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static azdo.junit.AzDoPipeline.BASH_COMMAND.*;
+import static azdo.junit.AzDoPipeline.POWERSHELL_COMMAND.INVOKE_RESTMETHOD;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class PipelineUnit {
@@ -35,6 +36,7 @@ public class PipelineUnit {
 
         try {
             // Create a hook to perform an action just before starting the pipeline
+            List<Hook> hookList = new ArrayList<>();
             class TestHook extends Hook {
                 @Override
                 public void executeHook() {
@@ -43,19 +45,17 @@ public class PipelineUnit {
             }
 
             // Create a list with hooks and pass it to the startPipeline
-            // Note: The startPipeline has a dryRun = true setting, meaning that it does not start the pipeline in AzUre DevOps
-            // This is temporary, and only used for testing
-            List<Hook> hookList = new ArrayList<>();
             hookList.add(new TestHook());
 
+            // Manipulate the pipeline and validate the 'testVar' and the existence of file  "output.csv"
             pipeline.overrideSectionPropertySearchByTypeAndIdentifier("pool", "", "vmImage", "windows-latest")
                     .setVariableSearchStepByDisplayName ("Testing, testing", "testVar", "myReplacedValue")
-                    .assertFileNotExistsSearchStepByDisplayName("Testing, testing", "test.txt", false)
+                    .assertFileNotExistsSearchStepByDisplayName("Testing, testing", "output.csv", false)
                     .assertNotEqualsSearchStepByDisplayName("Testing, testing", "testVar", "myReplacedValue", false)
-                    .startPipeline("master", hookList, false);
+                    .startPipeline("master", hookList);
         }
         catch (IOException e) {
-            logger.debug("Exception occurred after the pipeline was started: {}", e);
+            logger.debug("Exception occurred after the pipeline was started: {}", e.getMessage());
         }
         Assertions.assertEquals (RunResult.Result.failed, pipeline.getRunResult().result);
         logger.info("Test successful");
@@ -84,7 +84,7 @@ public class PipelineUnit {
                     .startPipeline();
         }
         catch (IOException e) {
-            logger.debug("Exception occurred after the pipeline was started: {}", e);
+            logger.debug("Exception occurred after the pipeline was started: {}", e.getMessage());
         }
         Assertions.assertEquals (RunResult.Result.succeeded, pipeline.getRunResult().result);
         logger.info("Test successful");
@@ -110,7 +110,7 @@ public class PipelineUnit {
                     .startPipeline("myFeature");
         }
         catch (IOException e) {
-            logger.debug("Exception occurred: {}", e);
+            logger.debug("Exception occurred: {}", e.getMessage());
         }
         Assertions.assertEquals (RunResult.Result.succeeded, pipeline.getRunResult().result);
         logger.info("Test successful");
@@ -145,7 +145,7 @@ public class PipelineUnit {
                     .startPipeline("myFeature", null, true);
         }
         catch (IOException e) {
-            logger.debug("Exception occurred: {}", e);
+            logger.debug("Exception occurred: {}", e.getMessage());
         }
         Assertions.assertEquals (RunResult.Result.none, pipeline.getRunResult().result);
         logger.info("Test successful");
@@ -165,17 +165,41 @@ public class PipelineUnit {
         pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/bash-mock.yml");
 
         try {
-            pipeline.mockBashCommandSearchStepByDisplayName(CURL,"HTTP/2 501", "Curl step")
-                    .mockBashCommandSearchStepByDisplayName(WGET, "mock 100%[=================================================>]  15.01M  6.77MB/s    in 2.2s", "Wget step")
-                    .mockBashCommandSearchStepByDisplayName(FTP,  "", "Ftp step")
+            pipeline.mockBashCommandSearchStepByDisplayName("Curl step", CURL,"HTTP/2 501")
+                    .mockBashCommandSearchStepByDisplayName("Wget step", WGET, "mock 100%[=================================================>]  15.01M  6.77MB/s    in 2.2s")
+                    .mockBashCommandSearchStepByDisplayName("Ftp step", FTP,  "")
                     .startPipeline();
         }
         catch (IOException e) {
-            logger.debug("Exception occurred: {}", e);
+            logger.debug("Exception occurred: {}", e.getMessage());
         }
         Assertions.assertEquals (RunResult.Result.succeeded, pipeline.getRunResult().result);
         logger.info("Test successful");
         logger.info("Expected: {}", RunResult.Result.succeeded);
+        logger.info("Actual: {}", pipeline.getRunResult().result);
+    }
+
+    @Test
+    @Order(6)
+    public void test6() {
+        logger.debug("");
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        logger.debug("Perform unittest: test6");
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+        // Initialize the pipeline
+        pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/powershell-mock.yml");
+
+        try {
+            pipeline.mockPowershellCommandSearchStepByDisplayName("Invoke-RestMethod step", INVOKE_RESTMETHOD, "This is a mock Invoke-RestMethod")
+                    .startPipeline("master");
+        }
+        catch (IOException e) {
+            logger.debug("Exception occurred after the pipeline was started: {}", e.getMessage());
+        }
+        Assertions.assertEquals (RunResult.Result.succeeded, pipeline.getRunResult().result);
+        logger.info("Test successful");
+        logger.info("Expected: {}", RunResult.Result.failed);
         logger.info("Actual: {}", pipeline.getRunResult().result);
     }
 }

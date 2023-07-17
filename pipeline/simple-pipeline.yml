@@ -8,12 +8,12 @@ variables:
     value: test
 
 stages:
-  - stage: test
+  - stage: simpleStage
     jobs:
-      - job: test
+      - job: simpleJob
         pool:
           vmImage: 'ubuntu-latest'
         steps:
           - script: |
-              echo 'This is a TEST'
+              echo 'This is a simple test'
             displayName: 'Testing, testing'

@@ -1,9 +1,18 @@
 package azdo.action;
+
 import azdo.utils.Log;
 import azdo.yaml.ActionResult;
 import java.util.ArrayList;
 import java.util.Map;
 
+/******************************************************************************************
+ This class is used to perform an action on a section. This section is searched using
+ 'sectionType' and 'property'. For example:
+ Assume, that 'sectionType' has the value "script", 'property' has the value "displayName",
+ and 'propertyValue' has the value "Deploy task".
+ The script with the displayName "Deploy task" is searched in the yaml pipeline.
+ If found, the step section is, for example, deleted from the yaml if the action is DELETE_SECTION.
+ ******************************************************************************************/
 public class ActionOnSectionByProperty implements Action {
 
     private static Log logger = Log.getLogger();
@@ -33,6 +42,11 @@ public class ActionOnSectionByProperty implements Action {
         this.insertBefore = insertBefore;
     }
 
+    /******************************************************************************************
+     Perform an action on a section. The action properties are sey during creation of the object.
+     @param actionResult Contains parts of the YAML structure. It is used to search for the
+     section in the l3 structure.
+     ******************************************************************************************/
     public void execute (ActionResult actionResult) {
         logger.debug("==> Method ActionDeleteSectionByProperty.execute");
         logger.debug("actionResult.l1: {}", actionResult.l1);

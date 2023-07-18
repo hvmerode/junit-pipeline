@@ -1,0 +1,25 @@
+# Build numbering format
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+trigger: none
+
+stages:
+  - stage: bashMockStage
+    jobs:
+      - job: bashMockJob
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - script: |
+              # Return the HTTP status code. This should be 200 (if not mocked).
+              var=$(curl --silent --head https://www.example.com | awk '/^HTTP/{print $2}')
+              echo "$var"
+            displayName: 'Curl step'
+          - bash: |
+              # The wget command downloads a .jar file
+              wget "https://repo1.maven.org/maven2/com/github/tomakehurst/wiremock-jre8-standalone/2.35.0/wiremock-jre8-standalone-2.35.0.jar"
+            displayName: 'Wget step'
+          - script: |
+              # This ftp command fails
+              ftp -u ftp://user:secret@ftp.example.com/my-local-file.txt my-local-file.txt
+            displayName: 'Ftp step'

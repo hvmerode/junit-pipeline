@@ -11,6 +11,8 @@ stages:
           vmImage: 'windows-latest'
         steps:
           - pwsh: |
+              # This is a bogus example of Invoke-RestMethod, which does not work (server does not exists)
+              # It is used as example to mock the Invoke-RestMethod
               $Url = "https://server.contoso.com:8089/services/search/jobs/export"
               $Body = @{
                 search = "search index=_internal | reverse | table index,host,source,sourcetype,_raw"
@@ -18,5 +20,15 @@ stages:
                 earliest_time = "-2d@d"
                 latest_time = "-1d@d"
               }
-              Invoke-RestMethod -Method 'Post' -Uri $url -Body $body -OutFile output.csv
-            displayName: 'Invoke-RestMethod step'
+              $result = Invoke-RestMethod -Method 'Post' -Uri $url -Body $body -OutFile output.csv
+              Write-Output "Result: $($result.element)"
+              
+              $result = Invoke-RestMethod -Method 'Post' -Uri $url -Body $body -OutFile output.csv
+              Write-Output "Result: $($result.element)"
+            displayName: 'Invoke-RestMethod step 1 of 2'
+          - pwsh: |
+              $Url = "https://server.contoso.com:8089/services/search/people/export"
+              $result = Invoke-RestMethod -Method 'Post' -Uri $url -OutFile output.csv
+              Write-Output "Result: $($result.element)"
+            displayName: 'Invoke-RestMethod step 2 of 2'
+

@@ -12,10 +12,8 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 import static azdo.utils.Constants.*;
 
 /*
@@ -39,10 +37,10 @@ public class AzDoPipeline {
 
     private AgentOSEnum agentOS = AgentOSEnum.LINUX; // Needed for OS-specific tasks
 
-    public enum BASH_COMMAND {CURL, SSH, WGET, FTP};
+    public String supportedBashCommands[] = { "curl", "wget", "ftp" }; // Valid commands for method mockBashCommandSearchStepByDisplayName()
 
     // TODO: Invoke-WebRequest,
-    public enum POWERSHELL_COMMAND {INVOKE_RESTMETHOD};
+    public String supportedPowershellCommands[] = { "Invoke-RestMethod" }; // Valid commands for method mockPowershellCommandSearchStepByDisplayName()
 
     private static final String EXCLUDEFILESLIST = "\\excludedfileslist.txt";
 
@@ -1043,7 +1041,7 @@ public class AzDoPipeline {
      Mock a bash command in a script. The real command will not be executed.
      The script is found using the displayName.
      @param displayValue The value of the displayName property of a step
-     @param command Bash command; this is an enum of supported bash commands that can be mocked
+     @param command Bash command; for example "curl", "wget", "ftp"
      @param commandOutput The value of the displayName property of a step
 
      Note: The Bash@03, SSH@0, and CmdLine@2 tasks are not yet supported. Only bash scripts
@@ -1054,7 +1052,7 @@ public class AzDoPipeline {
      This makes it possible to define different commandOutput strings per command.
      ******************************************************************************************/
     public AzDoPipeline mockBashCommandSearchStepByDisplayName (String displayValue,
-                                                                BASH_COMMAND command,
+                                                                String command,
                                                                 String commandOutput){
         logger.debug("==> Method: YamlDocument.mockBashCommandSearchStepByDisplayName");
         logger.debug("displayValue: {}", displayValue);
@@ -1065,61 +1063,40 @@ public class AzDoPipeline {
         String newLine = null;
         Map<String, Object> stepToInsert = new LinkedHashMap<>();
         String s;
-        switch (command) {
-            case CURL: {
-                s = getMockedBashCommandScript ("curl", "./curl-mock.sh", commandOutput);
-                stepToInsert.put(SECTION_BASH, s);
+        String functionFileName;
+        boolean retval = Arrays.asList(supportedBashCommands).contains(command);
+        if (retval) {
+            // Mock the command; create a bash script to override the command with a function
+            functionFileName = "./" + command + "-mock.sh";
+            s = getMockedBashCommandScript (command, "./" + command + "-mock.sh", commandOutput);
+            stepToInsert.put(SECTION_BASH, s);
 
-                // displayName
-                s = "<Inserted> Mock curl";
-                stepToInsert.put(DISPLAY_NAME, s);
-                newLine = ". ./curl-mock.sh\n";
-                break;
-            }
-            case SSH: {
-                logger.warn("mockBashCommandSearchStepByDisplayName for SSH not yet supported");
-                break;
-            }
-            case WGET: {
-                s = getMockedBashCommandScript ("wget", "./wget-mock.sh", commandOutput);
-                stepToInsert.put(SECTION_BASH, s);
-
-                // displayName
-                s = "<Inserted> Mock wget";
-                stepToInsert.put(DISPLAY_NAME, s);
-                newLine = ". ./wget-mock.sh\n";
-                break;
-            }
-            case FTP: {
-                s = getMockedBashCommandScript ("ftp", "./ftp-mock.sh", commandOutput);
-                stepToInsert.put(SECTION_BASH, s);
-
-                // displayName
-                s = "<Inserted> Mock ftp";
-                stepToInsert.put(DISPLAY_NAME, s);
-                newLine = ". ./ftp-mock.sh\n";
-                break;
-            }
+            // displayName
+            s = "<Inserted> Mock " + command;
+            stepToInsert.put(DISPLAY_NAME, s);
+            newLine = ". " + functionFileName + "\n";
+        }
+        else {
+            logger.warn("Mocking command \'{}\' is not yet supported", command);
         }
 
-        // Add a new line to the Bash script, to define the overridden Bash command
         if (newLine != null) {
 
-            // Insert the bash step before a searched script (if found)
+            // Insert the bash step before a searched step of type 'script' (if found)
             ActionResult ar;
             ActionInsertSectionByProperty scriptAction = new ActionInsertSectionByProperty(SECTION_SCRIPT, DISPLAY_NAME, displayValue, stepToInsert, true);
             ar = yamlDocumentEntryPoint.performAction (scriptAction, SECTION_SCRIPT, "");
 
-            // Add a new line to the subsequent bash or script step
+            // Add a new line to the subsequent script step
             ActionInsertLineInSection scriptActionInsertLineInSection = new ActionInsertLineInSection(SECTION_SCRIPT, DISPLAY_NAME, displayValue, newLine);
             yamlDocumentEntryPoint.performAction(scriptActionInsertLineInSection, SECTION_SCRIPT, "");
 
             if (ar == null || !ar.actionExecuted) {
-                // Insert the bash step before a searched bash (if found)
+                // If the script was not found, try to insert the bash step before a searched step of type 'bash'
                 ActionInsertSectionByProperty bashAction = new ActionInsertSectionByProperty(SECTION_BASH, DISPLAY_NAME, displayValue, stepToInsert, true);
                 yamlDocumentEntryPoint.performAction(bashAction, SECTION_BASH, "");
 
-                // Add a new line to the subsequent bash
+                // Add a new line to the subsequent bash step
                 ActionInsertLineInSection bashActionInsertLineInSection = new ActionInsertLineInSection(SECTION_BASH, DISPLAY_NAME, displayValue, newLine);
                 yamlDocumentEntryPoint.performAction(bashActionInsertLineInSection, SECTION_BASH, "");
             }
@@ -1133,52 +1110,55 @@ public class AzDoPipeline {
      Mock a Powershell command in a script. The real command will not be executed.
      The script is found using the displayName.
      @param displayValue The value of the displayName property of a step
-     @param command Pwershell command; this is an enum of supported PS commands that can be mocked
-     @param commandOutput The value of the displayName property of a step
+     @param command Pwershell command
+     @param commandOutput The return value of the Powershell command
 
      Note: The PowerShell@2, and CmdLine@2 tasks are not yet supported. Only PS scripts
      included in a 'pwsh' step can be mocked.
-
-     TODO: Add additional counter argument to pinpoint the right command (if the same command occurs
-     multiple times in one step; default the first one is picked).
-     This makes it possible to define different commandOutput strings per command.
      ******************************************************************************************/
     public AzDoPipeline mockPowershellCommandSearchStepByDisplayName (String displayValue,
-                                                                      POWERSHELL_COMMAND command,
+                                                                      String command,
                                                                       String commandOutput){
         String[] commandOutputArray = new String[1];
         commandOutputArray[0] = commandOutput;
         return mockPowershellCommandSearchStepByDisplayName (displayValue, command, commandOutputArray);
     }
 
+    /******************************************************************************************
+     Mock a Powershell command in a script. The real command will not be executed.
+     The script is found using the displayName.
+     @param displayValue The value of the displayName property of a step
+     @param command Pwershell command
+     @param commandOutputArray The return value of the Powershell command. This method signature takes
+     an array of Strings. Reason is, that the step may contain multiple instances of the same command.
+     The order of the String array is also the order in which the commands are located in the
+     Powershell script.
+
+     Note: The PowerShell@2, and CmdLine@2 tasks are not yet supported. Only PS scripts
+     included in a 'pwsh' step can be mocked.
+     ******************************************************************************************/
     public AzDoPipeline mockPowershellCommandSearchStepByDisplayName (String displayValue,
-                                                                      POWERSHELL_COMMAND command,
-                                                                      String[] commandOutput){
+                                                                      String command,
+                                                                      String[] commandOutputArray){
         logger.debug("==> Method: YamlDocument.mockPowershellCommandSearchStepByDisplayName");
         logger.debug("displayValue: {}", displayValue);
         logger.debug("command: {}", command);
-        logger.debug("commandOutput: {}", commandOutput);
+        logger.debug("commandOutputArray: {}", commandOutputArray);
 
         // First, insert a section before the script, to override the PS command
         String newLine = null;
         Map<String, Object> stepToInsert = new LinkedHashMap<>();
         String s;
         switch (command) {
-            case INVOKE_RESTMETHOD: {
-                //s = getMockedPSCommandScript ("Invoke-RestMethod", "./Invoke-RestMethod-mock.ps1", commandOutput);
-                // Assume the commandOutput is a Json string; convert it to an array of objects because this is the return type of Invoke-RestMethod
-//                s = "{function Invoke-RestMethod {\n" +
-//                        "return '" + commandOutput + "' | ConvertFrom-Json\n " +
-//                        "}} > ./Invoke-RestMethod-mock.ps1";
-
-                // Construct the mock Powershell function for Invoke-RestMethod
+            case "Invoke-RestMethod": {
+                // Construct the mock Powershell function for the Invoke-RestMethod
                 s = "{function Invoke-RestMethod {\n" +
                         "$global:InvokeRestMethodCounter++\n" +
-                        "$strarry = @('{}', ";
-                int size = commandOutput.length;
+                        "$strarry = @('{\"dummy\": \"dummy\"}', ";
+                int size = commandOutputArray.length;
                 int sizeMinusOne = size - 1;
                 for (int i = 0; i < size; i++) {
-                    s += "'" + commandOutput[i] + "'";
+                    s += "'" + commandOutputArray[i] + "'";
                     if (i < sizeMinusOne)
                         s += ", ";
                 }
@@ -1195,12 +1175,14 @@ public class AzDoPipeline {
                 newLine = ". ./Invoke-RestMethod-mock.ps1\n";
                 break;
             }
+            default: {
+                logger.warn("Mocking command \'{}\' is not yet supported", command);
+                break;
+            }
         }
 
-        // Add a new line to the PS script, to define the overridden PS command
         if (newLine != null) {
-            // Insert the script before a PS script
-            ActionResult ar;
+            // Insert a Powershell script before the Powershell script that is searched for
             ActionInsertSectionByProperty actionPSScript = new ActionInsertSectionByProperty(SECTION_POWERSHELL, DISPLAY_NAME, displayValue, stepToInsert, true);
             yamlDocumentEntryPoint.performAction (actionPSScript, SECTION_POWERSHELL, "");
 
@@ -1221,12 +1203,12 @@ public class AzDoPipeline {
         return s;
     }
 
-    private String getMockedPSCommandScript (String functionName, String functionFileName, String commandOutput) {
-        String s = "{function " + functionName + " {\n" +
-                "return '" + commandOutput + "' | ConvertFrom-Json\n " +
-                "}} > " + functionFileName;
-        return s;
-    }
+//    private String getMockedPSCommandScript (String functionName, String functionFileName, String commandOutput) {
+//        String s = "{function " + functionName + " {\n" +
+//                "return '" + commandOutput + "' | ConvertFrom-Json\n " +
+//                "}} > " + functionFileName;
+//        return s;
+//    }
 
     /******************************************************************************************
      The assertEqualsSearchStepByDisplayName() method validates a variable during runtime of

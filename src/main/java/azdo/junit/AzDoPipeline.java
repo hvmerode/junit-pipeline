@@ -12,6 +12,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -1145,6 +1146,14 @@ public class AzDoPipeline {
     public AzDoPipeline mockPowershellCommandSearchStepByDisplayName (String displayValue,
                                                                       POWERSHELL_COMMAND command,
                                                                       String commandOutput){
+        String[] commandOutputArray = new String[1];
+        commandOutputArray[0] = commandOutput;
+        return mockPowershellCommandSearchStepByDisplayName (displayValue, command, commandOutputArray);
+    }
+
+    public AzDoPipeline mockPowershellCommandSearchStepByDisplayName (String displayValue,
+                                                                      POWERSHELL_COMMAND command,
+                                                                      String[] commandOutput){
         logger.debug("==> Method: YamlDocument.mockPowershellCommandSearchStepByDisplayName");
         logger.debug("displayValue: {}", displayValue);
         logger.debug("command: {}", command);
@@ -1158,15 +1167,25 @@ public class AzDoPipeline {
             case INVOKE_RESTMETHOD: {
                 //s = getMockedPSCommandScript ("Invoke-RestMethod", "./Invoke-RestMethod-mock.ps1", commandOutput);
                 // Assume the commandOutput is a Json string; convert it to an array of objects because this is the return type of Invoke-RestMethod
-                s = "{function Invoke-RestMethod {\n" +
-                        "return '" + commandOutput + "' | ConvertFrom-Json\n " +
-                        "}} > ./Invoke-RestMethod-mock.ps1";
+//                s = "{function Invoke-RestMethod {\n" +
+//                        "return '" + commandOutput + "' | ConvertFrom-Json\n " +
+//                        "}} > ./Invoke-RestMethod-mock.ps1";
 
-                // TODO: Add global counter to determine how often the function was called
-//                function Invoke-RestMethod {
-//                    $global:InvokeRestMethodCounter++
-//                    Write-Host $InvokeRestMethodCounter
-//                }
+                // Construct the mock Powershell function for Invoke-RestMethod
+                s = "{function Invoke-RestMethod {\n" +
+                        "$global:InvokeRestMethodCounter++\n" +
+                        "$strarry = @('{}', ";
+                int size = commandOutput.length;
+                int sizeMinusOne = size - 1;
+                for (int i = 0; i < size; i++) {
+                    s += "'" + commandOutput[i] + "'";
+                    if (i < sizeMinusOne)
+                        s += ", ";
+                }
+                s += ")\n";
+                s += "$output = $($strarry[$InvokeRestMethodCounter]) | ConvertFrom-Json\n";
+                s += "return $output\n";
+                s += "}} > ./Invoke-RestMethod-mock.ps1";
 
                 stepToInsert.put(SECTION_POWERSHELL, s);
 

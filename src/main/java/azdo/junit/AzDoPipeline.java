@@ -1047,6 +1047,10 @@ public class AzDoPipeline {
 
      Note: The Bash@03, SSH@0, and CmdLine@2 tasks are not yet supported. Only bash scripts
      included in a 'script' ir 'bash' step can be mocked.
+
+     TODO: Add additional counter argument to pinpoint the right command (if the same command occurs
+     multiple times in one step; default the first one is picked).
+     This makes it possible to define different commandOutput strings per command.
      ******************************************************************************************/
     public AzDoPipeline mockBashCommandSearchStepByDisplayName (String displayValue,
                                                                 BASH_COMMAND command,
@@ -1133,6 +1137,10 @@ public class AzDoPipeline {
 
      Note: The PowerShell@2, and CmdLine@2 tasks are not yet supported. Only PS scripts
      included in a 'pwsh' step can be mocked.
+
+     TODO: Add additional counter argument to pinpoint the right command (if the same command occurs
+     multiple times in one step; default the first one is picked).
+     This makes it possible to define different commandOutput strings per command.
      ******************************************************************************************/
     public AzDoPipeline mockPowershellCommandSearchStepByDisplayName (String displayValue,
                                                                       POWERSHELL_COMMAND command,
@@ -1148,7 +1156,18 @@ public class AzDoPipeline {
         String s;
         switch (command) {
             case INVOKE_RESTMETHOD: {
-                s = getMockedPSCommandScript ("Invoke-RestMethod", "./Invoke-RestMethod-mock.ps1", commandOutput);
+                //s = getMockedPSCommandScript ("Invoke-RestMethod", "./Invoke-RestMethod-mock.ps1", commandOutput);
+                // Assume the commandOutput is a Json string; convert it to an array of objects because this is the return type of Invoke-RestMethod
+                s = "{function Invoke-RestMethod {\n" +
+                        "return '" + commandOutput + "' | ConvertFrom-Json\n " +
+                        "}} > ./Invoke-RestMethod-mock.ps1";
+
+                // TODO: Add global counter to determine how often the function was called
+//                function Invoke-RestMethod {
+//                    $global:InvokeRestMethodCounter++
+//                    Write-Host $InvokeRestMethodCounter
+//                }
+
                 stepToInsert.put(SECTION_POWERSHELL, s);
 
                 // displayName
@@ -1185,7 +1204,7 @@ public class AzDoPipeline {
 
     private String getMockedPSCommandScript (String functionName, String functionFileName, String commandOutput) {
         String s = "{function " + functionName + " {\n" +
-                "    Write-Host \"" + commandOutput + "\"\n" +
+                "return '" + commandOutput + "' | ConvertFrom-Json\n " +
                 "}} > " + functionFileName;
         return s;
     }

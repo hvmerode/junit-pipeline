@@ -162,9 +162,15 @@ public class PipelineUnit {
         pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/bash-mock.yml");
 
         try {
-            pipeline.mockBashCommandSearchStepByDisplayName("Curl step", "curl","HTTP/2 501")
+            String[] strArr = new String[3];
+            strArr[0] = "HTTP/2 200";
+            strArr[1] = "HTTP/2 403";
+            strArr[2] = "HTTP/2 501";
+            pipeline.mockBashCommandSearchStepByDisplayName("Curl step 1 of 2", "curl", strArr)
+                    .mockBashCommandSearchStepByDisplayName("Curl step 2 of 2", "curl","HTTP/2 200")
                     .mockBashCommandSearchStepByDisplayName("Wget step", "wget", "mock 100%[=================================================>]  15.01M  6.77MB/s    in 2.2s")
                     .mockBashCommandSearchStepByDisplayName("Ftp step", "ftp",  "")
+                    .mockBashCommandSearchStepByDisplayName("Bash@3 task", "curl", "HTTP/2 403")
                     .startPipeline();
         }
         catch (IOException e) {
@@ -197,6 +203,9 @@ public class PipelineUnit {
                     .mockPowershellCommandSearchStepByDisplayName("Invoke-RestMethod step 2 of 2",
                             "Invoke-RestMethod",
                             strArr[1])
+                    .mockPowershellCommandSearchStepByDisplayName("PowerShell@2 task",
+                            "Invoke-RestMethod",
+                            "{\"element\" : \"value_3\"}")
                     .startPipeline("master");
         }
         catch (IOException e) {

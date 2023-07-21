@@ -557,9 +557,6 @@ pipeline.getRunResult()
   <br></br>
 
 ## New features ##
-* mockBashCommandSearchStepByDisplayName: Add additional counter argument to pinpoint the
-  right command (if the same command occurs multiple times in one step; default the first
-  one is picked). This makes it possible to define different commandOutput strings per command.
 * Test on Linux; some filesystem methods in Utils may not work properly.
 * Support "refs/tags/tag" and "refs/refname" for external repositories with templates.
 * Reset trigger to none; this prevents that pipelines are executed twice; one time because the repo is updated and
@@ -578,7 +575,7 @@ pipeline.getRunResult()
   This is a 'nice-to-have'.
 
 ## Solved ##
-* ~~mockPowershellCommandSearchStepByDisplayName: Add additional counter argument to 
+* ~~mockBashCommandSearchStepByDisplayName / mockPowershellCommandSearchStepByDisplayName: Add additional counter argument to 
   pinpoint the right command (if the same command occurs multiple times in one step; default the first
   one is picked). This makes it possible to define different commandOutput strings per command.~~
 * ~~Create local HTTP server that receives HTTP(S) requests send by the pipeline.

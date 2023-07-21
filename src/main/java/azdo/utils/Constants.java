@@ -5,21 +5,25 @@ public class Constants {
     // *************************************** Sections ***************************************
     public static final String SECTION_VARIABLES = "variables";
     public static final String SECTION_PARAMETERS = "parameters";
-    public static final String SECTION_STAGE = "stage";
     public static final String SECTION_STAGES = "stages";
-    public static final String SECTION_JOB = "job";
+    public static final String SECTION_STAGE = "stage";
     public static final String SECTION_JOBS = "jobs";
+    public static final String SECTION_JOB = "job";
+    public static final String SECTION_STEPS = "steps";
     public static final String SECTION_STEP = "step";
     public static final String SECTION_TASK = "task";
-    public static final String SECTION_SCRIPT = "script";
-    public static final String SECTION_POWERSHELL = "pwsh";
-    public static final String SECTION_BASH = "bash";
-    public static final String SECTION_STEPS = "steps";
+    public static final String STEP_SCRIPT = "script";
+    public static final String SCRIPT = "script";
+    public static final String STEP_SCRIPT_PWSH = "pwsh";
+    public static final String TASK_POWERSHELL_2 = "PowerShell@2";
+    public static final String TASK_BASH_3 = "Bash@3";
+    public static final String STEP_SCRIPT_BASH = "bash";
     public static final String SECTION_TEMPLATE = "template";
 
     // *************************************** Other ***************************************
     public static final String IDENTIFIER_NAME = "name";
     public static final String DISPLAY_NAME = "displayName";
+    public static final String INPUTS = "inputs";
     public static final String CONDITION = "condition";
     public static final String OPERATOR_EQUALS = "eq";
     public static final String OPERATOR_NOT_EQUALS = "ne";

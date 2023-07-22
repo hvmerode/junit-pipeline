@@ -35,6 +35,9 @@ To test the manipulated script, execute it like this:
 ```java
 pipeline.startPipeline();
 ```
+![no picture](https://github.com/hvmerode/junit-pipeline/blob/main/yaml_junit.png "yaml and junit")
+
+
 The ___junit-pipeline___ library connects with the Azure DevOps test project (in the figure below, represented by "__UnitTest__"), and pushes the code to your test
 repository ("__myrepo-test__", in this example), after which the pipeline is executed. If the repository and/or the pipeline in the test project
 do not exists, they are automatically created for you. The illustration below shows how it works in concept.
@@ -502,12 +505,13 @@ before or after the execution of the step, identified by the 'displayName'.
 ***
 ```java
 public void mockPowerShellCommandSearchStepByDisplayName (String displayValue,
-        POWERSHELL_COMMAND command, 
+        String command, 
         String[] commandOutput)
 ```
 <i>
 Mock a PowerShell command in a script. The real PowerShell command will not be executed, but a
-mocked version is executed instead. The PowerShell script is found using the displayName.
+mocked version is executed instead. The PowerShell script is found using the displayName of the step
+("pwsh" script or "PowerShell@2" task).
 
 The commandOutput argument contains the return value of the mocked command. This is a json string.
 This method actually has two signatures. One, in which the commandOutput is a String, and one in which

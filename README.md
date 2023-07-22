@@ -148,7 +148,7 @@ public void mockStepSearchByIdentifier (String stepIdentifier, String inlineScri
 ```
 <i>
 The original step is replaced by a mock step. This is a step of the type 'script'. The argument 'inlineScript' '
-is added to the mock. Depending on the job pool this can be a Powershell script (Windows) or a bash script (Linux).
+is added to the mock. Depending on the job pool this can be a PowerShell script (Windows) or a bash script (Linux).
 
 <u>Example</u>:
 <pre>
@@ -501,15 +501,51 @@ before or after the execution of the step, identified by the 'displayName'.
 ***
 ***
 ```java
-public void mockPowershellCommandSearchStepByDisplayName (String displayValue,
+public void mockPowerShellCommandSearchStepByDisplayName (String displayValue,
         POWERSHELL_COMMAND command, 
         String[] commandOutput)
 ```
 <i>
-Mock a Powershell command in a script. The real command will not be executed. The script is found using the displayName. The command defines the Powershell command. the commandOutput contains the return value
-of the mocked command. This method has actually two signatures. One, in which the commandOutput is a String, and one in which the commandOutput is an array of Strings. In the latter case, this is used if a step contains multiple instances of the same command. By using an array of Strings, each command has a different return value.
+Mock a PowerShell command in a script. The real PowerShell command will not be executed, but a
+mocked version is executed instead. The PowerShell script is found using the displayName.
+
+The commandOutput argument contains the return value of the mocked command. This is a json string.
+This method actually has two signatures. One, in which the commandOutput is a String, and one in which
+the commandOutput is an array of Strings. In the latter case, this is used if a PowerShell script contains 
+multiple instances of the same command. By using an array of Strings, each command has a different 
+return value.
+
+In __junit_pipeline__ version 1.1.5. only the 'Invoke-RestMethod' is supported
+
+Example:
+<pre>
+- pwsh: |
+    $Url = "https://server.contoso.com:8089/services/search/people/export"
+    $result = Invoke-RestMethod -Method 'Post' -Uri $url -OutFile output.csv
+    Write-Output "Result: $($result.element)"
+  displayName: 'Invoke-RestMethod step 2 of 2'
+</pre>
+
+When calling
+```java
+pipeline.mockPowerShellCommandSearchStepByDisplayName("Invoke-RestMethod step 2 of 2",
+        "Invoke-RestMethod",
+        "{\"element\" : \"value_1\"}");
+```
+the pre-processor inserts a new "pwsh" script before the "pwsh" script with 'displayName' "Invoke-RestMethod step 2 of 2",
+containing code to mock the 'Invoke-RestMethod', and adds a reference to this code in the 
+script "Invoke-RestMethod step 2 of 2".
+When executing the pipeline, the 'Invoke-RestMethod' returns the json, specified in the
+mockPowerShellCommandSearchStepByDisplayName() method.
+
+The mockPowerShellCommandSearchStepByDisplayName() method works with both "pwsh" scripts and "PowerShell@2" tasks.
+> Note, that the __junit-pipeline__ library also contains a Bash version of this method, called mockBashCommandSearchStepByDisplayName(),
+which works with "script", "bash", and "Bash@3" tasks. It mocks the Bash commands:
+> * curl
+> * wget
+> * ftp
+
 </i>
-<br>
 <br>
 
 ***
@@ -575,7 +611,7 @@ pipeline.getRunResult()
   This is a 'nice-to-have'.
 
 ## Solved ##
-* ~~mockBashCommandSearchStepByDisplayName / mockPowershellCommandSearchStepByDisplayName: Add additional counter argument to 
+* ~~mockBashCommandSearchStepByDisplayName / mockPowerShellCommandSearchStepByDisplayName: Add additional counter argument to 
   pinpoint the right command (if the same command occurs multiple times in one step; default the first
   one is picked). This makes it possible to define different commandOutput strings per command.~~
 * ~~Create local HTTP server that receives HTTP(S) requests send by the pipeline.

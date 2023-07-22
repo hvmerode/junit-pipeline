@@ -197,13 +197,13 @@ public class PipelineUnit {
             String[] strArr = new String[2];
             strArr[0] = "{\"element\" : \"value_1\"}";
             strArr[1] = "{\"element\" : \"value_2\"}";
-            pipeline.mockPowershellCommandSearchStepByDisplayName("Invoke-RestMethod step 1 of 2",
+            pipeline.mockPowerShellCommandSearchStepByDisplayName("Invoke-RestMethod step 1 of 2",
                             "Invoke-RestMethod",
                             strArr)
-                    .mockPowershellCommandSearchStepByDisplayName("Invoke-RestMethod step 2 of 2",
+                    .mockPowerShellCommandSearchStepByDisplayName("Invoke-RestMethod step 2 of 2",
                             "Invoke-RestMethod",
                             strArr[1])
-                    .mockPowershellCommandSearchStepByDisplayName("PowerShell@2 task",
+                    .mockPowerShellCommandSearchStepByDisplayName("PowerShell@2 task",
                             "Invoke-RestMethod",
                             "{\"element\" : \"value_3\"}")
                     .startPipeline("master");

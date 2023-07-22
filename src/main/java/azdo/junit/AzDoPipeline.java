@@ -40,7 +40,7 @@ public class AzDoPipeline {
     public String supportedBashCommands[] = { "curl", "wget", "ftp" }; // Valid commands for method mockBashCommandSearchStepByDisplayName()
 
     // TODO: Invoke-WebRequest,
-    public String supportedPowershellCommands[] = { "Invoke-RestMethod" }; // Valid commands for method mockPowershellCommandSearchStepByDisplayName()
+    public String supportedPowerShellCommands[] = { "Invoke-RestMethod" }; // Valid commands for method mockPowerShellCommandSearchStepByDisplayName()
 
     private static final String EXCLUDEFILESLIST = "\\excludedfileslist.txt";
 
@@ -1143,42 +1143,42 @@ public class AzDoPipeline {
 
 
     /******************************************************************************************
-     Mock a Powershell command in a script. The real command will not be executed.
+     Mock a PowerShell command in a script. The real command will not be executed.
      The step is found using the displayName.
      @param displayValue The value of the displayName property of a step
-     @param command Powershell command
-     @param commandOutput The return value of the Powershell command
+     @param command PowerShell command
+     @param commandOutput The return value of the PowerShell command
 
      Note: This method supports the following step types:
      - pwsh
      - PowerShell@2
      ******************************************************************************************/
-    public AzDoPipeline mockPowershellCommandSearchStepByDisplayName (String displayValue,
-                                                                      String command,
-                                                                      String commandOutput){
+    public AzDoPipeline mockPowerShellCommandSearchStepByDisplayName(String displayValue,
+                                                                     String command,
+                                                                     String commandOutput){
         String[] commandOutputArray = new String[1];
         commandOutputArray[0] = commandOutput;
-        return mockPowershellCommandSearchStepByDisplayName (displayValue, command, commandOutputArray);
+        return mockPowerShellCommandSearchStepByDisplayName(displayValue, command, commandOutputArray);
     }
 
     /******************************************************************************************
-     Mock a Powershell command in a script. The real command will not be executed.
+     Mock a PowerShell command in a script. The real command will not be executed.
      The step is found using the displayName.
      @param displayValue The value of the displayName property of a step
-     @param command Powershell command
-     @param commandOutputArray The return value of the Powershell command. This method signature takes
+     @param command PowerShell command
+     @param commandOutputArray The return value of the PowerShell command. This method signature takes
      an array of Strings. Reason is, that the step may contain multiple instances of the same command.
      The order of the String array is also the order in which the commands are located in the
-     Powershell script.
+     PowerShell script.
 
      Note: This method supports the following step types:
      - pwsh
      - PowerShell@2
      ******************************************************************************************/
-    public AzDoPipeline mockPowershellCommandSearchStepByDisplayName (String displayValue,
-                                                                      String command,
-                                                                      String[] commandOutputArray){
-        logger.debug("==> Method: YamlDocument.mockPowershellCommandSearchStepByDisplayName");
+    public AzDoPipeline mockPowerShellCommandSearchStepByDisplayName(String displayValue,
+                                                                     String command,
+                                                                     String[] commandOutputArray){
+        logger.debug("==> Method: YamlDocument.mockPowerShellCommandSearchStepByDisplayName");
         logger.debug("displayValue: {}", displayValue);
         logger.debug("command: {}", command);
         logger.debug("commandOutputArray: {}", commandOutputArray);
@@ -1189,7 +1189,7 @@ public class AzDoPipeline {
         String s;
         switch (command) {
             case "Invoke-RestMethod": {
-                // Construct the mock Powershell function for the Invoke-RestMethod
+                // Construct the mock PowerShell function for the Invoke-RestMethod
                 s = "{function Invoke-RestMethod {\n" +
                         "$global:InvokeRestMethodCounter++\n" +
                         "$strarry = @('{\"dummy\": \"dummy\"}', ";
@@ -1220,7 +1220,7 @@ public class AzDoPipeline {
         }
 
         if (newLine != null) {
-            // Insert a Powershell (pwsh) script before the Powershell (pwsh) script that is searched for
+            // Insert a PowerShell (pwsh) script before the PowerShell (pwsh) script that is searched for
             ActionResult ar;
             ActionInsertSectionByProperty actionPSScript = new ActionInsertSectionByProperty(STEP_SCRIPT_PWSH, DISPLAY_NAME, displayValue, stepToInsert, true);
             yamlDocumentEntryPoint.performAction (actionPSScript, STEP_SCRIPT_PWSH, "");
@@ -1450,7 +1450,7 @@ public class AzDoPipeline {
         logger.debug("fileName: {}", fileName);
         logger.debug("insertBefore: {}", insertBefore);
 
-        // Create a Bash script or Powershell task that checks on the existence of a file
+        // Create a Bash script or PowerShell task that checks on the existence of a file
         Map<String, Object> assertStep = new LinkedHashMap<>();
         String s;
         if (agentOS == AgentOSEnum.LINUX) {

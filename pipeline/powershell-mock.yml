@@ -4,13 +4,13 @@ name: $(Date:yyyyMMdd)$(Rev:.r)
 trigger: none
 
 stages:
-  - stage: PowershellMockStage
+  - stage: PowerShellMockStage
     jobs:
-      - job: PowershellMockJob
+      - job: PowerShellMockJob
         pool:
           vmImage: 'windows-latest'
         steps:
-            # Multiple Invoke-RestMethod commands to test that mockPowershellCommandSearchStepByDisplayName is able to mock multiple
+            # Multiple Invoke-RestMethod commands to test that mockPowerShellCommandSearchStepByDisplayName is able to mock multiple
             # instances of the Invoke-RestMethod in one step
           - pwsh: |
               $Url = "https://server.contoso.com:8089/services/search/jobs/export"

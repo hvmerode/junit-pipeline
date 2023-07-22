@@ -4,12 +4,14 @@ name: $(Date:yyyyMMdd)$(Rev:.r)
 trigger: none
 
 stages:
-  - stage: PowershellMockStage
+  - stage: PowerShellMockStage
     jobs:
-      - job: PowershellMockJob
+      - job: PowerShellMockJob
         pool:
           vmImage: 'windows-latest'
         steps:
+            # Multiple Invoke-RestMethod commands to test that mockPowerShellCommandSearchStepByDisplayName is able to mock multiple
+            # instances of the Invoke-RestMethod in one step
           - pwsh: |
               $Url = "https://server.contoso.com:8089/services/search/jobs/export"
               $Body = @{
@@ -18,5 +20,29 @@ stages:
                 earliest_time = "-2d@d"
                 latest_time = "-1d@d"
               }
-              Invoke-RestMethod -Method 'Post' -Uri $url -Body $body -OutFile output.csv
-            displayName: 'Invoke-RestMethod step'
+              $result = Invoke-RestMethod -Method 'Post' -Uri $url -Body $body -OutFile output.csv
+              Write-Output "Result: $($result.element)"
+              
+              $result = Invoke-RestMethod -Method 'Post' -Uri $url -Body $body -OutFile output.csv
+              Write-Output "Result: $($result.element)"
+            displayName: 'Invoke-RestMethod step 1 of 2'
+
+            # An extra step with a Invoke-RestMethod to validate that mockPowershellCommandSearchStepByDisplayName resets for each new step
+          - pwsh: |
+              $Url = "https://server.contoso.com:8089/services/search/people/export"
+              $result = Invoke-RestMethod -Method 'Post' -Uri $url -OutFile output.csv
+              Write-Output "Result: $($result.element)"
+            displayName: 'Invoke-RestMethod step 2 of 2'
+
+            # Validate that the PowerShell@2 task is supported by mockPowershellCommandSearchStepByDisplayName
+          - task: PowerShell@2
+            inputs:
+              targetType: 'inline'
+              script: |
+                $url = "$($env:SYSTEM_TEAMFOUNDATIONCOLLECTIONURI)$env:SYSTEM_TEAMPROJECTID/_apis/build/definitions/$($env:SYSTEM_DEFINITIONID)?api-version=5.0"
+                $pipeline = Invoke-RestMethod -Uri $url -Headers @{
+                    Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN"
+                }
+                Write-Output "Result: $($pipeline.element)"
+            displayName: 'PowerShell@2 task'
+

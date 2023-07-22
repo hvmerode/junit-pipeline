@@ -12,9 +12,8 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.transport.CredentialsProvider;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 import static azdo.utils.Constants.*;
 
 /*
@@ -38,10 +37,10 @@ public class AzDoPipeline {
 
     private AgentOSEnum agentOS = AgentOSEnum.LINUX; // Needed for OS-specific tasks
 
-    public enum BASH_COMMAND {CURL, SSH, WGET, FTP};
+    public String supportedBashCommands[] = { "curl", "wget", "ftp" }; // Valid commands for method mockBashCommandSearchStepByDisplayName()
 
     // TODO: Invoke-WebRequest,
-    public enum POWERSHELL_COMMAND {INVOKE_RESTMETHOD};
+    public String supportedPowerShellCommands[] = { "Invoke-RestMethod" }; // Valid commands for method mockPowerShellCommandSearchStepByDisplayName()
 
     private static final String EXCLUDEFILESLIST = "\\excludedfileslist.txt";
 
@@ -501,18 +500,18 @@ public class AzDoPipeline {
                 SECTION_TASK,
                 "");
         if (ar == null || !ar.actionExecuted) {
-            ar = yamlDocumentEntryPoint.performAction(new ActionDeleteSectionByProperty(SECTION_SCRIPT, DISPLAY_NAME, displayValue),
-                    SECTION_SCRIPT,
+            ar = yamlDocumentEntryPoint.performAction(new ActionDeleteSectionByProperty(STEP_SCRIPT, DISPLAY_NAME, displayValue),
+                    STEP_SCRIPT,
                     "");
         }
         if (ar == null || !ar.actionExecuted) {
-            ar = yamlDocumentEntryPoint.performAction(new ActionDeleteSectionByProperty(SECTION_BASH, DISPLAY_NAME, displayValue),
-                    SECTION_BASH,
+            ar = yamlDocumentEntryPoint.performAction(new ActionDeleteSectionByProperty(STEP_SCRIPT_BASH, DISPLAY_NAME, displayValue),
+                    STEP_SCRIPT_BASH,
                     "");
         }
         if (ar == null || !ar.actionExecuted) {
-            yamlDocumentEntryPoint.performAction(new ActionDeleteSectionByProperty(SECTION_POWERSHELL, DISPLAY_NAME, displayValue),
-                    SECTION_POWERSHELL,
+            yamlDocumentEntryPoint.performAction(new ActionDeleteSectionByProperty(STEP_SCRIPT_PWSH, DISPLAY_NAME, displayValue),
+                    STEP_SCRIPT_PWSH,
                     "");
         }
 
@@ -691,7 +690,7 @@ public class AzDoPipeline {
             logger.debug("OS is Windows");
             s = "echo ##vso[task.setvariable variable=" + variableName + "]" + value.toString();
         }
-        stepToInsert.put(SECTION_SCRIPT, s);
+        stepToInsert.put(STEP_SCRIPT, s);
 
         s = "<Inserted> Set variable";
         stepToInsert.put(DISPLAY_NAME, s);
@@ -744,7 +743,7 @@ public class AzDoPipeline {
             // Add Window cmd script
             s = "echo ##vso[task.setvariable variable=" + variableName + "]" + value.toString();
         }
-        stepToInsert.put(SECTION_SCRIPT, s);
+        stepToInsert.put(STEP_SCRIPT, s);
 
         s = "<Inserted> Set variable";
         stepToInsert.put(DISPLAY_NAME, s);
@@ -756,20 +755,20 @@ public class AzDoPipeline {
 
         // It can even be a SECTION_SCRIPT with that displayName
         if (ar == null || !ar.actionExecuted) {
-            ActionInsertSectionByProperty actionScript = new ActionInsertSectionByProperty(SECTION_SCRIPT, DISPLAY_NAME, displayValue, stepToInsert, insertBefore);
-            ar = yamlDocumentEntryPoint.performAction(actionScript, SECTION_SCRIPT, "");
+            ActionInsertSectionByProperty actionScript = new ActionInsertSectionByProperty(STEP_SCRIPT, DISPLAY_NAME, displayValue, stepToInsert, insertBefore);
+            ar = yamlDocumentEntryPoint.performAction(actionScript, STEP_SCRIPT, "");
         }
 
         // Or a SECTION_BASH
         if (ar == null || !ar.actionExecuted) {
-            ActionInsertSectionByProperty actionBash = new ActionInsertSectionByProperty(SECTION_BASH, DISPLAY_NAME, displayValue, stepToInsert, insertBefore);
-            ar = yamlDocumentEntryPoint.performAction(actionBash, SECTION_BASH, "");
+            ActionInsertSectionByProperty actionBash = new ActionInsertSectionByProperty(STEP_SCRIPT_BASH, DISPLAY_NAME, displayValue, stepToInsert, insertBefore);
+            ar = yamlDocumentEntryPoint.performAction(actionBash, STEP_SCRIPT_BASH, "");
         }
 
         // It can even be a SECTION_POWERSHELL
         if (ar == null || !ar.actionExecuted) {
-            ActionInsertSectionByProperty actionPSScript = new ActionInsertSectionByProperty(SECTION_POWERSHELL, DISPLAY_NAME, displayValue, stepToInsert, insertBefore);
-            yamlDocumentEntryPoint.performAction(actionPSScript, SECTION_POWERSHELL, "");
+            ActionInsertSectionByProperty actionPSScript = new ActionInsertSectionByProperty(STEP_SCRIPT_PWSH, DISPLAY_NAME, displayValue, stepToInsert, insertBefore);
+            yamlDocumentEntryPoint.performAction(actionPSScript, STEP_SCRIPT_PWSH, "");
         }
 
         return this;
@@ -1000,7 +999,7 @@ public class AzDoPipeline {
         logger.debug("inlineScript: {}", inlineScript);
 
         Map<String, Object> script = new LinkedHashMap<>();
-        script.put(SECTION_SCRIPT, inlineScript);
+        script.put(STEP_SCRIPT, inlineScript);
 
         // Call the performAction method; find the step section with the stepIdentifier
         ActionUpdateSection action = new ActionUpdateSection(SECTION_TASK, stepIdentifier, script);
@@ -1022,7 +1021,7 @@ public class AzDoPipeline {
         logger.debug("inlineScript: {}", inlineScript);
 
         Map<String, Object> stepToInsert = new LinkedHashMap<>();
-        stepToInsert.put(SECTION_SCRIPT, inlineScript);
+        stepToInsert.put(STEP_SCRIPT, inlineScript);
 
         // Call the performAction method; find the task section with the displayName
         ActionResult ar;
@@ -1031,8 +1030,8 @@ public class AzDoPipeline {
 
         // Also check whether a script must be updated, instead of a task
         if (ar == null || !ar.actionExecuted) {
-            ActionUpdateSectionByProperty actionScript = new ActionUpdateSectionByProperty(SECTION_SCRIPT, DISPLAY_NAME, displayValue, stepToInsert);
-            yamlDocumentEntryPoint.performAction(actionScript, SECTION_SCRIPT, "");
+            ActionUpdateSectionByProperty actionScript = new ActionUpdateSectionByProperty(STEP_SCRIPT, DISPLAY_NAME, displayValue, stepToInsert);
+            yamlDocumentEntryPoint.performAction(actionScript, STEP_SCRIPT, "");
         }
 
         return this;
@@ -1040,83 +1039,102 @@ public class AzDoPipeline {
 
     /******************************************************************************************
      Mock a bash command in a script. The real command will not be executed.
-     The script is found using the displayName.
+     The step is found using the displayName.
      @param displayValue The value of the displayName property of a step
-     @param command Bash command; this is an enum of supported bash commands that can be mocked
-     @param commandOutput The value of the displayName property of a step
+     @param command Bash command; for example "curl", "wget", "ftp"
+     @param commandOutput The return value of the bash command
 
-     Note: The Bash@03, SSH@0, and CmdLine@2 tasks are not yet supported. Only bash scripts
-     included in a 'script' ir 'bash' step can be mocked.
+     Note: This method supports the following step types:
+     - script
+     - bash
+     - Bash@3
      ******************************************************************************************/
     public AzDoPipeline mockBashCommandSearchStepByDisplayName (String displayValue,
-                                                                BASH_COMMAND command,
+                                                                String command,
                                                                 String commandOutput){
+        String[] commandOutputArray = new String[1];
+        commandOutputArray[0] = commandOutput;
+        return mockBashCommandSearchStepByDisplayName (displayValue, command, commandOutputArray);
+    }
+
+    /******************************************************************************************
+     Mock a bash command in a script. The real command will not be executed.
+     The step is found using the displayName.
+     @param displayValue The value of the displayName property of a step
+     @param command Bash command; for example "curl", "wget", "ftp"
+     @param commandOutputArray The return value of the Bash command. This method signature takes
+     an array of Strings. Reason is, that the step may contain multiple instances of the same command.
+     The order of the String array is also the order in which the commands are located in the
+     Bash script.
+
+     Note: This method supports the following step types:
+     - script
+     - bash
+     - Bash@3
+     ******************************************************************************************/
+    public AzDoPipeline mockBashCommandSearchStepByDisplayName (String displayValue,
+                                                                String command,
+                                                                String[] commandOutputArray){
         logger.debug("==> Method: YamlDocument.mockBashCommandSearchStepByDisplayName");
         logger.debug("displayValue: {}", displayValue);
         logger.debug("command: {}", command);
-        logger.debug("commandOutput: {}", commandOutput);
+        logger.debug("commandOutputArray: {}", commandOutputArray);
 
         // First, insert a section before the script, to override the Bash command
         String newLine = null;
         Map<String, Object> stepToInsert = new LinkedHashMap<>();
         String s;
-        switch (command) {
-            case CURL: {
-                s = getMockedBashCommandScript ("curl", "./curl-mock.sh", commandOutput);
-                stepToInsert.put(SECTION_BASH, s);
+        String functionFileName;
+        boolean retval = Arrays.asList(supportedBashCommands).contains(command);
+        if (retval) {
+            // Mock the command; create a bash script to override the command with a function
+            functionFileName = "./" + command + "-mock.sh";
+            s = getMockedBashCommandScript (command, "./" + command + "-mock.sh", commandOutputArray);
+            stepToInsert.put(STEP_SCRIPT_BASH, s);
 
-                // displayName
-                s = "<Inserted> Mock curl";
-                stepToInsert.put(DISPLAY_NAME, s);
-                newLine = ". ./curl-mock.sh\n";
-                break;
-            }
-            case SSH: {
-                logger.warn("mockBashCommandSearchStepByDisplayName for SSH not yet supported");
-                break;
-            }
-            case WGET: {
-                s = getMockedBashCommandScript ("wget", "./wget-mock.sh", commandOutput);
-                stepToInsert.put(SECTION_BASH, s);
-
-                // displayName
-                s = "<Inserted> Mock wget";
-                stepToInsert.put(DISPLAY_NAME, s);
-                newLine = ". ./wget-mock.sh\n";
-                break;
-            }
-            case FTP: {
-                s = getMockedBashCommandScript ("ftp", "./ftp-mock.sh", commandOutput);
-                stepToInsert.put(SECTION_BASH, s);
-
-                // displayName
-                s = "<Inserted> Mock ftp";
-                stepToInsert.put(DISPLAY_NAME, s);
-                newLine = ". ./ftp-mock.sh\n";
-                break;
-            }
+            // displayName
+            s = "<Inserted> Mock " + command;
+            stepToInsert.put(DISPLAY_NAME, s);
+            newLine = ". " + functionFileName + "\n";
+        }
+        else {
+            logger.warn("Mocking command \'{}\' is not yet supported", command);
         }
 
-        // Add a new line to the Bash script, to define the overridden Bash command
         if (newLine != null) {
-
-            // Insert the bash step before a searched script (if found)
+            // Insert the bash step before a searched step of type 'script' (if found)
             ActionResult ar;
-            ActionInsertSectionByProperty scriptAction = new ActionInsertSectionByProperty(SECTION_SCRIPT, DISPLAY_NAME, displayValue, stepToInsert, true);
-            ar = yamlDocumentEntryPoint.performAction (scriptAction, SECTION_SCRIPT, "");
+            ActionInsertSectionByProperty scriptAction = new ActionInsertSectionByProperty(STEP_SCRIPT, DISPLAY_NAME, displayValue, stepToInsert, true);
+            ar = yamlDocumentEntryPoint.performAction (scriptAction, STEP_SCRIPT, "");
 
-            // Add a new line to the subsequent bash or script step
-            ActionInsertLineInSection scriptActionInsertLineInSection = new ActionInsertLineInSection(SECTION_SCRIPT, DISPLAY_NAME, displayValue, newLine);
-            yamlDocumentEntryPoint.performAction(scriptActionInsertLineInSection, SECTION_SCRIPT, "");
+            // Add a new line to the subsequent script step
+            ActionInsertLineInSection scriptActionInsertLineInSection = new ActionInsertLineInSection(STEP_SCRIPT, DISPLAY_NAME, displayValue, newLine);
+            yamlDocumentEntryPoint.performAction(scriptActionInsertLineInSection, STEP_SCRIPT, "");
 
             if (ar == null || !ar.actionExecuted) {
-                // Insert the bash step before a searched bash (if found)
-                ActionInsertSectionByProperty bashAction = new ActionInsertSectionByProperty(SECTION_BASH, DISPLAY_NAME, displayValue, stepToInsert, true);
-                yamlDocumentEntryPoint.performAction(bashAction, SECTION_BASH, "");
+                // If the script was not found, try to insert the bash step before a searched step of type 'bash'
+                ActionInsertSectionByProperty bashAction = new ActionInsertSectionByProperty(STEP_SCRIPT_BASH, DISPLAY_NAME, displayValue, stepToInsert, true);
+                ar = yamlDocumentEntryPoint.performAction(bashAction, STEP_SCRIPT_BASH, "");
 
-                // Add a new line to the subsequent bash
-                ActionInsertLineInSection bashActionInsertLineInSection = new ActionInsertLineInSection(SECTION_BASH, DISPLAY_NAME, displayValue, newLine);
-                yamlDocumentEntryPoint.performAction(bashActionInsertLineInSection, SECTION_BASH, "");
+                // Add a new line to the subsequent bash step
+                ActionInsertLineInSection bashActionInsertLineInSection = new ActionInsertLineInSection(STEP_SCRIPT_BASH, DISPLAY_NAME, displayValue, newLine);
+                yamlDocumentEntryPoint.performAction(bashActionInsertLineInSection, STEP_SCRIPT_BASH, "");
+            }
+
+            if (ar == null || !ar.actionExecuted) {
+                // If the searched step is not a "bash" or "script" type, it may be a "Bash@3" task. Btw, use the SECTION_TASK instead of the TASK_BASH_3
+                ActionInsertSectionByProperty actionBashTask = new ActionInsertSectionByProperty(SECTION_TASK, DISPLAY_NAME, displayValue, stepToInsert, true);
+                yamlDocumentEntryPoint.performAction(actionBashTask, SECTION_TASK, "");
+
+                // Insert a new line to the "Bash@3" script; the line contains a declaration of the function file created in the inserted step
+                // The inline script in a "Bash@3" task is > inputs > script
+                ActionInsertLineInInnerSection actionInsertLineInInnerSection = new ActionInsertLineInInnerSection(SECTION_TASK,
+                        DISPLAY_NAME,
+                        displayValue,
+                        INPUTS,
+                        SCRIPT,
+                        newLine);
+                yamlDocumentEntryPoint.performAction(actionInsertLineInInnerSection, TASK_BASH_3, "");
             }
         }
 
@@ -1125,31 +1143,69 @@ public class AzDoPipeline {
 
 
     /******************************************************************************************
-     Mock a Powershell command in a script. The real command will not be executed.
-     The script is found using the displayName.
+     Mock a PowerShell command in a script. The real command will not be executed.
+     The step is found using the displayName.
      @param displayValue The value of the displayName property of a step
-     @param command Pwershell command; this is an enum of supported PS commands that can be mocked
-     @param commandOutput The value of the displayName property of a step
+     @param command PowerShell command
+     @param commandOutput The return value of the PowerShell command
 
-     Note: The PowerShell@2, and CmdLine@2 tasks are not yet supported. Only PS scripts
-     included in a 'pwsh' step can be mocked.
+     Note: This method supports the following step types:
+     - pwsh
+     - PowerShell@2
      ******************************************************************************************/
-    public AzDoPipeline mockPowershellCommandSearchStepByDisplayName (String displayValue,
-                                                                      POWERSHELL_COMMAND command,
-                                                                      String commandOutput){
-        logger.debug("==> Method: YamlDocument.mockPowershellCommandSearchStepByDisplayName");
+    public AzDoPipeline mockPowerShellCommandSearchStepByDisplayName(String displayValue,
+                                                                     String command,
+                                                                     String commandOutput){
+        String[] commandOutputArray = new String[1];
+        commandOutputArray[0] = commandOutput;
+        return mockPowerShellCommandSearchStepByDisplayName(displayValue, command, commandOutputArray);
+    }
+
+    /******************************************************************************************
+     Mock a PowerShell command in a script. The real command will not be executed.
+     The step is found using the displayName.
+     @param displayValue The value of the displayName property of a step
+     @param command PowerShell command
+     @param commandOutputArray The return value of the PowerShell command. This method signature takes
+     an array of Strings. Reason is, that the step may contain multiple instances of the same command.
+     The order of the String array is also the order in which the commands are located in the
+     PowerShell script.
+
+     Note: This method supports the following step types:
+     - pwsh
+     - PowerShell@2
+     ******************************************************************************************/
+    public AzDoPipeline mockPowerShellCommandSearchStepByDisplayName(String displayValue,
+                                                                     String command,
+                                                                     String[] commandOutputArray){
+        logger.debug("==> Method: YamlDocument.mockPowerShellCommandSearchStepByDisplayName");
         logger.debug("displayValue: {}", displayValue);
         logger.debug("command: {}", command);
-        logger.debug("commandOutput: {}", commandOutput);
+        logger.debug("commandOutputArray: {}", commandOutputArray);
 
         // First, insert a section before the script, to override the PS command
         String newLine = null;
         Map<String, Object> stepToInsert = new LinkedHashMap<>();
         String s;
         switch (command) {
-            case INVOKE_RESTMETHOD: {
-                s = getMockedPSCommandScript ("Invoke-RestMethod", "./Invoke-RestMethod-mock.ps1", commandOutput);
-                stepToInsert.put(SECTION_POWERSHELL, s);
+            case "Invoke-RestMethod": {
+                // Construct the mock PowerShell function for the Invoke-RestMethod
+                s = "{function Invoke-RestMethod {\n" +
+                        "$global:InvokeRestMethodCounter++\n" +
+                        "$strarry = @('{\"dummy\": \"dummy\"}', ";
+                int size = commandOutputArray.length;
+                int sizeMinusOne = size - 1;
+                for (int i = 0; i < size; i++) {
+                    s += "'" + commandOutputArray[i] + "'";
+                    if (i < sizeMinusOne)
+                        s += ", ";
+                }
+                s += ")\n";
+                s += "$output = $($strarry[$InvokeRestMethodCounter]) | ConvertFrom-Json\n";
+                s += "return $output\n";
+                s += "}} > ./Invoke-RestMethod-mock.ps1";
+
+                stepToInsert.put(STEP_SCRIPT_PWSH, s);
 
                 // displayName
                 s = "<Inserted> Mock Invoke-RestMethod";
@@ -1157,38 +1213,76 @@ public class AzDoPipeline {
                 newLine = ". ./Invoke-RestMethod-mock.ps1\n";
                 break;
             }
+            default: {
+                logger.warn("Mocking command \'{}\' is not yet supported", command);
+                break;
+            }
         }
 
-        // Add a new line to the PS script, to define the overridden PS command
         if (newLine != null) {
-            // Insert the script before a PS script
+            // Insert a PowerShell (pwsh) script before the PowerShell (pwsh) script that is searched for
             ActionResult ar;
-            ActionInsertSectionByProperty actionPSScript = new ActionInsertSectionByProperty(SECTION_POWERSHELL, DISPLAY_NAME, displayValue, stepToInsert, true);
-            yamlDocumentEntryPoint.performAction (actionPSScript, SECTION_POWERSHELL, "");
+            ActionInsertSectionByProperty actionPSScript = new ActionInsertSectionByProperty(STEP_SCRIPT_PWSH, DISPLAY_NAME, displayValue, stepToInsert, true);
+            yamlDocumentEntryPoint.performAction (actionPSScript, STEP_SCRIPT_PWSH, "");
 
-            ActionInsertLineInSection actionInsertLineInSection = new ActionInsertLineInSection(SECTION_POWERSHELL, DISPLAY_NAME, displayValue, newLine);
-            yamlDocumentEntryPoint.performAction(actionInsertLineInSection, SECTION_POWERSHELL, "");
+            // Insert a new line to the "pwsh" script; the line contains a declaration of the function file created in the inserted step
+            ActionInsertLineInSection actionInsertLineInSection = new ActionInsertLineInSection(STEP_SCRIPT_PWSH, DISPLAY_NAME, displayValue, newLine);
+            ar = yamlDocumentEntryPoint.performAction(actionInsertLineInSection, STEP_SCRIPT_PWSH, "");
+
+            if (ar == null || !ar.actionExecuted) {
+                // If it is not a "pwsh" script, it may be a "PowerShel@2" task. Btw, use the SECTION_TASK instead of the TASK_POWERSHELL_2
+                ActionInsertSectionByProperty actionPSTask = new ActionInsertSectionByProperty(SECTION_TASK, DISPLAY_NAME, displayValue, stepToInsert, true);
+                yamlDocumentEntryPoint.performAction (actionPSTask, SECTION_TASK, "");
+
+                // Insert a new line to the "PowerShell@2" script; the line contains a declaration of the function file created in the inserted step
+                // The inline script in a "PowerShell@2" task is > inputs > script
+                ActionInsertLineInInnerSection actionInsertLineInInnerSection = new ActionInsertLineInInnerSection(SECTION_TASK,
+                        DISPLAY_NAME,
+                        displayValue,
+                        INPUTS,
+                        SCRIPT,
+                        newLine);
+                yamlDocumentEntryPoint.performAction(actionInsertLineInInnerSection, TASK_POWERSHELL_2, "");
+            }
         }
 
         return this;
     }
 
-    private String getMockedBashCommandScript (String functionName, String functionFileName, String commandOutput) {
+    private String getMockedBashCommandScript (String functionName, String functionFileName, String[] commandOutputArray) {
+        // Because a global variable cannot be updated in a bash function, the value of commandCounter is stored in a file
         String s = "cat > " + functionFileName + " <<\'EOF\'\n" +
                 "function " + functionName + " {\n" +
-                "  local result=\"" + commandOutput + "\"\n" +
-                "  echo \"$result\"\n" +
-                "}\n" +
-                "EOF";
+                "  rfile=\"./\"\n" +
+                "  rfile+=$(echo $$)\n" +
+                "  if [ ! -f \"$rfile\" ]; then\n" +
+                "    echo \"-1\" > \"$rfile\"\n" +
+                "  fi\n" +
+                "  commandCounter=$(cat \"$rfile\")\n" +
+                "  commandCounter=$((commandCounter + 1))\n" +
+                "  echo $commandCounter > \"$rfile\"\n" +
+                "  myArray=(";
+                int size = commandOutputArray.length;
+                int sizeMinusOne = size - 1;
+                for (int i = 0; i < size; i++) {
+                    s += "'" + commandOutputArray[i] + "'";
+                    if (i < sizeMinusOne)
+                        s += " ";
+                }
+                s += ")\n";
+                s += "  local result=${myArray[$((commandCounter))]}\n";
+                s += "  echo \"$result\"\n";
+                s += "}\n";
+                s += "EOF";
         return s;
     }
 
-    private String getMockedPSCommandScript (String functionName, String functionFileName, String commandOutput) {
-        String s = "{function " + functionName + " {\n" +
-                "    Write-Host \"" + commandOutput + "\"\n" +
-                "}} > " + functionFileName;
-        return s;
-    }
+//    private String getMockedPSCommandScript (String functionName, String functionFileName, String commandOutput) {
+//        String s = "{function " + functionName + " {\n" +
+//                "return '" + commandOutput + "' | ConvertFrom-Json\n " +
+//                "}} > " + functionFileName;
+//        return s;
+//    }
 
     /******************************************************************************************
      The assertEqualsSearchStepByDisplayName() method validates a variable during runtime of
@@ -1315,20 +1409,20 @@ public class AzDoPipeline {
 
         // It can even be a SECTION_SCRIPT with that displayName
         if (ar == null || !ar.actionExecuted) {
-            ActionInsertSectionByProperty actionScript = new ActionInsertSectionByProperty(SECTION_SCRIPT, DISPLAY_NAME, displayValue, stepToInsert, insertBefore);
-            ar = yamlDocumentEntryPoint.performAction(actionScript, SECTION_SCRIPT, "");
+            ActionInsertSectionByProperty actionScript = new ActionInsertSectionByProperty(STEP_SCRIPT, DISPLAY_NAME, displayValue, stepToInsert, insertBefore);
+            ar = yamlDocumentEntryPoint.performAction(actionScript, STEP_SCRIPT, "");
         }
 
         // It can even be a SECTION_BASH
         if (ar == null || !ar.actionExecuted) {
-            ActionInsertSectionByProperty actionBash = new ActionInsertSectionByProperty(SECTION_BASH, DISPLAY_NAME, displayValue, stepToInsert, insertBefore);
-            ar = yamlDocumentEntryPoint.performAction(actionBash, SECTION_BASH, "");
+            ActionInsertSectionByProperty actionBash = new ActionInsertSectionByProperty(STEP_SCRIPT_BASH, DISPLAY_NAME, displayValue, stepToInsert, insertBefore);
+            ar = yamlDocumentEntryPoint.performAction(actionBash, STEP_SCRIPT_BASH, "");
         }
 
-        // It can even be a SECTION_POWERSHELL
+        // It can even be a SECTION_PWSH
         if (ar == null || !ar.actionExecuted) {
-            ActionInsertSectionByProperty actionPSScript = new ActionInsertSectionByProperty(SECTION_POWERSHELL, DISPLAY_NAME, displayValue, stepToInsert, insertBefore);
-            ar = yamlDocumentEntryPoint.performAction(actionPSScript, SECTION_POWERSHELL, "");
+            ActionInsertSectionByProperty actionPSScript = new ActionInsertSectionByProperty(STEP_SCRIPT_PWSH, DISPLAY_NAME, displayValue, stepToInsert, insertBefore);
+            ar = yamlDocumentEntryPoint.performAction(actionPSScript, STEP_SCRIPT_PWSH, "");
         }
 
         return this;
@@ -1356,7 +1450,7 @@ public class AzDoPipeline {
         logger.debug("fileName: {}", fileName);
         logger.debug("insertBefore: {}", insertBefore);
 
-        // Create a Bash script or Powershell task that checks on the existence of a file
+        // Create a Bash script or PowerShell task that checks on the existence of a file
         Map<String, Object> assertStep = new LinkedHashMap<>();
         String s;
         if (agentOS == AgentOSEnum.LINUX) {
@@ -1371,21 +1465,21 @@ public class AzDoPipeline {
                     "    " + echo +
                     "    exit 1\n" +
                     "fi\n";
-            assertStep.put(SECTION_SCRIPT, s);
+            assertStep.put(STEP_SCRIPT, s);
         }
         else {
             // Windows
             // TODO: Change PowerShell@2 task into pwsh script
             logger.debug("OS is Windows");
             Map<String, Object> inputs = new LinkedHashMap<>();
-            assertStep.put(SECTION_TASK, "PowerShell@2");
+            assertStep.put(SECTION_TASK, TASK_POWERSHELL_2);
             inputs.put("targetType", "inline");
             s = "$FilePath = \"" + fileName + "\"\n" +
             "if (-not(Test-path $FilePath -PathType leaf)) {\n" +
                     "    Write-Host \"AssertFileNotExists: file \'" + fileName + "\' is not present (or empty) on the Azure DevOps Agent\"\n" +
                     "    exit 1\n" +
                     "}";
-            inputs.put(SECTION_SCRIPT, s);
+            inputs.put(STEP_SCRIPT, s);
             assertStep.put ("inputs", inputs);
         }
 
@@ -1400,22 +1494,22 @@ public class AzDoPipeline {
         ActionInsertSectionByProperty actionTask = new ActionInsertSectionByProperty(SECTION_TASK, DISPLAY_NAME, displayValue, assertStep, insertBefore);
         ar = yamlDocumentEntryPoint.performAction (actionTask, SECTION_TASK, "");
 
-        // It can even be a SECTION_SCRIPT with that displayName
+        // It can even be a "script" with that displayName
         if (ar == null || !ar.actionExecuted) {
-            ActionInsertSectionByProperty actionScript = new ActionInsertSectionByProperty(SECTION_SCRIPT, DISPLAY_NAME, displayValue, assertStep, insertBefore);
-            ar = yamlDocumentEntryPoint.performAction(actionScript, SECTION_SCRIPT, "");
+            ActionInsertSectionByProperty actionScript = new ActionInsertSectionByProperty(STEP_SCRIPT, DISPLAY_NAME, displayValue, assertStep, insertBefore);
+            ar = yamlDocumentEntryPoint.performAction(actionScript, STEP_SCRIPT, "");
         }
 
-        // It can even be a SECTION_BASH
+        // It can even be a "bash" script
         if (ar == null || !ar.actionExecuted) {
-            ActionInsertSectionByProperty actionBash = new ActionInsertSectionByProperty(SECTION_BASH, DISPLAY_NAME, displayValue, assertStep, insertBefore);
-            ar = yamlDocumentEntryPoint.performAction(actionBash, SECTION_BASH, "");
+            ActionInsertSectionByProperty actionBash = new ActionInsertSectionByProperty(STEP_SCRIPT_BASH, DISPLAY_NAME, displayValue, assertStep, insertBefore);
+            ar = yamlDocumentEntryPoint.performAction(actionBash, STEP_SCRIPT_BASH, "");
         }
 
-        // It can even be a SECTION_POWERSHELL
+        // It can even be a "pwsh" script
         if (ar == null || !ar.actionExecuted) {
-            ActionInsertSectionByProperty actionPSScript = new ActionInsertSectionByProperty(SECTION_POWERSHELL, DISPLAY_NAME, displayValue, assertStep, insertBefore);
-            ar = yamlDocumentEntryPoint.performAction(actionPSScript, SECTION_POWERSHELL, "");
+            ActionInsertSectionByProperty actionPSScript = new ActionInsertSectionByProperty(STEP_SCRIPT_PWSH, DISPLAY_NAME, displayValue, assertStep, insertBefore);
+            ar = yamlDocumentEntryPoint.performAction(actionPSScript, STEP_SCRIPT_PWSH, "");
         }
 
         return this;
@@ -1457,7 +1551,7 @@ public class AzDoPipeline {
         if (SECTION_PARAMETERS.equals(identifierType))
             s = String.format("echo \"%s: parameter '%s' with value '${{ parameters.%s }}' is %s to '%s'\"\n", actionDisplayName, identifier, identifier, operatorRepresentation, compareValue);
         s = s + "exit 1";
-        assertStep.put(SECTION_SCRIPT, s);
+        assertStep.put(STEP_SCRIPT, s);
 
         // displayName
         if (SECTION_VARIABLES.equals(identifierType))

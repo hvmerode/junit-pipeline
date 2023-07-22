@@ -1,0 +1,51 @@
+# Build numbering format
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+trigger: none
+
+stages:
+  - stage: bashMockStage
+    jobs:
+      - job: bashMockJob
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+            # Multiple curl commands to test that mockBashCommandSearchStepByDisplayName is able to mock multiple
+            # instances of the same command in one step
+          - script: |
+              var=$(curl --silent --head https://www.example.com | awk '/^HTTP/{print $2}')
+              echo "$var"
+              var=$(curl --silent --head https://www.example.com | awk '/^HTTP/{print $2}')
+              echo "$var"
+              var=$(curl --silent --head https://www.example.com | awk '/^HTTP/{print $2}')
+              echo "$var"
+            displayName: 'Curl step 1 of 2'
+
+            # An extra step with a curl command to validate that mockBashCommandSearchStepByDisplayName resets for each new step
+          - script: |
+              # Return the HTTP status code. This should be 200 (if not mocked).
+              var=$(curl --silent --head https://www.example.com | awk '/^HTTP/{print $2}')
+              echo "$var"
+            displayName: 'Curl step 2 of 2'
+
+            # Validate that the "bash" step works for mockBashCommandSearchStepByDisplayName
+            # Validate that the wget command is supported by mockBashCommandSearchStepByDisplayName
+          - bash: |
+              # The wget command downloads a .jar file
+              wget "https://repo1.maven.org/maven2/com/github/tomakehurst/wiremock-jre8-standalone/2.35.0/wiremock-jre8-standalone-2.35.0.jar"
+            displayName: 'Wget step'
+
+            # Validate that the ftp command is supported by mockBashCommandSearchStepByDisplayName
+          - script: |
+              # This ftp command fails
+              ftp -u ftp://user:secret@ftp.example.com/my-local-file.txt my-local-file.txt
+            displayName: 'Ftp step'
+
+            # Validate that the Bash@3 task is supported by mockBashCommandSearchStepByDisplayName
+          - task: Bash@3
+            inputs:
+              targetType: 'inline'
+              script: |
+                var=$(curl --silent --head https://www.example.com | awk '/^HTTP/{print $2}')
+                echo "$var"
+            displayName: 'Bash@3 task'

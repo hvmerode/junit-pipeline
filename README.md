@@ -2,8 +2,8 @@
 Perform unit/integration test for pipelines (Azure DevOps)
 
 ## Introduction ##
-Unit testing CI/CD pipelines is a challenge. Test frameworks for pipelines are almost non-existent or at least 
-very scarce. Teams often develop pipelines using trial-and-error and they test along the way. 
+Unit testing CI/CD pipelines is a challenge. Test frameworks for pipelines are almost non-existent or at least
+very scarce. Teams often develop pipelines using trial-and-error and they test along the way.
 Some of the challenges are:
 * During testing the pipeline, a wrong version of an app was deployed by accident.
 * Code from a feature branch was accidentally tagged with a release version tag.
@@ -14,8 +14,8 @@ Some of the challenges are:
 * The pipeline code contains switches or conditions specifically for testing the pipeline.
 * The overview with regular application pipeline runs is cluttered with a zillion test runs.
 * Asserts are difficult to incorporate in a pipeline, and if possible, they decrease readability.
- 
-This library is used to perform unit- and integration tests on (YAML) pipelines. At the moment, only 
+
+This library is used to perform unit- and integration tests on (YAML) pipelines. At the moment, only
 Azure DevOps pipelines are supported.
 <br></br>
 
@@ -35,7 +35,7 @@ To test the manipulated script, execute it like this:
 ```java
 pipeline.startPipeline();
 ```
-The ___junit-pipeline___ library connects with the Azure DevOps test project (in the figure below, represented by "__UnitTest__"), and pushes the code to your test 
+The ___junit-pipeline___ library connects with the Azure DevOps test project (in the figure below, represented by "__UnitTest__"), and pushes the code to your test
 repository ("__myrepo-test__", in this example), after which the pipeline is executed. If the repository and/or the pipeline in the test project
 do not exists, they are automatically created for you. The illustration below shows how it works in concept.
 
@@ -43,7 +43,7 @@ do not exists, they are automatically created for you. The illustration below sh
 
 In addition, all external repositories defined in the pipeline are cloned and also pushed to the Azure DevOps test project. External repositories are
 used to define pipeline templates that are included in your pipeline, but reside in a different repository than the pipeline itself.
-The ___junit-pipeline___ library takes care that the main pipeline refers to the 
+The ___junit-pipeline___ library takes care that the main pipeline refers to the
 cloned copies of these repositories instead to the original ones, so external templates can also be manipulated.
 <br></br>
 
@@ -55,7 +55,7 @@ using this link: [Create a project in Azure DevOps](https://learn.microsoft.com/
 
 ### Configure junit_pipeline.properties ###
 The properties file is located in src/main/resources. It contains the properties for your project. Some important properties:
-* __source.path__ - Contains the location (directory) of the main Git repository on your computer. This is the repository in which you develop your 
+* __source.path__ - Contains the location (directory) of the main Git repository on your computer. This is the repository in which you develop your
   app and the associated pipeline. In the example case, this repository is called "__myrepo__".
 * __target.path__ - Contains the location (directory) of the Git repository used to test the pipeline. You are not actively working in this repo.
   It is only used for the __junit-pipeline__ framework to communicate with the Azure DevOps test project. Before you start, this directory must not exist.
@@ -66,15 +66,15 @@ The properties file is located in src/main/resources. It contains the properties
 * __target.base.path.external__ - The location (local directory) containing external Git repositories; this location
   is used communicate with the Azure DevOps test project.
 * __source.repository.name__ - The name of the main repository
-* __target.repository.name__ - The name of the repository used in the Git repository used for testing. Example: If a source repository 
- with the name "__myrepo__" is used, the __target.repository.name__ used for testing the pipeline can be called "__myrepo-test__".
-  _target.repository.name_ should preferably not be equal to _source.repository.name_. 
+* __target.repository.name__ - The name of the repository used in the Git repository used for testing. Example: If a source repository
+  with the name "__myrepo__" is used, the __target.repository.name__ used for testing the pipeline can be called "__myrepo-test__".
+  _target.repository.name_ should preferably not be equal to _source.repository.name_.
 * __azdo.user__ - User used in the Azure DevOps API calls. Can be the default name 'UserWithToken'.
 * __azdo.pat__ - The PAT (Personal Access Token) used in the Azure DevOps API calls.\
   See [Use personal access tokens](https://learn.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate?view=azure-devops&tabs=Windows) how to create a PAT.\
-  Make sure this PAT is authorized to clone repositories in other Azure DevOps projects in the organization (other than the test project). 
+  Make sure this PAT is authorized to clone repositories in other Azure DevOps projects in the organization (other than the test project).
 * __git.commit.pattern__ - Defines the type of files pushed to the local- and remote test repo (this is a subset of the files from the main repo)
-* __pipelines.api__ - Name of the Azure DevOps base Pipeline API; do not change this value. 
+* __pipelines.api__ - Name of the Azure DevOps base Pipeline API; do not change this value.
 * __pipelines.api.runs__ - Name of a specific Azure DevOps Pipeline API; do not change this value.
 * __pipelines.api.version__ - Version of the Azure DevOps Pipeline API; only change if it is really needed (e.g., if a new version of the API is released).
 * __git.api__ - Name of the Azure DevOps base Git API; do not change this value.
@@ -82,11 +82,11 @@ The properties file is located in src/main/resources. It contains the properties
 * __git.api.version__ - Version of the Azure DevOps Git API; only change if it is really needed (e.g., if a new version of the API is released).
 * __build.api__ - Name of the Azure DevOps base Build API; do not change this value.
 * __build.api.version__ - Version of the Azure DevOps Build API; only change if it is really needed (e.g., if a new version of the API is released).
-* __build.api.poll.frequency__ - The result of a pipeline run is retrieved, using an Azure DevOps API. This API is called with a frequency determined by __build.api.poll.frequency__ (in seconds).  
+* __build.api.poll.frequency__ - The result of a pipeline run is retrieved, using an Azure DevOps API. This API is called with a frequency determined by __build.api.poll.frequency__ (in seconds).
 * __build.api.poll.timeout__ - The timeout value of polling the result of the pipeline run. If the final result is not retrieved yet, the polling stops after a number of seconds, defined by  __build.api.poll.timeout__.
 * __project.api__ - Name of the Azure DevOps base Project API; do not change this value.
 * __project.api.version__ - Version of the Azure DevOps Project API; only change if it is really needed (e.g., if a new version of the API is released).
-* __error.continue__ - If _true_, the junit-.pipeline framework continues after an error is detected 
+* __error.continue__ - If _true_, the junit-.pipeline framework continues after an error is detected
   (e.g., if the pipeline YAML file or a template file is incorrect). Note, that this can result in unpredictable results.
   If _false_, the framework stops with the test as soon as an error is detected.
 > The property file is stored in the _resources_ folder.
@@ -99,7 +99,7 @@ Example:
 <dependency>
   <groupId>io.github.hvmerode</groupId>
   <artifactId>junit-pipeline</artifactId>
-  <version>1.1.4</version>
+  <version>1.1.5</version>
 </dependency>
 ```
 
@@ -115,7 +115,7 @@ be instantiated. Its constructor requires two arguments, a property file and the
 ```java
 AzDoPipeline pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/pipeline_test.yml");
 ```
-The _junit_pipeline_my.properties_ file in this example contains my personal properties, but you can use 
+The _junit_pipeline_my.properties_ file in this example contains my personal properties, but you can use
 the _junit_pipeline.properties_ file in the _resources_ folder and customize it to your needs.\
 The file _./pipeline/pipeline_test.yml_ is the main pipeline file. It can be stored in any folder of the code repository.
 Its path is relative to the root of the repository. The main pipeline file may contain references to other yamlTemplate files
@@ -128,15 +128,15 @@ Before the pipeline code is pushed to the Azure DevOps unit test project, and st
 custom code. This code is provided as a list of 'hooks'. The unit test file _PipelineUnit.java_ shows an example; _test 3_.\
 This repository also contains a few standard hooks:
 * _DeleteJUnitPipelineDependency_ - Deletes the __junit-pipeline__ dependency from the _pom.xml_, before it is pushed to the
-Azure DevOps unit test project.
+  Azure DevOps unit test project.
 * _DeleteTargetFile_ - Deletes a single file before it is pushed to the Azure DevOps unit test project. It can be used to
-remove the file that includes the pipeline unit tests, if you don't want it to run it in the test project.
+  remove the file that includes the pipeline unit tests, if you don't want it to run it in the test project.
 * _FindReplaceInFile_ - Find and replace a string in a given file; either replaces the first occurence or all occurences.
-  This hook can be used to fix some inconveniences in the target yaml files in the Azure DevOps test project. 
-<br></br>
+  This hook can be used to fix some inconveniences in the target yaml files in the Azure DevOps test project.
+  <br></br>
 
 ### Define unit test ###
-The __junit-pipeline__ library contains a set of methods - used in unit tests - to manipulate the pipeline. Let's 
+The __junit-pipeline__ library contains a set of methods - used in unit tests - to manipulate the pipeline. Let's
 go over a few of them:
 > Note, that this is only a subset of the methods available.
 
@@ -148,7 +148,7 @@ public void mockStepSearchByIdentifier (String stepIdentifier, String inlineScri
 ```
 <i>
 The original step is replaced by a mock step. This is a step of the type 'script'. The argument 'inlineScript' '
-is added to the mock. Depending on the job pool this can be a Powershell script (Windows) or a bash script (Linux).
+is added to the mock. Depending on the job pool this can be a PowerShell script (Windows) or a bash script (Linux).
 
 <u>Example</u>:
 <pre>
@@ -472,13 +472,13 @@ value of the variable - with 'variableName' - is equal to 'compareValue', the pi
 The assertion is performed just before or after the execution of the step, identified by the 'displayName'.
 
 <u>Example</u>:\
-After calling 
+After calling
 ```java
 pipeline.assertEqualsSearchStepByDisplayName ("Deploy the app", "myVar", "123")
 ```
-the value of variable 'myVar' is compared with '123', just before the step with displayName 
+the value of variable 'myVar' is compared with '123', just before the step with displayName
 "Deploy the app" is executed. If you want to validate just after execution of the step, call
-assertEqualsSearchStepByDisplayName ("Deploy the app", "myVar", "123", false). 
+assertEqualsSearchStepByDisplayName ("Deploy the app", "myVar", "123", false).
 </i>
 <br>
 <br>
@@ -500,14 +500,64 @@ before or after the execution of the step, identified by the 'displayName'.
 
 ***
 ***
+```java
+public void mockPowerShellCommandSearchStepByDisplayName (String displayValue,
+        POWERSHELL_COMMAND command, 
+        String[] commandOutput)
+```
+<i>
+Mock a PowerShell command in a script. The real PowerShell command will not be executed, but a
+mocked version is executed instead. The PowerShell script is found using the displayName.
+
+The commandOutput argument contains the return value of the mocked command. This is a json string.
+This method actually has two signatures. One, in which the commandOutput is a String, and one in which
+the commandOutput is an array of Strings. In the latter case, this is used if a PowerShell script contains 
+multiple instances of the same command. By using an array of Strings, each command has a different 
+return value.
+
+In __junit_pipeline__ version 1.1.5. only the 'Invoke-RestMethod' is supported
+
+Example:
+<pre>
+- pwsh: |
+    $Url = "https://server.contoso.com:8089/services/search/people/export"
+    $result = Invoke-RestMethod -Method 'Post' -Uri $url -OutFile output.csv
+    Write-Output "Result: $($result.element)"
+  displayName: 'Invoke-RestMethod step 2 of 2'
+</pre>
+
+When calling
+```java
+pipeline.mockPowerShellCommandSearchStepByDisplayName("Invoke-RestMethod step 2 of 2",
+        "Invoke-RestMethod",
+        "{\"element\" : \"value_1\"}");
+```
+the pre-processor inserts a new "pwsh" script before the "pwsh" script with 'displayName' "Invoke-RestMethod step 2 of 2",
+containing code to mock the 'Invoke-RestMethod', and adds a reference to this code in the 
+script "Invoke-RestMethod step 2 of 2".
+When executing the pipeline, the 'Invoke-RestMethod' returns the json, specified in the
+mockPowerShellCommandSearchStepByDisplayName() method.
+
+The mockPowerShellCommandSearchStepByDisplayName() method works with both "pwsh" scripts and "PowerShell@2" tasks.
+> Note, that the __junit-pipeline__ library also contains a Bash version of this method, called mockBashCommandSearchStepByDisplayName(),
+which works with "script", "bash", and "Bash@3" tasks. It mocks the Bash commands:
+> * curl
+> * wget
+> * ftp
+
+</i>
+<br>
+
+***
+***
 ### Start unit tests and retrieve the result ###
 The startPipeline method has a few representations:
 * _startPipeline()_ - Starts the pipeline with the default branch (in most cases, this is the _master_ branch).
 * _startPipeline(String branchName)_ - Starts the pipeline with a given branch, for example a _feature_ branch.
 * _startPipeline(String branchName, List<Hook> hooks)_ - Starts the pipeline with a given branch but
   before the pipeline starts, the list with 'hooks' is executed.
-* _startPipeline(String branchName, List<Hook> hooks, boolean dryRun)_ - Performs all actions but does not start the 
-  pipeline in Azure DevOps.  Use this boolean to minimize the exexution time (A free Azure DevOps account includes 
+* _startPipeline(String branchName, List<Hook> hooks, boolean dryRun)_ - Performs all actions but does not start the
+  pipeline in Azure DevOps.  Use this boolean to minimize the exexution time (A free Azure DevOps account includes
   1 Microsoft-hosted job with 1,800 minutes per month).
 
 The result of a pipeline run is retrieved using:
@@ -521,26 +571,26 @@ pipeline.getRunResult()
   test must wait before the previous one is completed.
 
 * Templates residing in external repositories (GitHub and other Azure DevOps projects) are taken into account, but:
-  * The _ref_ parameter is not (yet) fully implemented. Only the format "refs/heads/branch" is supported; the pattern 
+  * The _ref_ parameter is not (yet) fully implemented. Only the format "refs/heads/branch" is supported; the pattern
     "refs/tags/tag" is not yet supported .
-  * If a remote external repository is updated, the update is not automatically included in the test; first delete the 
-    corresponding local directory; this enables the creation of q new clone of the external repository. For example, 
-    if an external repository is called 'Templates', 2 local directories are created, 'Templates' and 'Templates-source'; 
+  * If a remote external repository is updated, the update is not automatically included in the test; first delete the
+    corresponding local directory; this enables the creation of q new clone of the external repository. For example,
+    if an external repository is called 'Templates', 2 local directories are created, 'Templates' and 'Templates-source';
     delete them both.
   * An external GitHub repository is assumed to be public; no credentials are used to access the GitHub repository.
-* If the pipeline makes use of a resource in the test project for the first time, it needs manual approval first; for example, 
+* If the pipeline makes use of a resource in the test project for the first time, it needs manual approval first; for example,
   a variable group or an Environment. The Azure DevOps API returns an HTTP status 400.
-* If unknown service connections are used, if the updated pipeline code is not valid YAML anymore, or if a manual approval 
+* If unknown service connections are used, if the updated pipeline code is not valid YAML anymore, or if a manual approval
   of a resource is required, the AzDo API returns an HTTP status code 400.
-<br></br>
+  <br></br>
 
 ## Known bugs ##
 * An Azure DevOps "on..failure" / "on..success" construction is translated to "true..failure" / "true..success". It may be an issue in snakeyaml.
   * Temporary fix is by adding a FindReplaceInFile hook that replaces the "true:" string with an "on:" string.
-* A task with an input parameter 'template:' is handled as if it is a yamlTemplate (although it isn't); processing 
-  is still fine though (gives a warning), but it should not be treated as a yamlTemplate. Alternative is to change the 
+* A task with an input parameter 'template:' is handled as if it is a yamlTemplate (although it isn't); processing
+  is still fine though (gives a warning), but it should not be treated as a yamlTemplate. Alternative is to change the
   warning and give the recommendation that, although it is correct, it may lead to confusion.
-<br></br>
+  <br></br>
 
 ## New features ##
 * Test on Linux; some filesystem methods in Utils may not work properly.
@@ -561,6 +611,9 @@ pipeline.getRunResult()
   This is a 'nice-to-have'.
 
 ## Solved ##
+* ~~mockBashCommandSearchStepByDisplayName / mockPowerShellCommandSearchStepByDisplayName: Add additional counter argument to 
+  pinpoint the right command (if the same command occurs multiple times in one step; default the first
+  one is picked). This makes it possible to define different commandOutput strings per command.~~
 * ~~Create local HTTP server that receives HTTP(S) requests send by the pipeline.
   The HTTP server runs on the Azure DevOps agent and intercepts requests from the pipeline (eg. sent using curl).
   The override literal method should alter the endpoint defined in the pipeline.
@@ -581,7 +634,7 @@ pipeline.getRunResult()
 * ~~Sometimes you get the error "org.eclipse.jgit.api.errors.RefAlreadyExistsException: Ref myFeature already exists". This
   happens if a branch already exists (the checkout wants to create it again). Just ignore this error.~~
 * ~~With the introduction of tests running in multiple branches, it is not possible to run multiple tests in one go. Second test fails
-because cloning/checkout is not possible somehow~~
+  because cloning/checkout is not possible somehow~~
 * ~~The updated pipeline code is pushed to the _default branch_ in the test project (master); pushing to other branches is not possible.~~
 * ~~The project id of the Azure DevOps test project must be configured manually and is not (yet) derived automatically.~~
 * ~~Add an assert step; check a variable on a certain value using a condition. Exit with 1 if the condition is not met.~~

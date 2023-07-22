@@ -8,7 +8,7 @@ import java.util.Map;
 /******************************************************************************************
  This class is typically used to insert a line to the beginning of a script, although
  it is made generic, and it can be also used fore other section types.
- It searches a section using a 'property'  with a 'propertyValue', for example,
+ It searches a section using a 'property', with a 'propertyValue', for example,
  'property' == "displayName", and 'propertyValue' == "Deploy step".
  If the section is found, a new (script) line is added to the beginning of the section.
  If a script look like this:
@@ -16,8 +16,7 @@ import java.util.Map;
  script: |
      echo "This is the first line"
  }
- and the ActionInsertLineInSection.execute() method is called with
- newLine == "echo \"And now this is the first line\"\n", the result becomes:
+ and the ActionInsertLineInSection.execute() method is called, the result becomes:
  {@code
  script: |
      echo "And now this is the first line"
@@ -42,7 +41,7 @@ public class ActionInsertLineInSection implements Action {
     }
 
     public void execute (ActionResult actionResult) {
-        logger.debug("==> Method ActionDeleteSectionByProperty.execute");
+        logger.debug("==> Method ActionInsertLineInSection.execute");
         logger.debug("actionResult.l1: {}", actionResult.l1);
         logger.debug("actionResult.l2: {}", actionResult.l2);
         logger.debug("actionResult.L3: {}", actionResult.l3);

@@ -10,9 +10,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static azdo.junit.AzDoPipeline.BASH_COMMAND.*;
-import static azdo.junit.AzDoPipeline.POWERSHELL_COMMAND.INVOKE_RESTMETHOD;
-
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class PipelineUnit {
     private static Log logger = Log.getLogger();
@@ -165,9 +162,15 @@ public class PipelineUnit {
         pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/bash-mock.yml");
 
         try {
-            pipeline.mockBashCommandSearchStepByDisplayName("Curl step", CURL,"HTTP/2 501")
-                    .mockBashCommandSearchStepByDisplayName("Wget step", WGET, "mock 100%[=================================================>]  15.01M  6.77MB/s    in 2.2s")
-                    .mockBashCommandSearchStepByDisplayName("Ftp step", FTP,  "")
+            String[] strArr = new String[3];
+            strArr[0] = "HTTP/2 200";
+            strArr[1] = "HTTP/2 403";
+            strArr[2] = "HTTP/2 501";
+            pipeline.mockBashCommandSearchStepByDisplayName("Curl step 1 of 2", "curl", strArr)
+                    .mockBashCommandSearchStepByDisplayName("Curl step 2 of 2", "curl","HTTP/2 200")
+                    .mockBashCommandSearchStepByDisplayName("Wget step", "wget", "mock 100%[=================================================>]  15.01M  6.77MB/s    in 2.2s")
+                    .mockBashCommandSearchStepByDisplayName("Ftp step", "ftp",  "")
+                    .mockBashCommandSearchStepByDisplayName("Bash@3 task", "curl", "HTTP/2 403")
                     .startPipeline();
         }
         catch (IOException e) {
@@ -191,7 +194,18 @@ public class PipelineUnit {
         pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/powershell-mock.yml");
 
         try {
-            pipeline.mockPowershellCommandSearchStepByDisplayName("Invoke-RestMethod step", INVOKE_RESTMETHOD, "This is a mock Invoke-RestMethod")
+            String[] strArr = new String[2];
+            strArr[0] = "{\"element\" : \"value_1\"}";
+            strArr[1] = "{\"element\" : \"value_2\"}";
+            pipeline.mockPowerShellCommandSearchStepByDisplayName("Invoke-RestMethod step 1 of 2",
+                            "Invoke-RestMethod",
+                            strArr)
+                    .mockPowerShellCommandSearchStepByDisplayName("Invoke-RestMethod step 2 of 2",
+                            "Invoke-RestMethod",
+                            strArr[1])
+                    .mockPowerShellCommandSearchStepByDisplayName("PowerShell@2 task",
+                            "Invoke-RestMethod",
+                            "{\"element\" : \"value_3\"}")
                     .startPipeline("master");
         }
         catch (IOException e) {

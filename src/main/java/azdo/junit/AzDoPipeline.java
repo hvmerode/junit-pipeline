@@ -37,9 +37,10 @@ public class AzDoPipeline {
 
     private AgentOSEnum agentOS = AgentOSEnum.LINUX; // Needed for OS-specific tasks
 
+    // TODO: git, rm, ssh, cp, scp, rcp, sftp, rsync, mv, mkdir, touch, cat
     public String supportedBashCommands[] = { "curl", "wget", "ftp" }; // Valid commands for method mockBashCommandSearchStepByDisplayName()
 
-    // TODO: Invoke-WebRequest,
+    // TODO: Invoke-WebRequest
     public String supportedPowerShellCommands[] = { "Invoke-RestMethod" }; // Valid commands for method mockPowerShellCommandSearchStepByDisplayName()
 
     private static final String EXCLUDEFILESLIST = "\\excludedfileslist.txt";

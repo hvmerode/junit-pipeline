@@ -464,24 +464,24 @@ script: echo '##vso[task.setvariable variable=WebAppName]newName';
 ***
 ***
 ```java
-public void assertEqualsSearchStepByDisplayName (String displayValue, 
+public void assertVariableEqualsSearchStepByDisplayName (String displayValue,
         String variableName, 
         String compareValue, 
         boolean insertBefore)
 ```
 <i>
-The assertEqualsSearchStepByDisplayName() method validates a variable during runtime of the pipeline. If the 
-value of the variable - with 'variableName' - is equal to 'compareValue', the pipeline aborts. 
+The assertVariableEqualsSearchStepByDisplayName() method validates a variable during runtime of the pipeline. If the 
+value of the variable - with 'variableName' - is bot equal to the value of 'compareValue', the pipeline aborts. 
 The assertion is performed just before or after the execution of the step, identified by the 'displayName'.
 
 <u>Example</u>:\
 After calling
 ```java
-pipeline.assertEqualsSearchStepByDisplayName ("Deploy the app", "myVar", "123")
+pipeline.assertVariableEqualsSearchStepByDisplayName ("Deploy the app", "myVar", "123")
 ```
 the value of variable 'myVar' is compared with '123', just before the step with displayName
 "Deploy the app" is executed. If you want to validate just after execution of the step, call
-assertEqualsSearchStepByDisplayName ("Deploy the app", "myVar", "123", false).
+assertVariableEqualsSearchStepByDisplayName ("Deploy the app", "myVar", "123", false).
 </i>
 <br>
 <br>
@@ -489,12 +489,12 @@ assertEqualsSearchStepByDisplayName ("Deploy the app", "myVar", "123", false).
 ***
 ***
 ```java
-public void assertFileNotExistsSearchStepByDisplayName (String displayValue,
+public void assertFileExistsSearchStepByDisplayName (String displayValue,
         String fileName,
         boolean insertBefore)
 ```
 <i>
-The assertFileNotExistsSearchStepByDisplayName() method validates the existence of a file on the Azure DevOps agent, 
+The assertFileExistsSearchStepByDisplayName() method validates the existence of a file on the Azure DevOps agent, 
 during runtime of the pipeline. If the file is not present or empty, the pipeline aborts. The assertion is performed just 
 before or after the execution of the step, identified by the 'displayName'.
 </i>

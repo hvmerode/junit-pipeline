@@ -43,8 +43,6 @@ public class AzDoPipeline {
     // TODO: Invoke-WebRequest
     public String supportedPowerShellCommands[] = { "Invoke-RestMethod" }; // Valid commands for method mockPowerShellCommandSearchStepByDisplayName()
 
-    private static final String EXCLUDEFILESLIST = "\\excludedfileslist.txt";
-
     @SuppressWarnings("java:S1192")
     public AzDoPipeline(String propertyFile,
                         String pipelineFile) {
@@ -1286,9 +1284,9 @@ public class AzDoPipeline {
 //    }
 
     /******************************************************************************************
-     The assertEqualsSearchStepByDisplayName() method validates a variable during runtime of
-     the pipeline. If the variable - with 'variableName' - is equal to 'compareValue', the
-     pipeline aborts.
+     The assertVariableEqualsSearchStepByDisplayName() method validates a variable during
+     runtime of the pipeline. If the variable - with 'variableName' - is not equal to
+     'compareValue', the pipeline aborts.
      The assertion is performed just before the execution of the step, identifier by the
      'displayName'.
      @param displayValue The value of the displayName property of a step
@@ -1296,24 +1294,24 @@ public class AzDoPipeline {
      @param compareValue The value with which the variable or parameter is compared
 
      Example:
-     Calling assertEqualsSearchStepByDisplayName ("Deploy the app", "myVar", "myValue") means
+     Calling assertVariableEqualsSearchStepByDisplayName ("Deploy the app", "myVar", "myValue") means
      that just before the step with displayName "Deploy the app" is executed, the variable
      'myVar' value is compared with "myValue".
      If you want to validate just after execution of the step, call
-     assertEqualsSearchStepByDisplayName ("Deploy the app", "myVar", "myValue", false)
+     assertVariableEqualsSearchStepByDisplayName ("Deploy the app", "myVar", "myValue", false)
      ******************************************************************************************/
-    public AzDoPipeline assertEqualsSearchStepByDisplayName (String displayValue,
-                                                             String variableName,
-                                                             String compareValue) {
-        assertEqualsSearchStepByDisplayName (displayValue, variableName, compareValue, true); // Default is to insert before a step
+    public AzDoPipeline assertVariableEqualsSearchStepByDisplayName (String displayValue,
+                                                                     String variableName,
+                                                                     String compareValue) {
+        assertVariableEqualsSearchStepByDisplayName (displayValue, variableName, compareValue, true); // Default is to insert before a step
 
         return this;
     }
 
-    public AzDoPipeline assertEqualsSearchStepByDisplayName (String displayValue,
-                                                             String variableName,
-                                                             String compareValue,
-                                                             boolean insertBefore) {
+    public AzDoPipeline assertVariableEqualsSearchStepByDisplayName (String displayValue,
+                                                                     String variableName,
+                                                                     String compareValue,
+                                                                     boolean insertBefore) {
         logger.debug("==> Method: AzDoPipeline.assertEqualsSearchStepByDisplayName");
         logger.debug("displayValue: {}", displayValue); // Can be something like "Execute this step"
         logger.debug("variableName: {}", variableName);
@@ -1326,28 +1324,28 @@ public class AzDoPipeline {
     }
 
     /******************************************************************************************
-     The assertNotEqualsSearchStepByDisplayName() method validates a variable during runtime of
-     the pipeline. If the variable - with 'variableName' - is not equal to 'compareValue', the
-     pipeline aborts.
+     The assertVariableNotEqualsSearchStepByDisplayName() method validates a variable during
+     runtime of the pipeline. If the variable - with 'variableName' - is equal to
+     'compareValue', the pipeline aborts.
      The assertion is performed just before the execution of the step, identifier by the
      'displayName'.
      @param displayValue The value of the displayName property of a step
      @param variableName The name of the variable as declared in the 'variables' section
      @param compareValue The value with which the variable or parameter is compared
      ******************************************************************************************/
-    public AzDoPipeline assertNotEqualsSearchStepByDisplayName (String displayValue,
-                                                                String variableName,
-                                                                String compareValue) {
-        assertNotEqualsSearchStepByDisplayName (displayValue, variableName, compareValue, true); // Default is to insert before a step
+    public AzDoPipeline assertVariableNotEqualsSearchStepByDisplayName (String displayValue,
+                                                                        String variableName,
+                                                                        String compareValue) {
+        assertVariableNotEqualsSearchStepByDisplayName (displayValue, variableName, compareValue, true); // Default is to insert before a step
 
         return this;
     }
 
-    public AzDoPipeline assertNotEqualsSearchStepByDisplayName (String displayValue,
-                                                                String variableName,
-                                                                String compareValue,
-                                                                boolean insertBefore) {
-        logger.debug("==> Method: AzDoPipeline.assertNotEqualsSearchStepByDisplayName");
+    public AzDoPipeline assertVariableNotEqualsSearchStepByDisplayName (String displayValue,
+                                                                        String variableName,
+                                                                        String compareValue,
+                                                                        boolean insertBefore) {
+        logger.debug("==> Method: AzDoPipeline.assertVariableNotEqualsSearchStepByDisplayName");
         logger.debug("displayValue: {}", displayValue); // Can be something like "Execute this step"
         logger.debug("variableName: {}", variableName);
         logger.debug("compareValue: {}", compareValue);
@@ -1359,20 +1357,45 @@ public class AzDoPipeline {
     }
 
     /******************************************************************************************
-     Same as assertEqualsSearchStepByDisplayName() but it is compared to an empty value
+     Same as assertVariableNotEqualsSearchStepByDisplayName() but it is compared to an empty value
      @param displayValue The value of the displayName property of a step
      @param variableName The name of the variable as declared in the 'variables' section
      ******************************************************************************************/
-    public AzDoPipeline assertEmptySearchStepByDisplayName (String displayValue,
-                                                            String variableName) {
-        assertEmptySearchStepByDisplayName (displayValue, variableName, true); // Default is to insert before a step
+    public AzDoPipeline assertVariableNotEmptySearchStepByDisplayName (String displayValue,
+                                                                       String variableName) {
+        assertVariableNotEmptySearchStepByDisplayName (displayValue, variableName, true); // Default is to insert before a step
 
         return this;
     }
-    public AzDoPipeline assertEmptySearchStepByDisplayName (String displayValue,
-                                                            String variableName,
-                                                            boolean insertBefore) {
-        logger.debug("==> Method: AzDoPipeline.assertEmptySearchStepByDisplayName");
+
+    public AzDoPipeline assertVariableNotEmptySearchStepByDisplayName (String displayValue,
+                                                                       String variableName,
+                                                                       boolean insertBefore) {
+        logger.debug("==> Method: AzDoPipeline.assertVariableNotEmptySearchStepByDisplayName");
+        logger.debug("displayValue: {}", displayValue); // Can be something like "Execute this step"
+        logger.debug("variableName: {}", variableName);
+        logger.debug("insertBefore: {}", insertBefore);
+
+        assertVariableSearchStepByDisplayName (displayValue, variableName,"", false, insertBefore);
+
+        return this;
+    }
+
+    /******************************************************************************************
+     Same as assertVariableEqualsSearchStepByDisplayName() but it is compared to an empty value
+     @param displayValue The value of the displayName property of a step
+     @param variableName The name of the variable as declared in the 'variables' section
+     ******************************************************************************************/
+    public AzDoPipeline assertVariableEmptySearchStepByDisplayName (String displayValue,
+                                                                    String variableName) {
+        assertVariableEmptySearchStepByDisplayName (displayValue, variableName, true); // Default is to insert before a step
+
+        return this;
+    }
+    public AzDoPipeline assertVariableEmptySearchStepByDisplayName (String displayValue,
+                                                                    String variableName,
+                                                                    boolean insertBefore) {
+        logger.debug("==> Method: AzDoPipeline.assertVariableEmptySearchStepByDisplayName");
         logger.debug("displayValue: {}", displayValue); // Can be something like "Execute this step"
         logger.debug("variableName: {}", variableName);
         logger.debug("insertBefore: {}", insertBefore);
@@ -1395,11 +1418,14 @@ public class AzDoPipeline {
                                                                 boolean insertBefore) {
 
         // Create a script that compares the value of a variable
+        // Note, that if the boolean 'equals' is true, the condition results in "ne"
+        // (the condition in the pipeline fails if the value of 'variableName' is not equal to the 'compareValue')
+        // If the boolean 'is false, the condition results in eq".
         Map<String, Object> stepToInsert;
         if (equals)
-            stepToInsert = constructAssertStep(SECTION_VARIABLES, variableName, compareValue, OPERATOR_EQUALS);
+            stepToInsert = constructAssertStep(SECTION_VARIABLES, variableName, compareValue, CONDITION_NOT_EQUALS);
         else
-            stepToInsert = constructAssertStep(SECTION_VARIABLES, variableName, compareValue, OPERATOR_NOT_EQUALS);
+            stepToInsert = constructAssertStep(SECTION_VARIABLES, variableName, compareValue, CONDITION_EQUALS);
 
         // Call the performAction method; find the SECTION_TASK with the displayName
         // Other arguments besides "task", "script", bash", and "pwsh" are: powershell | checkout | download | downloadBuild | getPackage | publish | reviewApp
@@ -1430,23 +1456,23 @@ public class AzDoPipeline {
     }
 
     /******************************************************************************************
-     The assertFileNotExistsSearchStepByDisplayName() method validates at runtime the presence
-     of a certain file on the Azure DevOps agent. If the file does not exists, the pipeline
-     exists with an error.
+     The assertFileExistsSearchStepByDisplayName() method validates at runtime the presence
+     of a certain file on the Azure DevOps agent. If the file does not exist, the pipeline
+     exits with an error.
      @param displayValue The value of the displayName property of a step
      @param fileName The file name of the file of which its existence is checked
      ******************************************************************************************/
-    public AzDoPipeline assertFileNotExistsSearchStepByDisplayName (String displayValue,
-                                                                    String fileName) {
-        assertFileNotExistsSearchStepByDisplayName (displayValue, fileName, true); // Default is to insert before a step
+    public AzDoPipeline assertFileExistsSearchStepByDisplayName (String displayValue,
+                                                                 String fileName) {
+        assertFileExistsSearchStepByDisplayName (displayValue, fileName, true); // Default is to insert before a step
 
         return this;
     }
 
-    public AzDoPipeline assertFileNotExistsSearchStepByDisplayName (String displayValue,
-                                                                    String fileName,
-                                                                    boolean insertBefore) {
-        logger.debug("==> Method: AzDoPipeline.assertFileNotExistsSearchStepByDisplayName");
+    public AzDoPipeline assertFileExistsSearchStepByDisplayName (String displayValue,
+                                                                 String fileName,
+                                                                 boolean insertBefore) {
+        logger.debug("==> Method: AzDoPipeline.assertFileExistsSearchStepByDisplayName");
         logger.debug("displayValue: {}", displayValue); // Can be something like "Execute this step"
         logger.debug("fileName: {}", fileName);
         logger.debug("insertBefore: {}", insertBefore);
@@ -1457,7 +1483,7 @@ public class AzDoPipeline {
         if (agentOS == AgentOSEnum.LINUX) {
             // Linux
             logger.debug("OS is Linux");
-            String echo = String.format("echo \"AssertFileNotExists: file '%s' is not present (or empty) on the Azure DevOps Agent\"\n", fileName);
+            String echo = String.format("echo \"AssertFileExists: file '%s' is not present (or empty) on the Azure DevOps Agent\"\n", fileName);
             s = "if [ ! -f " + fileName + " ]; then\n" +
                     "    " + echo +
                     "    exit 1\n" +
@@ -1477,7 +1503,7 @@ public class AzDoPipeline {
             inputs.put("targetType", "inline");
             s = "$FilePath = \"" + fileName + "\"\n" +
             "if (-not(Test-path $FilePath -PathType leaf)) {\n" +
-                    "    Write-Host \"AssertFileNotExists: file \'" + fileName + "\' is not present (or empty) on the Azure DevOps Agent\"\n" +
+                    "    Write-Host \"AssertFileExists: file \'" + fileName + "\' is not present (or empty) on the Azure DevOps Agent\"\n" +
                     "    exit 1\n" +
                     "}";
             inputs.put(STEP_SCRIPT, s);
@@ -1485,7 +1511,7 @@ public class AzDoPipeline {
         }
 
         // displayName
-        s = "<Inserted> AssertFileNotExists: " + fileName;
+        s = "<Inserted> AssertFileExists: " + fileName;
         assertStep.put(DISPLAY_NAME, s);
 
         // Call the performAction method; find the SECTION_TASK section with the displayName
@@ -1521,24 +1547,24 @@ public class AzDoPipeline {
      @param identifierType Possible values ["variables", "parameters"]
      @param identifier The value of the identification
      @param compareValue The value with which the variable or parameter is compared
-     @param operator Possible values ["eq", "ne"]
+     @param conditionOperator Possible values ["eq", "ne"]
      ******************************************************************************************/
     private Map<String, Object> constructAssertStep (String identifierType,
                                                      String identifier,
                                                      String compareValue,
-                                                     String operator) {
+                                                     String conditionOperator) {
         Map<String, Object> assertStep = new LinkedHashMap<>();
 
-        String operatorRepresentation = "";
+        String assertOperatorRepresentation = "";
         String actionDisplayName = "";
-        if (OPERATOR_EQUALS.equals(operator)) {
+        if (CONDITION_NOT_EQUALS.equals(conditionOperator)) {
             actionDisplayName = "AssertEquals";
             if (compareValue == null || compareValue.isEmpty())
                 actionDisplayName = "AssertEmpty";
-            operatorRepresentation = "equal";
+            assertOperatorRepresentation = "equal";
         }
-        if (OPERATOR_NOT_EQUALS.equals(operator)) {
-            operatorRepresentation = "not equal";
+        if (CONDITION_EQUALS.equals(conditionOperator)) {
+            assertOperatorRepresentation = "not equal";
             actionDisplayName = "AssertNotEquals";
             if (compareValue == null || compareValue.isEmpty())
                 actionDisplayName = "AssertNotEmpty";
@@ -1548,9 +1574,9 @@ public class AzDoPipeline {
 
         // script
         if (SECTION_VARIABLES.equals(identifierType))
-            s = String.format("echo \"%s: variable '%s' with value '$(%s)' is %s to '%s'\"\n", actionDisplayName, identifier, identifier, operatorRepresentation, compareValue);
+            s = String.format("echo \"%s: variable '%s' with value '$(%s)' is %s to '%s'\"\n", actionDisplayName, identifier, identifier, assertOperatorRepresentation, compareValue);
         if (SECTION_PARAMETERS.equals(identifierType))
-            s = String.format("echo \"%s: parameter '%s' with value '${{ parameters.%s }}' is %s to '%s'\"\n", actionDisplayName, identifier, identifier, operatorRepresentation, compareValue);
+            s = String.format("echo \"%s: parameter '%s' with value '${{ parameters.%s }}' is %s to '%s'\"\n", actionDisplayName, identifier, identifier, assertOperatorRepresentation, compareValue);
         s = s + "exit 1";
         assertStep.put(STEP_SCRIPT, s);
 
@@ -1563,9 +1589,9 @@ public class AzDoPipeline {
 
         // condition
         if (SECTION_VARIABLES.equals(identifierType))
-            s = operator + "(variables['" + identifier + "'], '" + compareValue + "')";
+            s = conditionOperator + "(variables['" + identifier + "'], '" + compareValue + "')";
         if (SECTION_PARAMETERS.equals(identifierType))
-            s = operator + "(parameters['" + identifier + "'], '" + identifier + "')";
+            s = conditionOperator + "(parameters['" + identifier + "'], '" + identifier + "')";
 
         assertStep.put(CONDITION, s);
 

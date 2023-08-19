@@ -47,8 +47,8 @@ public class PipelineUnit {
             // Manipulate the pipeline and validate the 'testVar' and the existence of file  "output.csv"
             pipeline.overrideSectionPropertySearchByTypeAndIdentifier("pool", "", "vmImage", "windows-latest")
                     .setVariableSearchStepByDisplayName ("Testing, testing", "testVar", "myReplacedValue")
-                    .assertFileNotExistsSearchStepByDisplayName("Testing, testing", "output.csv", false)
-                    .assertNotEqualsSearchStepByDisplayName("Testing, testing", "testVar", "myReplacedValue", false)
+                    .assertFileExistsSearchStepByDisplayName("Testing, testing", "output.csv", false)
+                    .assertVariableEqualsSearchStepByDisplayName("Testing, testing", "testVar", "myReplacedValue", false)
                     .startPipeline("master", hookList);
         }
         catch (IOException e) {
@@ -77,7 +77,7 @@ public class PipelineUnit {
             pipeline.mockStepSearchByIdentifier("AWSShellScript@1", inlineScript)
                     .skipStageSearchByIdentifier("Stage_B")
                     .skipStageSearchByIdentifier("ExecuteScriptStage")
-                    .assertEqualsSearchStepByDisplayName ("DeployStage job_xd script", "myVar", "donotfail", true)
+                    .assertVariableNotEqualsSearchStepByDisplayName ("DeployStage job_xd script", "myVar", "donotfail", true)
                     .startPipeline();
         }
         catch (IOException e) {
@@ -136,9 +136,9 @@ public class PipelineUnit {
                     .skipJobSearchByIdentifier("Job_XD")
                     .setVariableSearchStepByIdentifier ("AWSShellScript@1", "aws_connection", "42")
                     .setVariableSearchStepByDisplayName ("ExecuteScriptStage job_xc script", "myVar", "myReplacedValue")
-                    .assertNotEqualsSearchStepByDisplayName("ExecuteScriptStage job_xa script", "jobVar", "replacedJobVar")
-                    .assertEqualsSearchStepByDisplayName("ExecuteScriptStage job_xa script", "jobVar", "replacedJobVar")
-                    .assertEmptySearchStepByDisplayName("ExecuteScriptStage job_xa script", "jobVar")
+                    .assertVariableEqualsSearchStepByDisplayName("ExecuteScriptStage job_xa script", "jobVar", "replacedJobVar")
+                    .assertVariableNotEqualsSearchStepByDisplayName("ExecuteScriptStage job_xa script", "jobVar", "replacedJobVar")
+                    .assertVariableNotEmptySearchStepByDisplayName("ExecuteScriptStage job_xa script", "jobVar")
                     .startPipeline("myFeature", null, true);
         }
         catch (IOException e) {

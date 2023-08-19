@@ -25,8 +25,8 @@ public class Constants {
     public static final String DISPLAY_NAME = "displayName";
     public static final String INPUTS = "inputs";
     public static final String CONDITION = "condition";
-    public static final String OPERATOR_EQUALS = "eq";
-    public static final String OPERATOR_NOT_EQUALS = "ne";
+    public static final String CONDITION_EQUALS = "eq";
+    public static final String CONDITION_NOT_EQUALS = "ne";
 
     // *************************************** Colors ***************************************
     public static final String RED = "\u001B[31m";

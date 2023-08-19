@@ -103,7 +103,7 @@ public class ActionInsertLineInInnerSection implements Action {
                         if (innerSectionProperty.equals(entry.getKey())) {
                             // The first element of the innerSectionPath equals the property of this section
                             // For example, the "inputs" property of a "Powershel@2" task.
-                            logger.info("Found inner section property: {}", innerSectionProperty);
+                            logger.debug("Found inner section property: {}", innerSectionProperty);
                             foundinnerSection = true;
                             innerSection = entry.getValue();
                         }
@@ -121,11 +121,11 @@ public class ActionInsertLineInInnerSection implements Action {
 
     private void innerSection (String innerSectionType, Object innerSection) {
         if (innerSection == null)
-            logger.info("innerSection is null");
+            logger.debug("innerSection is null");
 
         // Only a Map section is assumed valid
         if (innerSection instanceof Map) {
-            logger.info("innerSection is a Map: {}", innerSection);
+            logger.debug("innerSection is a Map: {}", innerSection);
 
             Map<String, Object> innerMap = (Map<String, Object>) innerSection;
             for (Map.Entry<String, Object> innerEntry : innerMap.entrySet()) {

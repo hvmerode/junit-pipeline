@@ -102,7 +102,7 @@ Example:
 <dependency>
   <groupId>io.github.hvmerode</groupId>
   <artifactId>junit-pipeline</artifactId>
-  <version>1.1.5</version>
+  <version>1.2.0</version>
 </dependency>
 ```
 
@@ -471,7 +471,7 @@ public void assertVariableEqualsSearchStepByDisplayName (String displayValue,
 ```
 <i>
 The assertVariableEqualsSearchStepByDisplayName() method validates a variable during runtime of the pipeline. If the 
-value of the variable - with 'variableName' - is bot equal to the value of 'compareValue', the pipeline aborts. 
+value of the variable - with 'variableName' - is not equal to the value of 'compareValue', the pipeline aborts. 
 The assertion is performed just before or after the execution of the step, identified by the 'displayName'.
 
 <u>Example</u>:\

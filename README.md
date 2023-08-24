@@ -605,7 +605,6 @@ pipeline.getRunResult()
 * Dynamically create service connections, which refer to the locally running HTTP server.
 * Clone variable group from original Azure DevOps project into the Azure DevOps test project.
 * Log YAML line numbers in method _Utils.validatePipelineFile()_ according to [yaml-line-numbers.md](https://github.com/networknt/json-schema-validator/blob/master/doc/yaml-line-numbers.md)
-* Add option to pipeline.mockStep to display a name (the inline script shows as CmdLine in Azure DevOps).
 * Add option to continue on error for all steps.
 * Possibility to replace a step with a yamlTemplate file (the yamlTemplate file could serve as a mock file).
 * Possibility to replace a step with another step.
@@ -615,6 +614,7 @@ pipeline.getRunResult()
   This is a 'nice-to-have'.
 
 ## Solved ##
+* ~~Add option to pipeline.mockStep to display a name (the inline script shows as CmdLine in Azure DevOps).~~
 * ~~mockBashCommandSearchStepByDisplayName / mockPowerShellCommandSearchStepByDisplayName: Add additional counter argument to 
   pinpoint the right command (if the same command occurs multiple times in one step; default the first
   one is picked). This makes it possible to define different commandOutput strings per command.~~

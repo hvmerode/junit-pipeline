@@ -74,7 +74,9 @@ public class PipelineUnit {
         try {
             String inlineScript = "echo \"This is a mock script\"\n" +
                     "echo \"This is line 2\"";
+            String inlineScript2 = "echo \"This is an inserted script\"";
             pipeline.mockStepSearchByIdentifier("AWSShellScript@1", inlineScript)
+                    .insertScriptSearchStepByDisplayName ("DeployStage job_xe script", inlineScript2, false)
                     .skipStageSearchByIdentifier("Stage_B")
                     .skipStageSearchByIdentifier("ExecuteScriptStage")
                     .assertVariableNotEqualsSearchStepByDisplayName ("DeployStage job_xd script", "myVar", "donotfail", true)

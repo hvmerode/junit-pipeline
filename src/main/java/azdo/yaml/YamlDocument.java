@@ -493,6 +493,14 @@ public class YamlDocument {
             logger.warn("sectionType is not provided");
         }
 
+        // Check whether it concerns a custom action
+        if (action.isCustomAction()) {
+            action.execute(actionResult);
+            actionResult.actionExecuted = true;
+            return actionResult;
+        }
+
+        // If not a custom action, continue ...
         // Find the section; handle the Map
         Object l1 = actionResult.l1;
         Map<String, Object> map = null;

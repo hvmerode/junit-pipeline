@@ -45,7 +45,8 @@ public class PipelineUnit {
             hookList.add(new TestHook());
 
             // Manipulate the pipeline and validate the 'testVar' and the existence of file  "output.csv"
-            pipeline.overrideSectionPropertySearchByTypeAndIdentifier("pool", "", "vmImage", "windows-latest")
+            pipeline.resetTrigger()
+                    .overrideSectionPropertySearchByTypeAndIdentifier("pool", "", "vmImage", "windows-latest")
                     .setVariableSearchStepByDisplayName ("Testing, testing", "testVar", "myReplacedValue")
                     .assertFileExistsSearchStepByDisplayName("Testing, testing", "output.csv", false)
                     .assertVariableEqualsSearchStepByDisplayName("Testing, testing", "testVar", "myReplacedValue", false)

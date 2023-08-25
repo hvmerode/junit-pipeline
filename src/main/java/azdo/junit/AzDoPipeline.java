@@ -1030,6 +1030,21 @@ public class AzDoPipeline {
     }
 
     /******************************************************************************************
+     Reset the trigger in the main pipeline to 'trigger: none'
+     This prevents a pipeline from starting twice as part of performing the pipeline unit test,
+     if the trigger in the main pipeline is configured to start after every commit.
+     ******************************************************************************************/
+    public AzDoPipeline resetTrigger (){
+        logger.debug("==> Method: AzDoPipeline.resetTrigger");
+
+        // Call the action
+        ActionResetTrigger action = new ActionResetTrigger();
+        yamlDocumentEntryPoint.performAction (action, SECTION_TRIGGER, null);
+
+        return this;
+    }
+
+    /******************************************************************************************
      Replace the content of a step with an inline script. The step is searched using the
      'stepIdentifier', for example "AWSShellScript@1"
      @param stepIdentifier The identification of a step

@@ -599,14 +599,12 @@ pipeline.getRunResult()
 ## New features ##
 * Test on Linux; some filesystem methods in Utils may not work properly.
 * Support "refs/tags/tag" and "refs/refname" for external repositories with templates.
-* Reset trigger to none; this prevents that pipelines are executed twice; one time because the repo is updated and
-  one time because it is explicitly started by the junit-pipeline framework.
 * Publish pipeline unit test report.
+* Possibility to replace a step with a yamlTemplate file (the yamlTemplate file could serve as a mock file).
 * Dynamically create service connections, which refer to the locally running HTTP server.
 * Clone variable group from original Azure DevOps project into the Azure DevOps test project.
 * Log YAML line numbers in method _Utils.validatePipelineFile()_ according to [yaml-line-numbers.md](https://github.com/networknt/json-schema-validator/blob/master/doc/yaml-line-numbers.md)
 * Add option to continue on error for all steps.
-* Possibility to replace a step with a yamlTemplate file (the yamlTemplate file could serve as a mock file).
 * Possibility to replace a step with another step.
 * Add unit tests to the junit-pipeline code itself.
 * Add methods to add, update or remove conditions in stages or jobs. Use the _overrideLiteral_ method, if possible.
@@ -614,6 +612,8 @@ pipeline.getRunResult()
   This is a 'nice-to-have'.
 
 ## Solved ##
+* ~~Reset trigger to none; this prevents that pipelines are executed twice; one time because the repo is updated and
+  one time because it is explicitly started by the junit-pipeline framework.~~
 * ~~Add option to pipeline.mockStep to display a name (the inline script shows as CmdLine in Azure DevOps).~~
 * ~~mockBashCommandSearchStepByDisplayName / mockPowerShellCommandSearchStepByDisplayName: Add additional counter argument to 
   pinpoint the right command (if the same command occurs multiple times in one step; default the first

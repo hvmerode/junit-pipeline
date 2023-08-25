@@ -149,4 +149,7 @@ public class ActionInsertLineInInnerSection implements Action {
     public boolean needsSectionIdentifier() {
         return false;
     }
+
+    // This action is not a custom action
+    public boolean isCustomAction () { return false; }
 }

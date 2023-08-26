@@ -612,6 +612,8 @@ pipeline.getRunResult()
   This is a 'nice-to-have'.
 
 ## Solved ##
+* ~~Method constructAssertStep() needs rework. The text is incorrect in case of AssertNotEmpy, for
+  example "AssertNotEmpty: variable 'releaseVersion' with value '' is not equal to ''".~~
 * ~~Reset trigger to none; this prevents that pipelines are executed twice; one time because the repo is updated and
   one time because it is explicitly started by the junit-pipeline framework.~~
 * ~~Add option to pipeline.mockStep to display a name (the inline script shows as CmdLine in Azure DevOps).~~

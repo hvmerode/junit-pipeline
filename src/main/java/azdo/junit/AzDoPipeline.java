@@ -1613,46 +1613,49 @@ public class AzDoPipeline {
                                                      String identifier,
                                                      String compareValue,
                                                      String conditionOperator) {
-        Map<String, Object> assertStep = new LinkedHashMap<>();
 
-        String assertOperatorRepresentation = "";
-        String actionDisplayName = "";
-        if (CONDITION_NOT_EQUALS.equals(conditionOperator)) {
-            actionDisplayName = "AssertEquals";
-            if (compareValue == null || compareValue.isEmpty())
-                actionDisplayName = "AssertEmpty";
-            assertOperatorRepresentation = "equal";
+        String identifierTypeDisplay = "";
+        if (SECTION_VARIABLES.equals(identifierType)) {
+            identifierTypeDisplay = "variable";
         }
-        if (CONDITION_EQUALS.equals(conditionOperator)) {
-            assertOperatorRepresentation = "not equal";
-            actionDisplayName = "AssertNotEquals";
-            if (compareValue == null || compareValue.isEmpty())
-                actionDisplayName = "AssertNotEmpty";
+        if (SECTION_PARAMETERS.equals(identifierType)) {
+            identifierTypeDisplay = "parameter";
         }
 
         String s = "";
-
-        // script
-        if (SECTION_VARIABLES.equals(identifierType))
-            s = String.format("echo \"%s: variable '%s' with value '$(%s)' is %s to '%s'\"\n", actionDisplayName, identifier, identifier, assertOperatorRepresentation, compareValue);
-        if (SECTION_PARAMETERS.equals(identifierType))
-            s = String.format("echo \"%s: parameter '%s' with value '${{ parameters.%s }}' is %s to '%s'\"\n", actionDisplayName, identifier, identifier, assertOperatorRepresentation, compareValue);
+        String value = "$(" + identifier + ")";
+        String actionDisplayName = "";
+        if (CONDITION_NOT_EQUALS.equals(conditionOperator)) {
+            if (compareValue == null || compareValue.isEmpty()) {
+                actionDisplayName = "AssertEmpty";
+                s = String.format("echo \"%s: %s '%s' with value '%s' is not empty\"\n", actionDisplayName, identifierTypeDisplay, identifier, value);
+            }
+            else {
+                actionDisplayName = "AssertEquals";
+                s = String.format("echo \"%s: %s '%s' with value '%s' is not equal to compared value '%s'\"\n", actionDisplayName, identifierTypeDisplay, identifier, value, compareValue);
+            }
+        }
+        if (CONDITION_EQUALS.equals(conditionOperator)) {
+            if (compareValue == null || compareValue.isEmpty()) {
+                actionDisplayName = "AssertNotEmpty";
+                s = String.format("echo \"%s: %s '%s' is empty\"\n", actionDisplayName, identifierTypeDisplay, identifier);
+            }
+            else {
+                actionDisplayName = "AssertNotEquals";
+                s = String.format("echo \"%s: %s '%s' with value '%s' is equal to compared value '%s'\"\n", actionDisplayName, identifierTypeDisplay, identifier, value, compareValue);
+            }
+        }
         s = s + "exit 1";
+
+        Map<String, Object> assertStep = new LinkedHashMap<>();
         assertStep.put(STEP_SCRIPT, s);
 
         // displayName
-        if (SECTION_VARIABLES.equals(identifierType))
-            s = "<Inserted> " + actionDisplayName + " variable " + identifier;
-        if (SECTION_PARAMETERS.equals(identifierType))
-            s = "<Inserted> " + actionDisplayName + " parameter " + identifier;
+        s = "<Inserted> " + actionDisplayName + " " + identifierTypeDisplay + " " + identifier;
         assertStep.put(DISPLAY_NAME, s);
 
-        // condition
-        if (SECTION_VARIABLES.equals(identifierType))
-            s = conditionOperator + "(variables['" + identifier + "'], '" + compareValue + "')";
-        if (SECTION_PARAMETERS.equals(identifierType))
-            s = conditionOperator + "(parameters['" + identifier + "'], '" + identifier + "')";
-
+        // condition (requires plural form of 'identifierTypeDisplay'. Therefor an 's' is added)
+        s = conditionOperator + "(" + identifierTypeDisplay + "s['" + identifier + "'], '" + compareValue + "')";
         assertStep.put(CONDITION, s);
 
         return assertStep;

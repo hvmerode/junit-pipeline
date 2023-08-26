@@ -617,6 +617,51 @@ public class AzDoPipeline {
     }
 
     /******************************************************************************************
+     Inserts a script before or after a given step.
+     @param displayValue The displayName of a step
+     @param inlineScript The script to insert, before or after the step
+     @param insertBefore Determines whether the script is inserted before (true) or after (false)
+     the given step
+     ******************************************************************************************/
+    public AzDoPipeline insertScriptSearchStepByDisplayName (String displayValue,
+                                                             String inlineScript,
+                                                             boolean insertBefore) {
+        logger.debug("==> Method: AzDoPipeline.insertScriptSearchStepByDisplayName");
+        logger.debug("displayValue: {}", displayValue);
+        logger.debug("inlineScript: {}", inlineScript);
+        logger.debug("insertBefore: {}", insertBefore);
+
+        Map<String, Object> scriptToInsert = new LinkedHashMap<>();
+        scriptToInsert.put(STEP_SCRIPT, inlineScript);
+        scriptToInsert.put(DISPLAY_NAME, "<Inserted> Script");
+
+        // Call the performAction method; find the SECTION_TASK section with the DISPLAY_NAME
+        ActionResult ar;
+        ActionInsertSectionByProperty actionTask = new ActionInsertSectionByProperty(SECTION_TASK, DISPLAY_NAME, displayValue, scriptToInsert, insertBefore);
+        ar = yamlDocumentEntryPoint.performAction (actionTask, SECTION_TASK, "");
+
+        // It can even be a SECTION_SCRIPT with that displayName
+        if (ar == null || !ar.actionExecuted) {
+            ActionInsertSectionByProperty actionScript = new ActionInsertSectionByProperty(STEP_SCRIPT, DISPLAY_NAME, displayValue, scriptToInsert, insertBefore);
+            ar = yamlDocumentEntryPoint.performAction(actionScript, STEP_SCRIPT, "");
+        }
+
+        // Or a SECTION_BASH
+        if (ar == null || !ar.actionExecuted) {
+            ActionInsertSectionByProperty actionBash = new ActionInsertSectionByProperty(STEP_SCRIPT_BASH, DISPLAY_NAME, displayValue, scriptToInsert, insertBefore);
+            ar = yamlDocumentEntryPoint.performAction(actionBash, STEP_SCRIPT_BASH, "");
+        }
+
+        // It can even be a SECTION_POWERSHELL
+        if (ar == null || !ar.actionExecuted) {
+            ActionInsertSectionByProperty actionPSScript = new ActionInsertSectionByProperty(STEP_SCRIPT_PWSH, DISPLAY_NAME, displayValue, scriptToInsert, insertBefore);
+            yamlDocumentEntryPoint.performAction(actionPSScript, STEP_SCRIPT_PWSH, "");
+        }
+
+        return this;
+    }
+
+    /******************************************************************************************
      Replaces the value of a variable in the 'variables' section.
      @param variableName The name of the variable as declared in the 'variables' section
      @param value The new value of the variable
@@ -930,7 +975,6 @@ public class AzDoPipeline {
         return this;
     }
 
-
     /******************************************************************************************
      Replace the identifier of a section (stage, job, vmImage, ...) with a new identifier value
      @param sectionType Possible values ["stage", "job", "template", "task", ...]
@@ -986,6 +1030,21 @@ public class AzDoPipeline {
     }
 
     /******************************************************************************************
+     Reset the trigger in the main pipeline to 'trigger: none'
+     This prevents a pipeline from starting twice as part of performing the pipeline unit test,
+     if the trigger in the main pipeline is configured to start after every commit.
+     ******************************************************************************************/
+    public AzDoPipeline resetTrigger (){
+        logger.debug("==> Method: AzDoPipeline.resetTrigger");
+
+        // Call the action
+        ActionResetTrigger action = new ActionResetTrigger();
+        yamlDocumentEntryPoint.performAction (action, SECTION_TRIGGER, null);
+
+        return this;
+    }
+
+    /******************************************************************************************
      Replace the content of a step with an inline script. The step is searched using the
      'stepIdentifier', for example "AWSShellScript@1"
      @param stepIdentifier The identification of a step
@@ -993,15 +1052,16 @@ public class AzDoPipeline {
      ******************************************************************************************/
     public AzDoPipeline mockStepSearchByIdentifier (String stepIdentifier,
                                                     String inlineScript){
-        logger.debug("==> Method: YamlDocument. mockStepSearchByIdentifier");
+        logger.debug("==> Method: AzDoPipeline.mockStepSearchByIdentifier");
         logger.debug("stepIdentifier: {}", stepIdentifier); // For example AWSShellScript@1
         logger.debug("inlineScript: {}", inlineScript);
 
-        Map<String, Object> script = new LinkedHashMap<>();
-        script.put(STEP_SCRIPT, inlineScript);
+        Map<String, Object> mockScript = new LinkedHashMap<>();
+        mockScript.put(STEP_SCRIPT, inlineScript);
+        mockScript.put(DISPLAY_NAME, "<Replaced> Mock script");
 
         // Call the performAction method; find the step section with the stepIdentifier
-        ActionUpdateSection action = new ActionUpdateSection(SECTION_TASK, stepIdentifier, script);
+        ActionUpdateSection action = new ActionUpdateSection(SECTION_TASK, stepIdentifier, mockScript);
         yamlDocumentEntryPoint.performAction (action, SECTION_TASK, stepIdentifier);
 
         return this;
@@ -1015,7 +1075,7 @@ public class AzDoPipeline {
      ******************************************************************************************/
     public AzDoPipeline mockStepSearchStepByDisplayName (String displayValue,
                                                          String inlineScript){
-        logger.debug("==> Method: YamlDocument. mockStepSearchByIdentifier");
+        logger.debug("==> Method: AzDoPipeline.mockStepSearchStepByDisplayName");
         logger.debug("displayValue: {}", displayValue);
         logger.debug("inlineScript: {}", inlineScript);
 
@@ -1074,7 +1134,7 @@ public class AzDoPipeline {
     public AzDoPipeline mockBashCommandSearchStepByDisplayName (String displayValue,
                                                                 String command,
                                                                 String[] commandOutputArray){
-        logger.debug("==> Method: YamlDocument.mockBashCommandSearchStepByDisplayName");
+        logger.debug("==> Method: AzDoPipeline.mockBashCommandSearchStepByDisplayName");
         logger.debug("displayValue: {}", displayValue);
         logger.debug("command: {}", command);
         logger.debug("commandOutputArray: {}", commandOutputArray);
@@ -1177,7 +1237,7 @@ public class AzDoPipeline {
     public AzDoPipeline mockPowerShellCommandSearchStepByDisplayName(String displayValue,
                                                                      String command,
                                                                      String[] commandOutputArray){
-        logger.debug("==> Method: YamlDocument.mockPowerShellCommandSearchStepByDisplayName");
+        logger.debug("==> Method: AzDoPipeline.mockPowerShellCommandSearchStepByDisplayName");
         logger.debug("displayValue: {}", displayValue);
         logger.debug("command: {}", command);
         logger.debug("commandOutputArray: {}", commandOutputArray);
@@ -1449,7 +1509,7 @@ public class AzDoPipeline {
         // It can even be a SECTION_PWSH
         if (ar == null || !ar.actionExecuted) {
             ActionInsertSectionByProperty actionPSScript = new ActionInsertSectionByProperty(STEP_SCRIPT_PWSH, DISPLAY_NAME, displayValue, stepToInsert, insertBefore);
-            ar = yamlDocumentEntryPoint.performAction(actionPSScript, STEP_SCRIPT_PWSH, "");
+            yamlDocumentEntryPoint.performAction(actionPSScript, STEP_SCRIPT_PWSH, "");
         }
 
         return this;
@@ -1536,7 +1596,7 @@ public class AzDoPipeline {
         // It can even be a "pwsh" script
         if (ar == null || !ar.actionExecuted) {
             ActionInsertSectionByProperty actionPSScript = new ActionInsertSectionByProperty(STEP_SCRIPT_PWSH, DISPLAY_NAME, displayValue, assertStep, insertBefore);
-            ar = yamlDocumentEntryPoint.performAction(actionPSScript, STEP_SCRIPT_PWSH, "");
+            yamlDocumentEntryPoint.performAction(actionPSScript, STEP_SCRIPT_PWSH, "");
         }
 
         return this;
@@ -1553,46 +1613,49 @@ public class AzDoPipeline {
                                                      String identifier,
                                                      String compareValue,
                                                      String conditionOperator) {
-        Map<String, Object> assertStep = new LinkedHashMap<>();
 
-        String assertOperatorRepresentation = "";
-        String actionDisplayName = "";
-        if (CONDITION_NOT_EQUALS.equals(conditionOperator)) {
-            actionDisplayName = "AssertEquals";
-            if (compareValue == null || compareValue.isEmpty())
-                actionDisplayName = "AssertEmpty";
-            assertOperatorRepresentation = "equal";
+        String identifierTypeDisplay = "";
+        if (SECTION_VARIABLES.equals(identifierType)) {
+            identifierTypeDisplay = "variable";
         }
-        if (CONDITION_EQUALS.equals(conditionOperator)) {
-            assertOperatorRepresentation = "not equal";
-            actionDisplayName = "AssertNotEquals";
-            if (compareValue == null || compareValue.isEmpty())
-                actionDisplayName = "AssertNotEmpty";
+        if (SECTION_PARAMETERS.equals(identifierType)) {
+            identifierTypeDisplay = "parameter";
         }
 
         String s = "";
-
-        // script
-        if (SECTION_VARIABLES.equals(identifierType))
-            s = String.format("echo \"%s: variable '%s' with value '$(%s)' is %s to '%s'\"\n", actionDisplayName, identifier, identifier, assertOperatorRepresentation, compareValue);
-        if (SECTION_PARAMETERS.equals(identifierType))
-            s = String.format("echo \"%s: parameter '%s' with value '${{ parameters.%s }}' is %s to '%s'\"\n", actionDisplayName, identifier, identifier, assertOperatorRepresentation, compareValue);
+        String value = "$(" + identifier + ")";
+        String actionDisplayName = "";
+        if (CONDITION_NOT_EQUALS.equals(conditionOperator)) {
+            if (compareValue == null || compareValue.isEmpty()) {
+                actionDisplayName = "AssertEmpty";
+                s = String.format("echo \"%s: %s '%s' with value '%s' is not empty\"\n", actionDisplayName, identifierTypeDisplay, identifier, value);
+            }
+            else {
+                actionDisplayName = "AssertEquals";
+                s = String.format("echo \"%s: %s '%s' with value '%s' is not equal to compared value '%s'\"\n", actionDisplayName, identifierTypeDisplay, identifier, value, compareValue);
+            }
+        }
+        if (CONDITION_EQUALS.equals(conditionOperator)) {
+            if (compareValue == null || compareValue.isEmpty()) {
+                actionDisplayName = "AssertNotEmpty";
+                s = String.format("echo \"%s: %s '%s' is empty\"\n", actionDisplayName, identifierTypeDisplay, identifier);
+            }
+            else {
+                actionDisplayName = "AssertNotEquals";
+                s = String.format("echo \"%s: %s '%s' with value '%s' is equal to compared value '%s'\"\n", actionDisplayName, identifierTypeDisplay, identifier, value, compareValue);
+            }
+        }
         s = s + "exit 1";
+
+        Map<String, Object> assertStep = new LinkedHashMap<>();
         assertStep.put(STEP_SCRIPT, s);
 
         // displayName
-        if (SECTION_VARIABLES.equals(identifierType))
-            s = "<Inserted> " + actionDisplayName + " variable " + identifier;
-        if (SECTION_PARAMETERS.equals(identifierType))
-            s = "<Inserted> " + actionDisplayName + " parameter " + identifier;
+        s = "<Inserted> " + actionDisplayName + " " + identifierTypeDisplay + " " + identifier;
         assertStep.put(DISPLAY_NAME, s);
 
-        // condition
-        if (SECTION_VARIABLES.equals(identifierType))
-            s = conditionOperator + "(variables['" + identifier + "'], '" + compareValue + "')";
-        if (SECTION_PARAMETERS.equals(identifierType))
-            s = conditionOperator + "(parameters['" + identifier + "'], '" + identifier + "')";
-
+        // condition (requires plural form of 'identifierTypeDisplay'. Therefor an 's' is added)
+        s = conditionOperator + "(" + identifierTypeDisplay + "s['" + identifier + "'], '" + compareValue + "')";
         assertStep.put(CONDITION, s);
 
         return assertStep;

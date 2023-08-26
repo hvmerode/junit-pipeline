@@ -3,6 +3,7 @@ package azdo.utils;
 public class Constants {
     // *************************************** Types in YAML files ***************************************
     // *************************************** Sections ***************************************
+    public static final String SECTION_TRIGGER = "trigger";
     public static final String SECTION_VARIABLES = "variables";
     public static final String SECTION_PARAMETERS = "parameters";
     public static final String SECTION_STAGES = "stages";

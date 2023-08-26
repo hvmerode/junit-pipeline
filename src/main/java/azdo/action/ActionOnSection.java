@@ -124,4 +124,7 @@ public class ActionOnSection implements Action {
     public boolean needsSectionIdentifier() {
         return true;
     }
+
+    // This action is not a custom action
+    public boolean isCustomAction () { return false; }
 }

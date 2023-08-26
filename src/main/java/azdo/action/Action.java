@@ -11,4 +11,7 @@ public interface Action {
 
     // You can ask a question to the action; does it need a section name to be executed or is a section type sufficient
     boolean needsSectionIdentifier ();
+
+    // A custom action does not follow the pattern of regular actions
+    boolean isCustomAction ();
 }

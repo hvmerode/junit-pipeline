@@ -70,6 +70,9 @@ public class RunResult {
     public void reorganize() {
         logger.debug("==> Method: RunResult.reorganize");
 
+        // Sort the list first; this properly displays the order of the phases in the pipeline (in most of the cases)
+        sort(timelineRecords);
+
         int size = timelineRecords.size();
         TimelineRecord timelineRecord;
         for (int counter = 0; counter < size; counter++) {
@@ -80,6 +83,18 @@ public class RunResult {
         }
     }
 
+    /*
+        Sort the TimelineRecord arraylist
+     */
+    private static void sort(ArrayList<TimelineRecord> list) {
+        list.sort((o1, o2)
+                -> o1.startTime.compareTo(
+                o2.startTime));
+    }
+
+    /*
+        Write all TimelineRecords to the log
+     */
     public void dumpTimelineToLog() {
         logger.debug("==> Method: RunResult.dumpTimelineToLog");
 
@@ -97,6 +112,10 @@ public class RunResult {
         logger.info(DEMARCATION);
     }
 
+
+    /*
+        Return a TimelineRecord of a certain type and certain name (= displayValue)
+     */
     public Result getSectionResultSearchByDisplayName(String sectionType,
                                                       String displayValue) {
         logger.debug("==> Method: RunResult.getSectionResultSearchByDisplayName");
@@ -125,7 +144,14 @@ public class RunResult {
 
     public Result getJobResultSearchByDisplayName(String displayValue) {
         logger.debug("==> Method: RunResult.getJobResultSearchByDisplayName");
-        return getSectionResultSearchByDisplayName("Job", displayValue);
+        Result res = Result.none;
+        res = getSectionResultSearchByDisplayName("Job", displayValue);
+        if (res == Result.none) {
+            // Not Job found (for example, if the Job was skipped); try the Phase instead
+            res = getSectionResultSearchByDisplayName("Phase", displayValue);
+        }
+
+        return res;
     }
 
     public Result getStepResultSearchByDisplayName(String displayValue) {

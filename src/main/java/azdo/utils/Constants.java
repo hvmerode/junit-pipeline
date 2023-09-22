@@ -50,4 +50,6 @@ public class Constants {
 
     // *************************************** Visualization ***************************************
     public static final String DEMARCATION = "==============================================================================";
+    public static final String HEADER_FOOTER = "-------------------------------------------------------------------------------------------------------------------";
+    public static final String ARROW_DOWN = "▼";
 }

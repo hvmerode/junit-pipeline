@@ -75,27 +75,32 @@ public class TimelineRecord {
 
             if (logDetails) {
                 String color = LIGHT_GREEN;
-                String tab = "";
+                String arrow = ARROW_DOWN;
                 if (RunResult.Result.failed.toString().equals(result))
                     color = LIGHT_RED;
-                if (RunResult.Result.skipped.toString().equals(result))
+                if (RunResult.Result.skipped.toString().equals(result)) {
                     color = LIGHT_WHITE;
+                    arrow = " ";
+                }
                 if (RunResult.Result.canceled.toString().equals(result))
                     color = YELLOW;
                 if (RunResult.Result.partiallySucceeded.toString().equals(result))
                     color = YELLOW;
 
+                if ("Stage".equals(type)) {
+                    displayedType = "Stage " + arrow + "      ";
+                }
                 if ("Job".equals(type)) {
-                    tab = "   ";
+                    displayedType = "Job " + arrow + "  ";
                 }
                 if ("Phase".equals(type)) {
-                    tab = "   ";
-                    displayedType = "Job"; // The type Phase is abstract and not for display purposes
+                    displayedType = "Job " + arrow + "  "; // The type Phase is abstract and not for display purposes
                 }
                 if ("Task".equals(type)) {
-                    tab = "      ";
+                    displayedType = "Task";
                 }
-                logger.infoColor(color, tab + "{}: \"{}\"       Execution time: {} seconds       Status: {}", displayedType, name, timeInSeconds, result);
+                String out = String.format("%14s %60s %23s %15s", displayedType, name, timeInSeconds, result);
+                logger.infoColor(color, out);
             }
 
             int size = reorganizedTimelineRecords.size();

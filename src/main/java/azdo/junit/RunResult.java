@@ -7,7 +7,7 @@ import azdo.utils.Log;
 
 import java.util.ArrayList;
 
-import static azdo.utils.Constants.DEMARCATION;
+import static azdo.utils.Constants.*;
 
 /*
     The result of the pipeline run and its details are stored in RunResult
@@ -98,7 +98,11 @@ public class RunResult {
     public void dumpTimelineToLog() {
         logger.debug("==> Method: RunResult.dumpTimelineToLog");
 
-        logger.info(DEMARCATION);
+        logger.info("");
+        logger.info(HEADER_FOOTER);
+        String header = String.format("%14s %60s %23s %15s", "Type", "Name", "Execution time in sec", "Result");
+        logger.info(header);
+        logger.info(HEADER_FOOTER);
         int size = timelineRecords.size();
         TimelineRecord timelineRecord;
         for (int counter = 0; counter < size; counter++) {
@@ -109,7 +113,7 @@ public class RunResult {
                 }
             }
         }
-        logger.info(DEMARCATION);
+        logger.info(HEADER_FOOTER);
     }
 
 

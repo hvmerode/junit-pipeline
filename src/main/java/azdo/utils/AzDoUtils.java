@@ -460,11 +460,21 @@ public class AzDoUtils {
                 runResult.result = RunResult.Result.undetermined;
                 runResult.status = RunResult.Status.timeout;
             }
+            String pipelineResult = runResult.result.toString();
             logger.info(DEMARCATION);
             logger.info("Buildnumber: {}", buildNumber);
             logger.info("BuildId: {}", runResult.buildId);
             logger.info("Status: {}", runResult.status.toString());
-            logger.info("Result: {}", runResult.result.toString());
+
+            String color = LIGHT_GREEN;
+            if (RunResult.Result.failed.toString().equals(pipelineResult))
+                color = LIGHT_RED;
+            if (RunResult.Result.canceled.toString().equals(pipelineResult))
+                color = YELLOW;
+            if (RunResult.Result.partiallySucceeded.toString().equals(pipelineResult))
+                color = YELLOW;
+
+            logger.infoColor(color, "Result: {}", runResult.result.toString());
         }
 
         //////////////////////////////////////////////////////////

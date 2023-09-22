@@ -1,6 +1,7 @@
 package azdo.utils;
 
 import azdo.junit.RunResult;
+import azdo.junit.TimelineRecord;
 import org.eclipse.jgit.api.Git;
 import org.yaml.snakeyaml.Yaml;
 import java.io.IOException;
@@ -18,7 +19,7 @@ import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static azdo.utils.Constants.DEMARCATION;
+import static azdo.utils.Constants.*;
 
 public class AzDoUtils {
     private static Log logger = Log.getLogger();
@@ -35,6 +36,7 @@ public class AzDoUtils {
     private static final String RESPONSE_IS = "Response is: {}";
     private static final String REPOSITORY_ID_IS = "Repository id is: {}";
     private static final String JSON_ELEMENT_VALUE = "value";
+    private static final String JSON_ELEMENT_RECORDS = "records";
     private static final String JSON_ELEMENT_NAME = "name";
     private static final String JSON_ELEMENT_ID = "id";
     private enum HttpMethod {GET, PUT, POST, PATCH}
@@ -392,6 +394,7 @@ public class AzDoUtils {
         String status = null;
         String result = null;
         String buildNumber = null;
+        String id = null;
 
         long timeElapsed = 0;
         String http = azdoEndpoint +
@@ -404,8 +407,10 @@ public class AzDoUtils {
 
         String json = "{}";
 
-        // Poll the API until the status is completed or timed out
+        //////////////////////////////////////////////////////////
+        // 1. Poll the API until the status is completed or timed out
         // Polling is determined using a certain frequency
+        //////////////////////////////////////////////////////////
         while (runResult.result == RunResult.Result.none) {
 
             // Call the API
@@ -436,12 +441,14 @@ public class AzDoUtils {
                                 result = value.get("result").toString();
                             if (value.get("buildNumber") != null)
                                 buildNumber = value.get("buildNumber").toString();
+                            if (value.get("id") != null)
+                                id = value.get("id").toString();
                         }
                     }
                 }
             }
 
-            runResult = new RunResult(result, status);
+            runResult = new RunResult(result, status, id);
 
             // Wait until the next poll is allowed
             Utils.wait(pollFrequency * 1000);
@@ -455,8 +462,78 @@ public class AzDoUtils {
             }
             logger.info(DEMARCATION);
             logger.info("Buildnumber: {}", buildNumber);
+            logger.info("BuildId: {}", runResult.buildId);
             logger.info("Status: {}", runResult.status.toString());
             logger.info("Result: {}", runResult.result.toString());
+        }
+
+        //////////////////////////////////////////////////////////
+        // 2. Retrieve the details of the build using the timeline
+        //////////////////////////////////////////////////////////
+        http = azdoEndpoint +
+                azdoBuildApi +
+                "/" +
+                id +
+                "/timeline" +
+                "?" +
+                azdoBuildApiVersion;
+
+        response = callApi(azdoUser, azdoPat, http, HttpMethod.GET, null);
+
+        // Get the build timeline from the response
+        if (response != null) {
+            yaml = new Yaml();
+            Map<String, Object> yamlMap = yaml.load(response.body().toString());
+            if (yamlMap != null) {
+                logger.debug(RESPONSE_IS, yamlMap.toString());
+
+                // Parse the json response and add the result to runResult
+                if (yamlMap.get(JSON_ELEMENT_RECORDS) instanceof ArrayList) {
+                    int sizeRecords = 0;
+                    ArrayList<Object> records = (ArrayList<Object>) yamlMap.get(JSON_ELEMENT_RECORDS);
+                    if (records != null) {
+                        sizeRecords = records.size();
+
+                        // Go through list of records
+                        Map<String, Object> map;
+                        TimelineRecord timelineRecord;
+                        String key;
+                        String value;
+                        for (int recordCounter = 0; recordCounter < sizeRecords; recordCounter++) {
+                            map = (Map<String, Object>) records.get(recordCounter);
+                            timelineRecord = new TimelineRecord();
+                            for (Map.Entry<String, Object> entry : map.entrySet()) {
+                                if (entry.getKey() != null)
+                                    key = entry.getKey().toString();
+                                else key = "";
+                                if (entry.getValue() != null)
+                                    value = entry.getValue().toString();
+                                else value = "";
+
+                                if ("id".equals(key))
+                                    timelineRecord.id = value;
+                                if ("parentId".equals(key))
+                                    timelineRecord.parentId = value;
+                                if ("type".equals(key))
+                                    timelineRecord.type = value;
+                                if ("name".equals(key))
+                                    timelineRecord.name = value;
+                                if ("startTime".equals(key))
+                                    timelineRecord.startTime = value;
+                                if ("finishTime".equals(key))
+                                    timelineRecord.finishTime = value;
+                                if ("state".equals(key))
+                                    timelineRecord.state = value;
+                                if ("result".equals(key))
+                                    timelineRecord.result = value;
+                            }
+                            runResult.addTimelineRecord(timelineRecord);
+                        }
+                    }
+                }
+            }
+            else
+                logger.error("Retrieving the build timeline failed; always ignore");
         }
 
         return runResult;

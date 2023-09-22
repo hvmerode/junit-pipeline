@@ -56,9 +56,13 @@ public class PipelineUnit {
             logger.debug("Exception occurred after the pipeline was started: {}", e.getMessage());
         }
         Assertions.assertEquals (RunResult.Result.failed, pipeline.getRunResult().result);
+        RunResult.Result stageResult = pipeline.getRunResult().getStageResultSearchByDisplayName("simpleStage");
+        Assertions.assertEquals (RunResult.Result.failed, stageResult);
         logger.info("Test successful");
-        logger.info("Expected: {}", RunResult.Result.failed);
-        logger.info("Actual: {}", pipeline.getRunResult().result);
+        logger.info("Expected pipeline result: {}", RunResult.Result.failed);
+        logger.info("Actual pipeline result: {}", pipeline.getRunResult().result);
+        logger.info("Expected stage result: {}", RunResult.Result.failed);
+        logger.info("Actual stage result: {}", stageResult);
     }
 
     @Test

@@ -102,7 +102,7 @@ Example:
 <dependency>
   <groupId>io.github.hvmerode</groupId>
   <artifactId>junit-pipeline</artifactId>
-  <version>1.2.1</version>
+  <version>1.2.3</version>
 </dependency>
 ```
 
@@ -566,7 +566,11 @@ The startPipeline method has a few representations:
 
 The result of a pipeline run is retrieved using:
 ```java
-pipeline.getRunResult()
+pipeline.getRunResult();
+```
+It is also possible to retrieve the run result of each individual stage, job, or step: 
+```java
+pipeline.getRunResult().getStageResultSearchByDisplayName("simpleStage");
 ```
 <br></br>
 

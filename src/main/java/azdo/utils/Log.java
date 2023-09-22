@@ -70,6 +70,13 @@ public class Log
         }
     }
 
+    public void infoColor(String color, String format, Object... args)
+    {
+        if (logger.isInfoEnabled()) {
+            logger.info(color + format + RESET_COLOR, args);
+        }
+    }
+
     public void warn(String format, Object... args)
     {
         if (logger.isWarnEnabled()) {

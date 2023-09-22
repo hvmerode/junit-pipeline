@@ -599,8 +599,14 @@ pipeline.getRunResult()
 ## New features ##
 * Test on Linux; some filesystem methods in Utils may not work properly.
 * Support "refs/tags/tag" and "refs/refname" for external repositories with templates.
-* Publish pipeline unit test report.
+* Publish pipeline unit test report. Make use of the timeline api (https://learn.microsoft.com/en-us/rest/api/azure/devops/build/timeline/get?view=azure-devops-rest-5.1)
+  Report contains:
+  * Which stages, jobs, and tasks are executed for a certain pipeline run?
+  * How long did each stage, job, and task run?
+  * What is the status of each stage, job, and task?
+  * The report must be created locally by the junit-plugin, showed in the log and/or created as HTML file (optional).
 * Possibility to replace a step with a yamlTemplate file (the yamlTemplate file could serve as a mock file).
+* Look into the usage of CD events (https://cdevents.dev/ and https://github.com/cdevents/spec)
 * Dynamically create service connections, which refer to the locally running HTTP server.
 * Clone variable group from original Azure DevOps project into the Azure DevOps test project.
 * Log YAML line numbers in method _Utils.validatePipelineFile()_ according to [yaml-line-numbers.md](https://github.com/networknt/json-schema-validator/blob/master/doc/yaml-line-numbers.md)

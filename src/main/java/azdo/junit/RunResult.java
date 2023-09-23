@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import static azdo.utils.Constants.*;
 
 /*
-    The result of the pipeline run and its details are stored in RunResult
+    The result of the pipeline run and its details are stored in RunResult.
  */
 public class RunResult {
     private static Log logger = Log.getLogger();
@@ -67,6 +67,12 @@ public class RunResult {
     }
 
 
+/*
+    The list of TimelineRecords contains information about each phase in the pipeline run. A phase can be of type
+    "Stage", "Job", "Phase" (which is an abstract representation of a Job), and "Task" (which represents all Steps).
+    After retrieval of the TimelineRecords, this list is unsorted. The reorganize() method takes care
+    that the records are sorted and a hierarchy is introduced. This improves readability of the log.
+ */
     public void reorganize() {
         logger.debug("==> Method: RunResult.reorganize");
 
@@ -89,7 +95,7 @@ public class RunResult {
     private static void sort(ArrayList<TimelineRecord> list) {
         list.sort((o1, o2)
                 -> o1.startTime.compareTo(
-                o2.startTime));
+                        o2.startTime));
     }
 
     /*
@@ -100,7 +106,7 @@ public class RunResult {
 
         logger.info("");
         logger.info(HEADER_FOOTER);
-        String header = String.format("%14s %60s %23s %15s", "Type", "Name", "Execution time in sec", "Result");
+        String header = String.format("%14s %80s %23s %15s", "Type", "Name", "Execution time in sec", "Result");
         logger.info(header);
         logger.info(HEADER_FOOTER);
         int size = timelineRecords.size();

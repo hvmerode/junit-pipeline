@@ -1,0 +1,20 @@
+# Build numbering format
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+trigger: none
+
+stages:
+  - stage: simpleDeployment
+    displayName: Deploy stage
+    jobs:
+      - deployment: Deploy
+        displayName: Deploy my app
+        pool:
+          vmImage: 'ubuntu-latest'
+        environment: 'dev'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                - script: echo 'This is a deployment'

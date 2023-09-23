@@ -43,13 +43,12 @@ public class Constants {
     public static final String LIGHT_WHITE = "\u001B[97m";
     public static final String RESET_COLOR = "\u001B[0m";
 
-
     // *************************************** Files ***************************************
     public static final String JSON_SCHEMA = "azure-pipelines-schema.json";
 
 
     // *************************************** Visualization ***************************************
     public static final String DEMARCATION = "==============================================================================";
-    public static final String HEADER_FOOTER = "-------------------------------------------------------------------------------------------------------------------";
+    public static final String HEADER_FOOTER = "---------------------------------------------------------------------------------------------------------------------------------------";
     public static final String ARROW_DOWN = "▼";
 }

@@ -11,8 +11,6 @@ import static azdo.utils.Constants.*;
 /*
     A TimelineRecord contains information about a phase in the pipeline run. This phase can be of type
     "Stage", "Job", "Phase" (which is a Job), and "Task" (which represents all Steps).
-    After retrieval of the TimelineRecords, this list is unsorted. The reorganize() method takes care
-    that the records are sorted and a hierarchy is introduced. This improves readability of the log.
  */
 public class TimelineRecord {
     private static Log logger = Log.getLogger();
@@ -28,7 +26,7 @@ public class TimelineRecord {
     public String result;
 
     /*
-        Sort the TimelineRecords and add a hierarchy
+        Add a hierarchy to the TimelineRecords
      */
     public void reorganize (ArrayList<TimelineRecord> timelineRecords) {
         logger.debug("==> Method: TimelineRecord.reorganize");
@@ -57,7 +55,7 @@ public class TimelineRecord {
     }
 
     /*
-        Write all TimelineRecords to the log
+        Write all TimelineRecords to the log in a formatted way.
      */
     public void dumpTimelineToLog () {
         logger.debug("==> Method: TimelineRecord.dumpTimelineToLog");
@@ -99,7 +97,7 @@ public class TimelineRecord {
                 if ("Task".equals(type)) {
                     displayedType = "Task";
                 }
-                String out = String.format("%14s %60s %23s %15s", displayedType, name, timeInSeconds, result);
+                String out = String.format("%14s %80s %23s %15s", displayedType, name, timeInSeconds, result);
                 logger.infoColor(color, out);
             }
 

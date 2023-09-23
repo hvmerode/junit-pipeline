@@ -324,7 +324,6 @@ public class AzDoPipeline {
                 runResult = new RunResult();
 
             // Write the detailed result to the log
-            // TODO: Do not log the details in certain cases (for example, cancelled, timeout, ...)
             runResult.reorganize();
             runResult.dumpTimelineToLog();
         }

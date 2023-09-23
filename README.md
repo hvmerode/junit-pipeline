@@ -102,7 +102,7 @@ Example:
 <dependency>
   <groupId>io.github.hvmerode</groupId>
   <artifactId>junit-pipeline</artifactId>
-  <version>1.2.4</version>
+  <version>1.2.5</version>
 </dependency>
 ```
 
@@ -603,12 +603,6 @@ pipeline.getRunResult().getStageResultSearchByDisplayName("simpleStage");
 ## New features ##
 * Test on Linux; some filesystem methods in Utils may not work properly.
 * Support "refs/tags/tag" and "refs/refname" for external repositories with templates.
-* Publish pipeline unit test report. Make use of the timeline api (https://learn.microsoft.com/en-us/rest/api/azure/devops/build/timeline/get?view=azure-devops-rest-5.1)
-  Report contains:
-  * Which stages, jobs, and tasks are executed for a certain pipeline run?
-  * How long did each stage, job, and task run?
-  * What is the status of each stage, job, and task?
-  * The report must be created locally by the junit-plugin, showed in the log and/or created as HTML file (optional).
 * Possibility to replace a step with a yamlTemplate file (the yamlTemplate file could serve as a mock file).
 * Look into the usage of CD events (https://cdevents.dev/ and https://github.com/cdevents/spec)
 * Dynamically create service connections, which refer to the locally running HTTP server.
@@ -622,6 +616,12 @@ pipeline.getRunResult().getStageResultSearchByDisplayName("simpleStage");
   This is a 'nice-to-have'.
 
 ## Solved ##
+* ~~Publish pipeline unit test report. Make use of the timeline api (https://learn.microsoft.com/en-us/rest/api/azure/devops/build/timeline/get?view=azure-devops-rest-5.1)
+    Report contains:~~
+    ~~- Which stages, jobs, and tasks are executed for a certain pipeline run?~~
+    ~~- How long did each stage, job, and task run?~~
+    ~~- What is the status of each stage, job, and task?~~
+    ~~- The report must be created locally by the junit-plugin, showed in the log and/or created as HTML file (optional).~~
 * ~~Method constructAssertStep() needs rework. The text is incorrect in case of AssertNotEmpy, for
   example "AssertNotEmpty: variable 'releaseVersion' with value '' is not equal to ''".~~
 * ~~Reset trigger to none; this prevents that pipelines are executed twice; one time because the repo is updated and

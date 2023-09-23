@@ -223,4 +223,25 @@ public class PipelineUnit {
         logger.info("Expected: {}", RunResult.Result.failed);
         logger.info("Actual: {}", pipeline.getRunResult().result);
     }
+
+    @Test
+    @Order(7)
+    public void test7() {
+        logger.debug("");
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        logger.debug("Perform unittest: test7");
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+        // Initialize the pipeline
+        pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/simple-deployment.yml");
+
+        try {
+            pipeline.overrideLiteral("dev", "prod")
+                    .startPipeline();
+        }
+        catch (IOException e) {
+            logger.debug("Exception occurred after the pipeline was started: {}", e.getMessage());
+        }
+        Assertions.assertEquals (RunResult.Result.succeeded, pipeline.getRunResult().result);
+    }
 }

@@ -395,6 +395,8 @@ public class AzDoUtils {
         String result = null;
         String buildNumber = null;
         String id = null;
+        String webUrl = null;
+        boolean firstPoll = true;
 
         long timeElapsed = 0;
         String http = azdoEndpoint +
@@ -443,6 +445,14 @@ public class AzDoUtils {
                                 buildNumber = value.get("buildNumber").toString();
                             if (value.get("id") != null)
                                 id = value.get("id").toString();
+                            if (value.get("_links") != null) {
+                                LinkedHashMap<String, Object> links = ((LinkedHashMap<String, Object>) value.get("_links"));
+                                if (links.get("web") != null) {
+                                    LinkedHashMap<String, Object> web = ((LinkedHashMap<String, Object>) links.get("web"));
+                                    if (web.get("href") != null)
+                                        webUrl = web.get("href").toString();
+                                }
+                            }
                         }
                     }
                 }
@@ -462,8 +472,11 @@ public class AzDoUtils {
             }
             String pipelineResult = runResult.result.toString();
             logger.info(DEMARCATION);
-            logger.info("Buildnumber: {}", buildNumber);
-            logger.info("BuildId: {}", runResult.buildId);
+            if (firstPoll) {
+                logger.info("Buildnumber: {}", buildNumber);
+                logger.info("Pipeline url: {}", webUrl);
+                logger.info("BuildId: {}", runResult.buildId);
+            }
             logger.info("Status: {}", runResult.status.toString());
 
             String color = LIGHT_GREEN;
@@ -475,6 +488,8 @@ public class AzDoUtils {
                 color = YELLOW;
 
             logger.infoColor(color, "Result: {}", runResult.result.toString());
+
+            firstPoll = false;
         }
 
         //////////////////////////////////////////////////////////

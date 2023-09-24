@@ -637,7 +637,8 @@ public class AzDoPipeline {
 
         Map<String, Object> scriptToInsert = new LinkedHashMap<>();
         scriptToInsert.put(STEP_SCRIPT, inlineScript);
-        scriptToInsert.put(DISPLAY_NAME, "<Inserted> Script");
+        String s = "<Inserted> Script";
+        scriptToInsert.put(DISPLAY_NAME, s);
 
         // Call the performAction method; find the SECTION_TASK section with the DISPLAY_NAME
         ActionResult ar;
@@ -740,7 +741,7 @@ public class AzDoPipeline {
         }
         stepToInsert.put(STEP_SCRIPT, s);
 
-        s = "<Inserted> Set variable";
+        s = String.format("<Inserted> Set variable %s = %s", variableName, value);
         stepToInsert.put(DISPLAY_NAME, s);
 
         // Call the performAction method; find the SECTION_TASK section with the identifier
@@ -793,7 +794,7 @@ public class AzDoPipeline {
         }
         stepToInsert.put(STEP_SCRIPT, s);
 
-        s = "<Inserted> Set variable";
+        s = String.format("<Inserted> Set variable %s = %s", variableName, value);
         stepToInsert.put(DISPLAY_NAME, s);
 
         // Call the performAction method; find the SECTION_TASK section with the DISPLAY_NAME
@@ -1355,7 +1356,7 @@ public class AzDoPipeline {
      'displayName'.
      @param displayValue The value of the displayName property of a step
      @param variableName The name of the variable as declared in the 'variables' section
-     @param compareValue The value with which the variable or parameter is compared
+     @param compareValue The value with which the variable is compared
 
      Example:
      Calling assertVariableEqualsSearchStepByDisplayName ("Deploy the app", "myVar", "myValue") means
@@ -1382,7 +1383,7 @@ public class AzDoPipeline {
         logger.debug("compareValue: {}", compareValue);
         logger.debug("insertBefore: {}", insertBefore);
 
-        assertVariableSearchStepByDisplayName (displayValue, variableName,compareValue, true, insertBefore);
+        assertIdentifierSearchStepByDisplayName (displayValue, variableName, TYPE_VARIABLE, compareValue, true, insertBefore);
 
         return this;
     }
@@ -1395,7 +1396,7 @@ public class AzDoPipeline {
      'displayName'.
      @param displayValue The value of the displayName property of a step
      @param variableName The name of the variable as declared in the 'variables' section
-     @param compareValue The value with which the variable or parameter is compared
+     @param compareValue The value with which the variable is compared
      ******************************************************************************************/
     public AzDoPipeline assertVariableNotEqualsSearchStepByDisplayName (String displayValue,
                                                                         String variableName,
@@ -1415,7 +1416,7 @@ public class AzDoPipeline {
         logger.debug("compareValue: {}", compareValue);
         logger.debug("insertBefore: {}", insertBefore);
 
-        assertVariableSearchStepByDisplayName (displayValue, variableName,compareValue, false, insertBefore);
+        assertIdentifierSearchStepByDisplayName (displayValue, variableName, TYPE_VARIABLE, compareValue, false, insertBefore);
 
         return this;
     }
@@ -1440,7 +1441,7 @@ public class AzDoPipeline {
         logger.debug("variableName: {}", variableName);
         logger.debug("insertBefore: {}", insertBefore);
 
-        assertVariableSearchStepByDisplayName (displayValue, variableName,"", false, insertBefore);
+        assertIdentifierSearchStepByDisplayName (displayValue, variableName, TYPE_VARIABLE, "", false, insertBefore);
 
         return this;
     }
@@ -1464,32 +1465,137 @@ public class AzDoPipeline {
         logger.debug("variableName: {}", variableName);
         logger.debug("insertBefore: {}", insertBefore);
 
-        assertVariableSearchStepByDisplayName (displayValue, variableName,"", true, insertBefore);
+        assertIdentifierSearchStepByDisplayName (displayValue, variableName, TYPE_VARIABLE, "", true, insertBefore);
 
         return this;
     }
 
     /******************************************************************************************
-     Private method used for the previous assert-if-variable-has-value methods.
+     Same as the assertVariableEqualsSearchStepByDisplayName() method, but for parameters
      @param displayValue The value of the displayName property of a step
-     @param variableName The name of the variable as declared in the 'variables' section
+     @param parameterName The name of the parameter as declared in the 'parameters' section
+     @param compareValue The value with which the parameter is compared
+     ******************************************************************************************/
+    public AzDoPipeline assertParameterEqualsSearchStepByDisplayName (String displayValue,
+                                                                      String parameterName,
+                                                                      String compareValue) {
+        assertParameterEqualsSearchStepByDisplayName (displayValue, parameterName, compareValue, true); // Default is to insert before a step
+
+        return this;
+    }
+
+    public AzDoPipeline assertParameterEqualsSearchStepByDisplayName (String displayValue,
+                                                                      String parameterName,
+                                                                      String compareValue,
+                                                                      boolean insertBefore) {
+        logger.debug("==> Method: AzDoPipeline.assertParameterEqualsSearchStepByDisplayName");
+        logger.debug("displayValue: {}", displayValue); // Can be something like "Execute this step"
+        logger.debug("parameterName: {}", parameterName);
+        logger.debug("compareValue: {}", compareValue);
+        logger.debug("insertBefore: {}", insertBefore);
+
+        assertIdentifierSearchStepByDisplayName (displayValue, parameterName, TYPE_PARAMETER, compareValue, true, insertBefore);
+
+        return this;
+    }
+
+    /******************************************************************************************
+     Same as the assertVariableNotEqualsSearchStepByDisplayName() method but for paramters
+     @param displayValue The value of the displayName property of a step
+     @param parameterName The name of the parameter as declared in the 'parameters' section
+     @param compareValue The value with which the parameter is compared
+     ******************************************************************************************/
+    public AzDoPipeline assertParameterNotEqualsSearchStepByDisplayName (String displayValue,
+                                                                         String parameterName,
+                                                                         String compareValue) {
+        assertParameterNotEqualsSearchStepByDisplayName (displayValue, parameterName, compareValue, true); // Default is to insert before a step
+
+        return this;
+    }
+
+    public AzDoPipeline assertParameterNotEqualsSearchStepByDisplayName (String displayValue,
+                                                                         String parameterName,
+                                                                         String compareValue,
+                                                                         boolean insertBefore) {
+        logger.debug("==> Method: AzDoPipeline.assertParameterNotEqualsSearchStepByDisplayName");
+        logger.debug("displayValue: {}", displayValue); // Can be something like "Execute this step"
+        logger.debug("parameterName: {}", parameterName);
+        logger.debug("compareValue: {}", compareValue);
+        logger.debug("insertBefore: {}", insertBefore);
+
+        assertIdentifierSearchStepByDisplayName (displayValue, parameterName, TYPE_PARAMETER, compareValue, false, insertBefore);
+
+        return this;
+    }
+
+    /******************************************************************************************
+     Same as assertVariableNotEmptySearchStepByDisplayName() but for parameters
+     @param displayValue The value of the displayName property of a step
+     @param parameterName The name of the parameter as declared in the 'parameters' section
+     ******************************************************************************************/
+    public AzDoPipeline assertParameterNotEmptySearchStepByDisplayName (String displayValue,
+                                                                        String parameterName) {
+        assertParameterNotEmptySearchStepByDisplayName (displayValue, parameterName, true); // Default is to insert before a step
+
+        return this;
+    }
+
+    public AzDoPipeline assertParameterNotEmptySearchStepByDisplayName (String displayValue,
+                                                                        String parameterName,
+                                                                        boolean insertBefore) {
+        logger.debug("==> Method: AzDoPipeline.assertParameterNotEmptySearchStepByDisplayName");
+        logger.debug("displayValue: {}", displayValue); // Can be something like "Execute this step"
+        logger.debug("parameterName: {}", parameterName);
+        logger.debug("insertBefore: {}", insertBefore);
+
+        assertIdentifierSearchStepByDisplayName (displayValue, parameterName, TYPE_PARAMETER, "", false, insertBefore);
+
+        return this;
+    }
+
+    /******************************************************************************************
+     Same as assertVariableEmptySearchStepByDisplayName() but for paramters
+     @param displayValue The value of the displayName property of a step
+     @param parameterName The name of the parameter as declared in the 'parameters' section
+     ******************************************************************************************/
+    public AzDoPipeline assertParameterEmptySearchStepByDisplayName (String displayValue,
+                                                                     String parameterName) {
+        assertParameterEmptySearchStepByDisplayName (displayValue, parameterName, true); // Default is to insert before a step
+
+        return this;
+    }
+    public AzDoPipeline assertParameterEmptySearchStepByDisplayName (String displayValue,
+                                                                     String parameterName,
+                                                                     boolean insertBefore) {
+        logger.debug("==> Method: AzDoPipeline.assertParameterEmptySearchStepByDisplayName");
+        logger.debug("displayValue: {}", displayValue); // Can be something like "Execute this step"
+        logger.debug("parameterName: {}", parameterName);
+        logger.debug("insertBefore: {}", insertBefore);
+
+        assertIdentifierSearchStepByDisplayName (displayValue, parameterName, TYPE_PARAMETER, "", true, insertBefore);
+
+        return this;
+    }
+
+    /******************************************************************************************
+     Private method used for the previous assert-if-identifier-has-value methods. The identifier
+     is of type 'variable' or 'parameter'.
+     @param displayValue The value of the displayName property of a step
+     @param identifierName The name of the variable or parameter as declared in the 'variables'
+                           or 'parameters' section
+     @param identifierType Variable (TYPE_VARIABLE) or Parameter (TYPE_PARAMETER)
      @param compareValue The value with which the variable or parameter is compared
      ******************************************************************************************/
-    private AzDoPipeline assertVariableSearchStepByDisplayName (String displayValue,
-                                                                String variableName,
-                                                                String compareValue,
-                                                                boolean equals,
-                                                                boolean insertBefore) {
+    private AzDoPipeline assertIdentifierSearchStepByDisplayName (String displayValue,
+                                                                  String identifierName,
+                                                                  String identifierType,
+                                                                  String compareValue,
+                                                                  boolean equals,
+                                                                  boolean insertBefore) {
 
-        // Create a script that compares the value of a variable
-        // Note, that if the boolean 'equals' is true, the condition results in "ne"
-        // (the condition in the pipeline fails if the value of 'variableName' is not equal to the 'compareValue')
-        // If the boolean 'is false, the condition results in eq".
+        // Create a script that compares the value of a variable or parameter with another value
         Map<String, Object> stepToInsert;
-        if (equals)
-            stepToInsert = constructAssertStep(SECTION_VARIABLES, variableName, compareValue, CONDITION_NOT_EQUALS);
-        else
-            stepToInsert = constructAssertStep(SECTION_VARIABLES, variableName, compareValue, CONDITION_EQUALS);
+        stepToInsert = constructAssertStep(identifierType, identifierName, compareValue, equals);
 
         // Call the performAction method; find the SECTION_TASK with the displayName
         // Other arguments besides "task", "script", bash", and "pwsh" are: powershell | checkout | download | downloadBuild | getPackage | publish | reviewApp
@@ -1608,59 +1714,67 @@ public class AzDoPipeline {
 
     /******************************************************************************************
      Construct a step with a condition that validates a variable
+     Use a Powershell (pwsh) script; it runs both on Linux and Windows
      @param identifierType Possible values ["variables", "parameters"]
      @param identifier The value of the identification
      @param compareValue The value with which the variable or parameter is compared
-     @param conditionOperator Possible values ["eq", "ne"]
+     @param equals If true  - The compareValue must match
+                   If false - The compareValue must NOT match
      ******************************************************************************************/
     private Map<String, Object> constructAssertStep (String identifierType,
                                                      String identifier,
                                                      String compareValue,
-                                                     String conditionOperator) {
+                                                     boolean equals) {
 
         String identifierTypeDisplay = "";
-        if (SECTION_VARIABLES.equals(identifierType)) {
+        String value = "";
+        if (TYPE_VARIABLE.equals(identifierType)) {
             identifierTypeDisplay = "variable";
+            value = "$(" + identifier + ")";
         }
-        if (SECTION_PARAMETERS.equals(identifierType)) {
+        if (TYPE_PARAMETER.equals(identifierType)) {
             identifierTypeDisplay = "parameter";
+            value = "${{ parameters."+ identifier + " }}";
         }
 
-        String s = "";
-        String value = "$(" + identifier + ")";
         String actionDisplayName = "";
-        if (CONDITION_NOT_EQUALS.equals(conditionOperator)) {
+        String s = "$str = \"" + value + "\"\n";
+        if (equals) {
+            // Applies to AssertEquals and AssertEmpty
             if (compareValue == null || compareValue.isEmpty()) {
                 actionDisplayName = "AssertEmpty";
-                s = String.format("echo \"%s: %s '%s' with value '%s' is not empty\"\n", actionDisplayName, identifierTypeDisplay, identifier, value);
+                s = s + "if ($str) {\n" +
+                        String.format("  Write-Host \"%s: %s '%s' with value '%s' is not empty\"\n", actionDisplayName, identifierTypeDisplay, identifier, value);
             }
             else {
                 actionDisplayName = "AssertEquals";
-                s = String.format("echo \"%s: %s '%s' with value '%s' is not equal to compared value '%s'\"\n", actionDisplayName, identifierTypeDisplay, identifier, value, compareValue);
+                s = s + "if (\"$str\" -ne \"" + compareValue + "\") {\n" +
+                        String.format("  Write-Host \"%s: %s '%s' with value '%s' is not equal to compared value '%s'\"\n", actionDisplayName, identifierTypeDisplay, identifier, value, compareValue);
             }
         }
-        if (CONDITION_EQUALS.equals(conditionOperator)) {
+        else {
+            // Applies to AssertNotEquals and AssertNotEmpty
             if (compareValue == null || compareValue.isEmpty()) {
                 actionDisplayName = "AssertNotEmpty";
-                s = String.format("echo \"%s: %s '%s' is empty\"\n", actionDisplayName, identifierTypeDisplay, identifier);
+                s = s + "if (-Not $str) {\n" +
+                        String.format("  Write-Host \"%s: %s '%s' is empty\"\n", actionDisplayName, identifierTypeDisplay, identifier);
             }
             else {
                 actionDisplayName = "AssertNotEquals";
-                s = String.format("echo \"%s: %s '%s' with value '%s' is equal to compared value '%s'\"\n", actionDisplayName, identifierTypeDisplay, identifier, value, compareValue);
+                s = s + "if (\"$str\" -eq \"" + compareValue + "\") {\n" +
+                        String.format("  Write-Host \"%s: %s '%s' with value '%s' is equal to compared value '%s'\"\n", actionDisplayName, identifierTypeDisplay, identifier, value, compareValue);
             }
         }
-        s = s + "exit 1";
+        s = s + "  exit 1\n" +
+        "}\n" +
+        "else {Write-Host \"Assert is true; continue\"}";
 
         Map<String, Object> assertStep = new LinkedHashMap<>();
-        assertStep.put(STEP_SCRIPT, s);
+        assertStep.put(STEP_SCRIPT_PWSH, s);
 
         // displayName
         s = "<Inserted> " + actionDisplayName + " " + identifierTypeDisplay + " " + identifier;
         assertStep.put(DISPLAY_NAME, s);
-
-        // condition (requires plural form of 'identifierTypeDisplay'. Therefor an 's' is added)
-        s = conditionOperator + "(" + identifierTypeDisplay + "s['" + identifier + "'], '" + compareValue + "')";
-        assertStep.put(CONDITION, s);
 
         return assertStep;
     }

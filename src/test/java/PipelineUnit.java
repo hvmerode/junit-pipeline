@@ -48,7 +48,7 @@ public class PipelineUnit {
             pipeline.resetTrigger()
                     .overrideSectionPropertySearchByTypeAndIdentifier("pool", "", "vmImage", "windows-latest")
                     .setVariableSearchStepByDisplayName ("Testing, testing", "testVar", "myReplacedValue")
-                    .assertFileExistsSearchStepByDisplayName("Testing, testing", "output.csv", false)
+                    .assertFileExistsSearchStepByDisplayName("Testing, testing", "output.csv", true)
                     .assertVariableEqualsSearchStepByDisplayName("Testing, testing", "testVar", "myReplacedValue", false)
                     .startPipeline("master", hookList);
         }
@@ -82,6 +82,7 @@ public class PipelineUnit {
             String inlineScript2 = "echo \"This is an inserted script\"";
             pipeline.mockStepSearchByIdentifier("AWSShellScript@1", inlineScript)
                     .insertScriptSearchStepByDisplayName ("DeployStage job_xe script", inlineScript2, false)
+                    .setVariableSearchStepByDisplayName ("DeployStage job_xe script", "aws_connection", "42")
                     .skipStageSearchByIdentifier("Stage_B")
                     .skipStageSearchByIdentifier("ExecuteScriptStage")
                     .assertVariableNotEqualsSearchStepByDisplayName ("DeployStage job_xd script", "myVar", "donotfail", true)

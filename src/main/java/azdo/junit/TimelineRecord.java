@@ -22,6 +22,7 @@ public class TimelineRecord {
     public String startTime;
     public String finishTime;
     long timeInSeconds = 0;
+    String timeInSecondsAsString = "<1";
     public String state;
     public String result;
 
@@ -51,7 +52,10 @@ public class TimelineRecord {
             Instant finish = Instant.parse(finishTime);
             Duration res = Duration.between(start, finish);
             timeInSeconds = res.getSeconds();
+            if (timeInSeconds > 0)
+                timeInSecondsAsString = String.valueOf(timeInSeconds);
         }
+        timeInSecondsAsString = timeInSecondsAsString + " sec.";
     }
 
     /*
@@ -97,7 +101,7 @@ public class TimelineRecord {
                 if ("Task".equals(type)) {
                     displayedType = "Task";
                 }
-                String out = String.format("%14s %80s %23s %15s", displayedType, name, timeInSeconds, result);
+                String out = String.format("%14s %80s %16s %15s", displayedType, name, timeInSecondsAsString, result);
                 logger.infoColor(color, out);
             }
 

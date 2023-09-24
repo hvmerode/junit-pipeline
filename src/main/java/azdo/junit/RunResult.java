@@ -106,7 +106,7 @@ public class RunResult {
 
         logger.info("");
         logger.info(HEADER_FOOTER);
-        String header = String.format("%14s %80s %23s %15s", "Type", "Name", "Execution time in sec", "Result");
+        String header = String.format("%14s %80s %16s %15s", "Type", "Name", "Execution time", "Result");
         logger.info(header);
         logger.info(HEADER_FOOTER);
         int size = timelineRecords.size();

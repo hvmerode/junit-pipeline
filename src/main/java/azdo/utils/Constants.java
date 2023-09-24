@@ -26,8 +26,8 @@ public class Constants {
     public static final String DISPLAY_NAME = "displayName";
     public static final String INPUTS = "inputs";
     public static final String CONDITION = "condition";
-    public static final String CONDITION_EQUALS = "eq";
-    public static final String CONDITION_NOT_EQUALS = "ne";
+    public static final String TYPE_VARIABLE = "variable";
+    public static final String TYPE_PARAMETER = "parameter";
 
     // *************************************** Colors ***************************************
     public static final String RED = "\u001B[31m";
@@ -49,6 +49,6 @@ public class Constants {
 
     // *************************************** Visualization ***************************************
     public static final String DEMARCATION = "==============================================================================";
-    public static final String HEADER_FOOTER = "---------------------------------------------------------------------------------------------------------------------------------------";
+    public static final String HEADER_FOOTER = "--------------------------------------------------------------------------------------------------------------------------------";
     public static final String ARROW_DOWN = "▼";
 }

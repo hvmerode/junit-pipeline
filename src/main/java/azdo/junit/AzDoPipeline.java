@@ -300,7 +300,7 @@ public class AzDoPipeline {
         // Call Azure Devops API to start the pipeline and retrieve the result.
         // If dryRun is true, the pipeline does not start.
         if (!dryRun) {
-            logger.info("Execute the pipeline remotely in Azure DevOps project \'{}\'", properties.getTargetProject());
+            logger.info("Execute the pipeline remotely in Azure DevOps project \'{}\' with branch \'{}\'", properties.getTargetProject(), branchName);
             AzDoUtils.callPipelineRunApi (properties.getAzDoUser(),
                     properties.getAzdoPat(),
                     properties.getAzdoEndpoint(),

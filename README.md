@@ -102,7 +102,7 @@ Example:
 <dependency>
   <groupId>io.github.hvmerode</groupId>
   <artifactId>junit-pipeline</artifactId>
-  <version>1.2.6</version>
+  <version>1.2.7</version>
 </dependency>
 ```
 
@@ -601,10 +601,7 @@ pipeline.getRunResult().getStageResultSearchByDisplayName("simpleStage");
   <br></br>
 
 ## New features ##
-* Add links to the timeline log to open the pipeline in a browser.
 * Add a custom condition to a stage, job, or step
-* Make the task inserted by assertFileExistsSearchStepByDisplayName of type 'pwsh', because it can run on both
-  Windows and Linux.
 * Test on Linux; some filesystem methods in Utils may not work properly.
 * Support "refs/tags/tag" and "refs/refname" for external repositories with templates.
 * Possibility to replace a step with a yamlTemplate file (the yamlTemplate file could serve as a mock file).
@@ -622,6 +619,9 @@ pipeline.getRunResult().getStageResultSearchByDisplayName("simpleStage");
   This is a 'nice-to-have'.
 
 ## Solved ##
+* ~~Make the task inserted by assertFileExistsSearchStepByDisplayName of type 'pwsh', because it can run on both
+  Windows and Linux.~~
+* ~~Add links to the timeline log to open the pipeline in a browser.~~
 * ~~'Assert variable' adds a task with a condition. Result is skipped (true) or failed (false). For clearness reasons
   this must be succeeded (true) or failed (false). Make sure that the task works on both Linux and Windows.~~
 * ~~Publish pipeline unit test report. Make use of the timeline api (https://learn.microsoft.com/en-us/rest/api/azure/devops/build/timeline/get?view=azure-devops-rest-5.1)

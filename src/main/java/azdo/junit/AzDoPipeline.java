@@ -33,30 +33,23 @@ public class AzDoPipeline {
     RunResult runResult = new RunResult();
     private YamlDocumentEntryPoint yamlDocumentEntryPoint;
 
-    public enum AgentOSEnum {LINUX, WINDOWS};
-
-    private AgentOSEnum agentOS = AgentOSEnum.LINUX; // Needed for OS-specific tasks
-
     // TODO: git, rm, ssh, cp, scp, rcp, sftp, rsync, mv, mkdir, touch, cat
     public String supportedBashCommands[] = { "curl", "wget", "ftp" }; // Valid commands for method mockBashCommandSearchStepByDisplayName()
 
     // TODO: Invoke-WebRequest
     public String supportedPowerShellCommands[] = { "Invoke-RestMethod" }; // Valid commands for method mockPowerShellCommandSearchStepByDisplayName()
 
-    @SuppressWarnings("java:S1192")
-    public AzDoPipeline(String propertyFile,
-                        String pipelineFile) {
-        this (propertyFile, pipelineFile, AgentOSEnum.LINUX);
-    }
+//    @SuppressWarnings("java:S1192")
+//    public AzDoPipeline(String propertyFile,
+//                        String pipelineFile) {
+//        //this (propertyFile, pipelineFile);
+//    }
 
     public AzDoPipeline(String propertyFile,
-                        String pipelineFile,
-                        AgentOSEnum agentOS) {
+                        String pipelineFile) {
         logger.debug("==> Object: AzDoPipeline");
         logger.debug("propertyFile {}:", propertyFile);
         logger.debug("pipelineFile {}:", pipelineFile);
-        logger.debug("agentOS {}:", agentOS);
-        this.agentOS = agentOS;
 
         // Validate the main pipeline file before any other action
         // If it is not valid, the test may fail
@@ -706,6 +699,7 @@ public class AzDoPipeline {
      pre-processing the pipelines.
      This step is found using the "stepIdentifier". The value of "stepIdentifier" is
      for example, "Maven@03". The methods searches for the first instance of a "Maven@03" task.
+     Use a Powershell (pwsh) script; it runs both on Linux and Windows
      @param stepIdentifier The identification of a step
      @param variableName The name of the variable as declared in the 'variables' section
      @param value The new value of the variable
@@ -730,16 +724,8 @@ public class AzDoPipeline {
 
         // Create a script that sets the value of a variable
         Map<String, Object> stepToInsert = new LinkedHashMap<>();
-        String s;
-        if (agentOS == AgentOSEnum.LINUX) {
-            logger.debug("OS is Linux");
-            s = "\"echo ##vso[task.setvariable variable=" + variableName + "]" + value.toString() + "\"";
-        }
-        else {
-            logger.debug("OS is Windows");
-            s = "echo ##vso[task.setvariable variable=" + variableName + "]" + value.toString();
-        }
-        stepToInsert.put(STEP_SCRIPT, s);
+        String s = "Write-Host \"echo ##vso[task.setvariable variable=" + variableName + "]" + value.toString() + "\"";
+        stepToInsert.put(STEP_SCRIPT_PWSH, s);
 
         s = String.format("<Inserted> Set variable %s = %s", variableName, value);
         stepToInsert.put(DISPLAY_NAME, s);
@@ -757,6 +743,7 @@ public class AzDoPipeline {
     /******************************************************************************************
      Set the variable at runtime, just as the previous method, but search the step using the
      displayName. The step can be of any type "step", SECTION_TASK, or SECTION_SCRIPT.
+     Use a Powershell (pwsh) script; it runs both on Linux and Windows
      @param displayValue The value of the displayName property of a step
      @param variableName The name of the variable as declared in the 'variables' section
      @param value The new value of the variable
@@ -768,6 +755,7 @@ public class AzDoPipeline {
 
         return this;
     }
+
     public AzDoPipeline setVariableSearchStepByDisplayName (String displayValue,
                                                             String variableName,
                                                             String value,
@@ -781,18 +769,10 @@ public class AzDoPipeline {
         // Create a script that sets the value of a variable
         // Other arguments besides SECTION_TASK and SECTION_SCRIPT are: powershell | pwsh | bash | checkout | download | downloadBuild | getPackage | publish | reviewApp
         // These are not implemented
+        // Create a script that sets the value of a variable
         Map<String, Object> stepToInsert = new LinkedHashMap<>();
-        String s;
-        if (agentOS == AgentOSEnum.LINUX) {
-            logger.debug("OS is Linux");
-            s = "echo \"##vso[task.setvariable variable=" + variableName + "]" + value.toString() + "\"";
-        }
-        else {
-            logger.debug("OS is Windows");
-            // Add Window cmd script
-            s = "echo ##vso[task.setvariable variable=" + variableName + "]" + value.toString();
-        }
-        stepToInsert.put(STEP_SCRIPT, s);
+        String s = "Write-Host \"##vso[task.setvariable variable=" + variableName + "]" + value.toString() + "\"";
+        stepToInsert.put(STEP_SCRIPT_PWSH, s);
 
         s = String.format("<Inserted> Set variable %s = %s", variableName, value);
         stepToInsert.put(DISPLAY_NAME, s);
@@ -1629,6 +1609,7 @@ public class AzDoPipeline {
      The assertFileExistsSearchStepByDisplayName() method validates at runtime the presence
      of a certain file on the Azure DevOps agent. If the file does not exist, the pipeline
      exits with an error.
+     Use a Powershell (pwsh) script; it runs both on Linux and Windows
      @param displayValue The value of the displayName property of a step
      @param fileName The file name of the file of which its existence is checked
      ******************************************************************************************/
@@ -1647,38 +1628,15 @@ public class AzDoPipeline {
         logger.debug("fileName: {}", fileName);
         logger.debug("insertBefore: {}", insertBefore);
 
-        // Create a Bash script or PowerShell task that checks on the existence of a file
+        // Create a pwsh task that checks on the existence of a file
         Map<String, Object> assertStep = new LinkedHashMap<>();
         String s;
-        if (agentOS == AgentOSEnum.LINUX) {
-            // Linux
-            logger.debug("OS is Linux");
-            String echo = String.format("echo \"AssertFileExists: file '%s' is not present (or empty) on the Azure DevOps Agent\"\n", fileName);
-            s = "if [ ! -f " + fileName + " ]; then\n" +
-                    "    " + echo +
-                    "    exit 1\n" +
-                    "fi\n" +
-                    "if [ ! -s " + fileName + " ]; then\n" +
-                    "    " + echo +
-                    "    exit 1\n" +
-                    "fi\n";
-            assertStep.put(STEP_SCRIPT, s);
-        }
-        else {
-            // Windows
-            // TODO: Change PowerShell@2 task into pwsh script
-            logger.debug("OS is Windows");
-            Map<String, Object> inputs = new LinkedHashMap<>();
-            assertStep.put(SECTION_TASK, TASK_POWERSHELL_2);
-            inputs.put("targetType", "inline");
-            s = "$FilePath = \"" + fileName + "\"\n" +
-            "if (-not(Test-path $FilePath -PathType leaf)) {\n" +
-                    "    Write-Host \"AssertFileExists: file \'" + fileName + "\' is not present (or empty) on the Azure DevOps Agent\"\n" +
-                    "    exit 1\n" +
-                    "}";
-            inputs.put(STEP_SCRIPT, s);
-            assertStep.put ("inputs", inputs);
-        }
+        s = "$FilePath = \"" + fileName + "\"\n" +
+                "if (-not(Test-path $FilePath -PathType leaf)) {\n" +
+                "    Write-Host \"AssertFileExists: file \'" + fileName + "\' is not present (or empty) on the Azure DevOps Agent\"\n" +
+                "    exit 1\n" +
+                "}";
+        assertStep.put(STEP_SCRIPT_PWSH, s);
 
         // displayName
         s = "<Inserted> AssertFileExists: " + fileName;

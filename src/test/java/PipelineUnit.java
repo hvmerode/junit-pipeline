@@ -29,7 +29,7 @@ public class PipelineUnit {
         logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
         // Initialize the pipeline
-        pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/simple-pipeline.yml", AzDoPipeline.AgentOSEnum.WINDOWS);
+        pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/simple-pipeline.yml");
 
         try {
             // Create a hook to perform an action just before starting the pipeline

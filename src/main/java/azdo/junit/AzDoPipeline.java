@@ -591,10 +591,9 @@ public class AzDoPipeline {
      ******************************************************************************************/
     public AzDoPipeline insertSectionSearchStepByIdentifier (String stepIdentifier,
                                                              Map<String, Object> stepToInsert) {
-        insertSectionSearchStepByIdentifier (stepIdentifier, stepToInsert, true); // Default is to insert before a step
-
-        return this;
+        return insertSectionSearchStepByIdentifier (stepIdentifier, stepToInsert, true); // Default is to insert before a step
     }
+
     public AzDoPipeline insertSectionSearchStepByIdentifier (String stepIdentifier,
                                                              Map<String, Object> stepToInsert,
                                                              boolean insertBefore) {
@@ -655,6 +654,54 @@ public class AzDoPipeline {
             ActionInsertSectionByProperty actionPSScript = new ActionInsertSectionByProperty(STEP_SCRIPT_PWSH, DISPLAY_NAME, displayValue, scriptToInsert, insertBefore);
             yamlDocumentEntryPoint.performAction(actionPSScript, STEP_SCRIPT_PWSH, "");
         }
+
+        return this;
+    }
+
+    public AzDoPipeline insertTemplateSearchSectionByDisplayName (String sectionType,
+                                                                  String displayValue,
+                                                                  String templateIdentifier,
+                                                                  Map<String, String> parameters) {
+        return insertTemplateSearchSectionByDisplayName (sectionType, displayValue, templateIdentifier, parameters, true); // Default is to insert before a step
+    }
+
+    /******************************************************************************************
+     Inserts a template section before or after a given section. The section is of type "stage",
+     "job", "script", "task", "bash", "pwsh" or "powershell".
+     @param sectionType Possible values ["stage", "job", "script", "task", "bash", "pwsh", "powershell"]
+     @param displayValue The displayName of a sectionType
+     @param templateIdentifier The identification of a template (= template name)
+     @param insertBefore Determines whether the script is inserted before (true) or after (false)
+     the given section
+     ******************************************************************************************/
+    public AzDoPipeline insertTemplateSearchSectionByDisplayName (String sectionType,
+                                                                  String displayValue,
+                                                                  String templateIdentifier,
+                                                                  Map<String, String> parameters,
+                                                                  boolean insertBefore) {
+
+        logger.debug("==> Method: AzDoPipeline.insertTemplateSearchByDisplayName");
+        logger.debug("sectionType: {}", sectionType);
+        logger.debug("displayValue: {}", displayValue);
+        logger.debug("templateName: {}", templateIdentifier);
+        logger.debug("insertBefore: {}", insertBefore);
+
+        if (sectionType == null)
+            return this;
+
+        // Create a template step
+        Map<String, Object> sectionToInsert = new LinkedHashMap<>();
+        sectionToInsert.put(SECTION_TEMPLATE, templateIdentifier);
+
+        // Add parameters
+        if (parameters != null && !parameters.isEmpty()) {
+            sectionToInsert.put(SECTION_PARAMETERS, parameters);
+        }
+
+        // Call the performAction method; find the section - identified by sectionType - and the displayName
+        yamlDocumentEntryPoint.performAction (new ActionInsertSectionByProperty(sectionType, DISPLAY_NAME, displayValue, sectionToInsert, insertBefore),
+                sectionType,
+                null);
 
         return this;
     }
@@ -1578,7 +1625,7 @@ public class AzDoPipeline {
         stepToInsert = constructAssertStep(identifierType, identifierName, compareValue, equals);
 
         // Call the performAction method; find the SECTION_TASK with the displayName
-        // Other arguments besides "task", "script", bash", and "pwsh" are: powershell | checkout | download | downloadBuild | getPackage | publish | reviewApp
+        // Other arguments besides "task", "script", "bash", and "pwsh" are: powershell | checkout | download | downloadBuild | getPackage | publish | reviewApp
         // These are not implemented
         ActionResult ar;
         ActionInsertSectionByProperty actionTask = new ActionInsertSectionByProperty(SECTION_TASK, DISPLAY_NAME, displayValue, stepToInsert, insertBefore);
@@ -1736,9 +1783,4 @@ public class AzDoPipeline {
 
         return assertStep;
     }
-
-    /******************************************************************************************
-     TODO; Add methods:
-     setVariableSearchTemplateByIdentifier (String templateIdentifier, String variableName, String value, boolean insertBefore)
-    ******************************************************************************************/
 }

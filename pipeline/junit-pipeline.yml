@@ -68,7 +68,7 @@ stages:
             inputs:
               goals: 'clean package -U'
               javaHomeOption: 'JDKVersion'
-              jdkVersionOption: '1.11'
+              jdkVersionOption: '1.17'
               jdkArchitectureOption: 'x64'
               sonarQubeRunAnalysis: false
               options: '-B -DscmBranch=$(Build.SourceBranchName) -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'
@@ -273,7 +273,7 @@ stages:
             inputs:
               goals: 'clean verify -U sonar:sonar -DskipTests'
               javaHomeOption: 'JDKVersion'
-              jdkVersionOption: '1.11'
+              jdkVersionOption: '1.17'
               jdkArchitectureOption: 'x64'
               sonarQubeRunAnalysis: true
               options: '-B -DscmBranch=$(Build.SourceBranchName) -Dmaven.repo.local=$(MAVEN_CACHE_FOLDER)'

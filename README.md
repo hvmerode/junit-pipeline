@@ -102,7 +102,7 @@ Example:
 <dependency>
   <groupId>io.github.hvmerode</groupId>
   <artifactId>junit-pipeline</artifactId>
-  <version>1.2.7</version>
+  <version>1.2.8</version>
 </dependency>
 ```
 
@@ -554,6 +554,23 @@ which works with "script", "bash", and "Bash@3" tasks. It mocks the Bash command
 
 ***
 ***
+```java
+public AzDoPipeline insertTemplateSearchSectionByDisplayName (String sectionType,
+        String displayValue,
+        String templateIdentifier,
+        Map<String, String> parameters,
+        boolean insertBefore)
+```
+<i>
+Inserts a template section before or after a given section. The section is of type "stage", "job", "script", "task", "bash", "pwsh" or "powershell".
+After execution of this method, a new template section is inserted, which points to a template file 
+identified by argument 'templateIdentifier' and with optional parameters, identified using a Map with key-value pairs. 
+</i>
+<br>
+<br>
+
+***
+***
 ### Start unit tests and retrieve the result ###
 The startPipeline method has a few representations:
 * _startPipeline()_ - Starts the pipeline with the default branch (in most cases, this is the _master_ branch).
@@ -604,7 +621,6 @@ pipeline.getRunResult().getStageResultSearchByDisplayName("simpleStage");
 * Add a custom condition to a stage, job, or step
 * Test on Linux; some filesystem methods in Utils may not work properly.
 * Support "refs/tags/tag" and "refs/refname" for external repositories with templates.
-* Possibility to replace a step with a yamlTemplate file (the yamlTemplate file could serve as a mock file).
 * Skip stage, job, or step deletes it from the yaml file. Add alternative to skip it but still have it visible in 
   the pipeline (e.g. add condition: eq(true,false)).
 * Look into the usage of CD events (https://cdevents.dev/ and https://github.com/cdevents/spec)
@@ -619,6 +635,7 @@ pipeline.getRunResult().getStageResultSearchByDisplayName("simpleStage");
   This is a 'nice-to-have'.
 
 ## Solved ##
+* ~~Possibility to replace a step with a yamlTemplate file (the yamlTemplate file could serve as a mock file).~~
 * ~~Make the task inserted by assertFileExistsSearchStepByDisplayName of type 'pwsh', because it can run on both
   Windows and Linux.~~
 * ~~Add links to the timeline log to open the pipeline in a browser.~~

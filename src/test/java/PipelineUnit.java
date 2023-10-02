@@ -8,7 +8,11 @@ import azdo.utils.Log;
 import org.junit.jupiter.api.*;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static azdo.utils.Constants.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class PipelineUnit {
@@ -244,5 +248,41 @@ public class PipelineUnit {
             logger.debug("Exception occurred after the pipeline was started: {}", e.getMessage());
         }
         Assertions.assertEquals (RunResult.Result.succeeded, pipeline.getRunResult().result);
+    }
+
+
+    @Test
+    @Order(8)
+    public void test8() {
+        logger.debug("");
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        logger.debug("Perform unittest: test8");
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+        // Initialize the pipeline
+        pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/simple-pipeline.yml");
+        Map<String, String> stageParameters = new HashMap<>();
+        stageParameters.put("aNiceParam", "stage_val1");
+        stageParameters.put("template", "stage_val2");
+        Map<String, String> mockParameters = new HashMap<>();
+        mockParameters.put("param_1", "mock_val1");
+        mockParameters.put("param_2", "mock_val2");
+
+        try {
+            pipeline.insertTemplateSearchSectionByDisplayName(SECTION_STAGE, "simple_stage", "templates/stages/template-stages.yml", stageParameters, false)
+                    .insertTemplateSearchSectionByDisplayName(SECTION_JOB, "simple_job", "templates/jobs/template-jobs.yml", null)
+                    .insertTemplateSearchSectionByDisplayName(STEP_SCRIPT, "Testing, testing", "templates/steps/template-mock.yml", mockParameters)
+                    .insertTemplateSearchSectionByDisplayName(STEP_SCRIPT, "Testing, testing", "templates/steps/template-steps.yml", null, false)
+                    .startPipeline("master");
+        }
+        catch (IOException e) {
+            logger.debug("Exception occurred after the pipeline was started: {}", e.getMessage());
+        }
+
+        RunResult pipelineRunResult = pipeline.getRunResult();
+        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.result);
+        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getStageResultSearchByDisplayName("simple_stage"));
+        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getJobResultSearchByDisplayName("simple_job"));
+        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getStepResultSearchByDisplayName("Testing, testing"));
     }
 }

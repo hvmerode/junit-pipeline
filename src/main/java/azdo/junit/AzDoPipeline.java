@@ -30,7 +30,7 @@ public class AzDoPipeline {
     Map<String, Object> yamlMap = null;
     String repositoryId = null;
     String pipelineId = null;
-    RunResult runResult = new RunResult();
+    RunResult runResult = null;
     private YamlDocumentEntryPoint yamlDocumentEntryPoint;
 
     // TODO: git, rm, ssh, cp, scp, rcp, sftp, rsync, mv, mkdir, touch, cat
@@ -39,12 +39,7 @@ public class AzDoPipeline {
     // TODO: Invoke-WebRequest
     public String supportedPowerShellCommands[] = { "Invoke-RestMethod" }; // Valid commands for method mockPowerShellCommandSearchStepByDisplayName()
 
-//    @SuppressWarnings("java:S1192")
-//    public AzDoPipeline(String propertyFile,
-//                        String pipelineFile) {
-//        //this (propertyFile, pipelineFile);
-//    }
-
+    @SuppressWarnings("java:S1192")
     public AzDoPipeline(String propertyFile,
                         String pipelineFile) {
         logger.debug("==> Object: AzDoPipeline");
@@ -196,6 +191,7 @@ public class AzDoPipeline {
         /*******************************************************************************************
                                   Doing stuff for the main repository
          *******************************************************************************************/
+        runResult = new RunResult();
 
         // Clone the repository to local if not done earlier
         // Keep the reference to the git object
@@ -324,7 +320,7 @@ public class AzDoPipeline {
             logger.info("dryRun is true; skip executing the pipeline");
         }
 
-        // Re-read the original pipeline for the next test (for a clean start of the next test)
+        // Re-read the original pipeline for the next test (for a clean start of the next test).
         // The manipulated, in-memory stored YAML files are refreshed with the content of the original (source) files.
         yamlMap = yamlDocumentEntryPoint.read(yamlFile, properties.isContinueOnError());
 
@@ -739,6 +735,14 @@ public class AzDoPipeline {
         return this;
     }
 
+    public AzDoPipeline setVariableSearchStepByIdentifier (String stepIdentifier,
+                                                           String variableName,
+                                                           String value) {
+        setVariableSearchStepByIdentifier (stepIdentifier, variableName, value, true); // Default is to set the value before a step
+
+        return this;
+    }
+
     /******************************************************************************************
      Sets (changes) the value of a variable (identified by "variableName") just before a certain
      step is executed. This means that the variable value is changed at runtime (while running
@@ -750,15 +754,9 @@ public class AzDoPipeline {
      @param stepIdentifier The identification of a step
      @param variableName The name of the variable as declared in the 'variables' section
      @param value The new value of the variable
+     @param insertBefore Determines whether the script is inserted before (true) or after (false)
+     the given step
      ******************************************************************************************/
-    public AzDoPipeline setVariableSearchStepByIdentifier (String stepIdentifier,
-                                                           String variableName,
-                                                           String value) {
-        setVariableSearchStepByIdentifier (stepIdentifier, variableName, value, true); // Default is to set the value before a step
-
-        return this;
-    }
-
     public AzDoPipeline setVariableSearchStepByIdentifier (String stepIdentifier,
                                                            String variableName,
                                                            String value,
@@ -770,12 +768,7 @@ public class AzDoPipeline {
         logger.debug("insertBefore: {}", insertBefore);
 
         // Create a script that sets the value of a variable
-        Map<String, Object> stepToInsert = new LinkedHashMap<>();
-        String s = "Write-Host \"echo ##vso[task.setvariable variable=" + variableName + "]" + value.toString() + "\"";
-        stepToInsert.put(STEP_SCRIPT_PWSH, s);
-
-        s = String.format("<Inserted> Set variable %s = %s", variableName, value);
-        stepToInsert.put(DISPLAY_NAME, s);
+        Map<String, Object> stepToInsert = constructSetVariableSection (variableName, value);
 
         // Call the performAction method; find the SECTION_TASK section with the identifier
         // Other arguments besides SECTION_TASK are: powershell | pwsh | bash | checkout | download | downloadBuild | getPackage | publish | reviewApp
@@ -787,14 +780,48 @@ public class AzDoPipeline {
         return this;
     }
 
+    public AzDoPipeline setVariableSearchTemplateByIdentifier (String templateIdentifier,
+                                                               String variableName,
+                                                               String value) {
+        setVariableSearchTemplateByIdentifier (templateIdentifier, variableName, value, true); // Default is to set the value before a template
+
+        return this;
+    }
+
     /******************************************************************************************
-     Set the variable at runtime, just as the previous method, but search the step using the
-     displayName. The step can be of any type "step", SECTION_TASK, or SECTION_SCRIPT.
+     Sets (changes) the value of a variable (identified by "variableName") just before a certain
+     template is executed. This means that the variable value is changed at runtime (while running
+     the pipeline), unlike the overrideVariable() method, which replaces the value during
+     pre-processing the pipelines.
+     This template is found using the "templateIdentifier".
      Use a Powershell (pwsh) script; it runs both on Linux and Windows
-     @param displayValue The value of the displayName property of a step
+     @param templateIdentifier The identification of a step
      @param variableName The name of the variable as declared in the 'variables' section
      @param value The new value of the variable
+     @param insertBefore Determines whether the script is inserted before (true) or after (false)
+     the given step
      ******************************************************************************************/
+    public AzDoPipeline setVariableSearchTemplateByIdentifier (String templateIdentifier,
+                                                               String variableName,
+                                                               String value,
+                                                               boolean insertBefore) {
+        logger.debug("==> Method: AzDoPipeline.setVariableSearchTemplateByIdentifier");
+        logger.debug("templateIdentifier: {}", templateIdentifier);
+        logger.debug("variableName: {}", variableName);
+        logger.debug("value: {}", value);
+        logger.debug("insertBefore: {}", insertBefore);
+
+        // Create a script that sets the value of a variable
+        Map<String, Object> stepToInsert = constructSetVariableSection (variableName, value);
+
+        // Call the performAction method; find the SECTION_TEMPLATE section with the identifier
+        yamlDocumentEntryPoint.performAction (new ActionInsertSection(SECTION_TEMPLATE, templateIdentifier, stepToInsert, insertBefore),
+                SECTION_TEMPLATE,
+                templateIdentifier);
+
+        return this;
+    }
+
     public AzDoPipeline setVariableSearchStepByDisplayName (String displayValue,
                                                     String variableName,
                                                     String value) {
@@ -803,6 +830,16 @@ public class AzDoPipeline {
         return this;
     }
 
+    /******************************************************************************************
+     Set the variable at runtime, just as the previous method, but search the step using the
+     displayName. The step can be of any type "step", SECTION_TASK, or SECTION_SCRIPT.
+     Use a Powershell (pwsh) script; it runs both on Linux and Windows
+     @param displayValue The value of the displayName property of a step
+     @param variableName The name of the variable as declared in the 'variables' section
+     @param value The new value of the variable
+     @param insertBefore Determines whether the script is inserted before (true) or after (false)
+     the given step
+     ******************************************************************************************/
     public AzDoPipeline setVariableSearchStepByDisplayName (String displayValue,
                                                             String variableName,
                                                             String value,
@@ -817,12 +854,7 @@ public class AzDoPipeline {
         // Other arguments besides SECTION_TASK and SECTION_SCRIPT are: powershell | pwsh | bash | checkout | download | downloadBuild | getPackage | publish | reviewApp
         // These are not implemented
         // Create a script that sets the value of a variable
-        Map<String, Object> stepToInsert = new LinkedHashMap<>();
-        String s = "Write-Host \"##vso[task.setvariable variable=" + variableName + "]" + value.toString() + "\"";
-        stepToInsert.put(STEP_SCRIPT_PWSH, s);
-
-        s = String.format("<Inserted> Set variable %s = %s", variableName, value);
-        stepToInsert.put(DISPLAY_NAME, s);
+        Map<String, Object> stepToInsert = constructSetVariableSection (variableName, value);
 
         // Call the performAction method; find the SECTION_TASK section with the DISPLAY_NAME
         ActionResult ar;
@@ -848,6 +880,25 @@ public class AzDoPipeline {
         }
 
         return this;
+    }
+
+
+    /******************************************************************************************
+     Private method to construct a section in which the variable is set
+     @param variableName The name of the variable as declared in the 'variables' section
+     @param value The new value of the variable
+     ******************************************************************************************/
+    private Map<String, Object> constructSetVariableSection (String variableName,
+                                                             String value) {
+        // Create a script that sets the value of a variable
+        Map<String, Object> stepToInsert = new LinkedHashMap<>();
+        String s = "Write-Host \"echo ##vso[task.setvariable variable=" + variableName + "]" + value + "\"";
+        stepToInsert.put(STEP_SCRIPT_PWSH, s);
+
+        s = String.format("<Inserted> Set variable %s = %s", variableName, value);
+        stepToInsert.put(DISPLAY_NAME, s);
+
+        return stepToInsert;
     }
 
     /******************************************************************************************

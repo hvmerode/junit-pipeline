@@ -102,7 +102,7 @@ Example:
 <dependency>
   <groupId>io.github.hvmerode</groupId>
   <artifactId>junit-pipeline</artifactId>
-  <version>1.2.8</version>
+  <version>1.2.9</version>
 </dependency>
 ```
 
@@ -456,8 +456,11 @@ pipeline.setVariableSearchStepByDisplayName ("Azure App Service Deploy", "WebApp
 a script is inserted just before the AzureRMWebAppDeployment@4 (note, that 'insertBefore' is omitted; default is 'true').
 When running the pipeline, the value of "WebAppName" is set with the value "newName"
 <pre>
-script: echo '##vso[task.setvariable variable=WebAppName]newName';
+pwsh: 'Write-Host "echo ##vso[task.setvariable variable=WebAppName]newName"'
 </pre>
+
+In addition to the setVariableSearchStepByDisplayName, the methods setVariableSearchStepByIdentifier and
+setVariableSearchTemplateByIdentifier are supported.
 </i>
 <br>
 
@@ -635,6 +638,8 @@ pipeline.getRunResult().getStageResultSearchByDisplayName("simpleStage");
   This is a 'nice-to-have'.
 
 ## Solved ##
+* ~~Implement method setVariableSearchStepByIdentifier~~
+* ~~- ${{ if }} construction in stages or jobs gives a validation error~~
 * ~~Possibility to replace a step with a yamlTemplate file (the yamlTemplate file could serve as a mock file).~~
 * ~~Make the task inserted by assertFileExistsSearchStepByDisplayName of type 'pwsh', because it can run on both
   Windows and Linux.~~

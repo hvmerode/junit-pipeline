@@ -519,8 +519,8 @@ public class YamlDocument {
                     key = entry.getKey();
                 }
                 catch (Exception e) {
-                    // In certain cases the key is not of the expected type. Because of a snakeyaml issue the
-                    // construction on..failure is translated to true..failure, making the key a boolean
+                    // In certain cases the key is not of the expected type. This can happen Because of a snakeyaml issue
+                    // (the construction on..failure is translated to true..failure, making the key a boolean)
                     keyError = true;
                 }
                 if (keyError || entry.getValue() == null) {

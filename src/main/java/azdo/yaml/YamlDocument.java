@@ -510,12 +510,21 @@ public class YamlDocument {
         if (l1 instanceof Map) {
             logger.debug("l1 is instance of map...");
             map = (Map<String, Object>) l1;
-            String key;
+            boolean keyError;
+            String key = "";
             String stringValue;
             for (Map.Entry<String, Object> entry : map.entrySet()) {
-                key = entry.getKey();
-                if (entry.getValue() == null) {
-                    logger.debug("entry.getValue() is not for key: {}", key);
+                keyError = false;
+                try {
+                    key = entry.getKey();
+                }
+                catch (Exception e) {
+                    // In certain cases the key is not of the expected type. This can happen Because of a snakeyaml issue
+                    // (the construction on..failure is translated to true..failure, making the key a boolean)
+                    keyError = true;
+                }
+                if (keyError || entry.getValue() == null) {
+                    logger.debug("keyError is set or entry.getValue() is not for key: {}", key);
                 }
                 else {
                     stringValue = entry.getValue().toString();

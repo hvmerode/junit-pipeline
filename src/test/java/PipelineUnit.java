@@ -60,7 +60,7 @@ public class PipelineUnit {
             logger.debug("Exception occurred after the pipeline was started: {}", e.getMessage());
         }
         Assertions.assertEquals (RunResult.Result.failed, pipeline.getRunResult().result);
-        RunResult.Result stageResult = pipeline.getRunResult().getStageResultSearchByDisplayName("simpleStage");
+        RunResult.Result stageResult = pipeline.getRunResult().getStageResultSearchByDisplayName("simple_stage");
         Assertions.assertEquals (RunResult.Result.failed, stageResult);
         logger.info("Test successful");
         logger.info("Expected pipeline result: {}", RunResult.Result.failed);
@@ -147,6 +147,8 @@ public class PipelineUnit {
                     .overrideVariable("aws_region", "eu-west-1")
                     .skipJobSearchByIdentifier("Job_XD")
                     .setVariableSearchStepByIdentifier ("AWSShellScript@1", "aws_connection", "42")
+                    .setVariableSearchTemplateByIdentifier("templates/steps/template-steps.yml", "environment", "prod")
+                    .setVariableSearchTemplateByIdentifier("templates/steps/template-steps.yml", "sleep", "2", false)
                     .setVariableSearchStepByDisplayName ("ExecuteScriptStage job_xc script", "myVar", "myReplacedValue")
                     .assertVariableEqualsSearchStepByDisplayName("ExecuteScriptStage job_xa script", "jobVar", "replacedJobVar")
                     .assertVariableNotEqualsSearchStepByDisplayName("ExecuteScriptStage job_xa script", "jobVar", "replacedJobVar")
@@ -249,7 +251,6 @@ public class PipelineUnit {
         }
         Assertions.assertEquals (RunResult.Result.succeeded, pipeline.getRunResult().result);
     }
-
 
     @Test
     @Order(8)

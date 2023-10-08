@@ -1852,14 +1852,15 @@
     "variables": {
       "anyOf": [
         {
-          "type": "object",
-          "additionalProperties": true
-        },
-        {
           "type": "array",
           "items": {
             "$ref": "#/definitions/variable"
-          }
+          },
+          "additionalProperties": true
+        },
+        {
+          "type": "object",
+          "additionalProperties": true
         }
       ]
     },
@@ -1877,7 +1878,7 @@
               "$ref": "#/definitions/boolean"
             }
           },
-          "additionalProperties": false,
+          "additionalProperties": true,
           "firstProperty": [
             "name"
           ]
@@ -1889,7 +1890,7 @@
               "$ref": "#/definitions/nonEmptyString"
             }
           },
-          "additionalProperties": false,
+          "additionalProperties": true,
           "firstProperty": [
             "group"
           ]
@@ -1904,7 +1905,7 @@
               "$ref": "#/definitions/mapping"
             }
           },
-          "additionalProperties": false,
+          "additionalProperties": true,
           "firstProperty": [
             "template"
           ]

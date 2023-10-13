@@ -176,7 +176,7 @@ public class YamlDocument {
      The manipulated yaml map is saved onto the local file system. The location is a target location,
      other than the original location of the pipeline file.
      ******************************************************************************************/
-    public void dumpYaml() throws IOException {
+    public void dumpYaml (boolean continueOnError) throws IOException {
         logger.debug("==> Method: YamlDocument.dumpYaml");
 
         // Dump the updated yaml to target directory (with the same name as the original file in the source directory)
@@ -210,13 +210,16 @@ public class YamlDocument {
         yaml.dump(yamlMap, writer);
         Utils.wait(1000);
 
+        // Validate the output file to determine whether it contains valid pipeline code
+        Utils.validatePipelineFile(targetOutputFile, continueOnError);
+
         // Dump the templates
         int index = 0;
         int size = yamlTemplateList.size();
         YamlTemplate yamlTemplate;
         for (index = 0; index < size; index++) {
             yamlTemplate = yamlTemplateList.get(index);
-            yamlTemplate.dumpYaml();
+            yamlTemplate.dumpYaml(continueOnError);
         }
     }
 

@@ -17,5 +17,12 @@ stages:
             deploy:
               steps:
                 - checkout: self
-                - script: echo 'This is a deployment'
+                - script: echo "This is a deployment"
                   displayName: 'This is a deployment'
+            on:
+              failure:
+                steps:
+                  - script: echo "This is on failure"
+              success:
+                steps:
+                  - script: echo "This is on success"

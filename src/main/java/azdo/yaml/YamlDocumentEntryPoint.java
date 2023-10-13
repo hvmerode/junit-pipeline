@@ -443,11 +443,12 @@ public class YamlDocumentEntryPoint {
     /*
        The manipulated yaml maps are saved onto the local file system. The location is a target location.
      */
-    public void dumpYaml() throws IOException {
+    public void dumpYaml (boolean continueOnError) throws IOException {
         logger.debug("==> Method: YamlDocumentEntryPoint.dumpYaml");
 
         // Dump the updated YAML files to the target directory (with the same name as the original file in the source directory)
-        mainYamlDocument.dumpYaml();
+        logger.info("Write output files and validate them");
+        mainYamlDocument.dumpYaml(continueOnError);
     }
 
     /******************************************************************************************

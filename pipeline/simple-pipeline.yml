@@ -13,6 +13,11 @@ variables:
   - name: testVar
     value: test
 
+parameters:
+  - name: param_1
+    type: string
+    default: 'default'
+
 stages:
   - stage: simpleStage
     displayName: simple_stage
@@ -25,3 +30,4 @@ stages:
           - script: |
               echo 'This is a simple test'
             displayName: 'Testing, testing'
+          - template: templates/steps/template-script.yml

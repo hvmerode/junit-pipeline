@@ -227,7 +227,7 @@ public class PipelineUnit {
         }
         Assertions.assertEquals (RunResult.Result.succeeded, pipeline.getRunResult().result);
         logger.info("Test successful");
-        logger.info("Expected: {}", RunResult.Result.failed);
+        logger.info("Expected: {}", RunResult.Result.succeeded);
         logger.info("Actual: {}", pipeline.getRunResult().result);
     }
 
@@ -244,6 +244,7 @@ public class PipelineUnit {
 
         try {
             pipeline.overrideLiteral("dev", "prod")
+                    .overrideLiteral("true:", "'on':") // This is a bug in snakeyaml; it replaces "on:" with "true:"
                     .startPipeline();
         }
         catch (IOException e) {
@@ -263,11 +264,11 @@ public class PipelineUnit {
         // Initialize the pipeline
         pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/simple-pipeline.yml");
         Map<String, String> stageParameters = new HashMap<>();
-        stageParameters.put("aNiceParam", "stage_val1");
-        stageParameters.put("template", "stage_val2");
+        stageParameters.put("aNiceParam", "stage_val81");
+        stageParameters.put("template", "stage_val82");
         Map<String, String> mockParameters = new HashMap<>();
-        mockParameters.put("param_1", "mock_val1");
-        mockParameters.put("param_2", "mock_val2");
+        mockParameters.put("param_1", "mock_val81");
+        mockParameters.put("param_2", "mock_val82");
 
         try {
             pipeline.insertTemplateSearchSectionByDisplayName(SECTION_STAGE, "simple_stage", "templates/stages/template-stages.yml", stageParameters, false)
@@ -285,5 +286,72 @@ public class PipelineUnit {
         Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getStageResultSearchByDisplayName("simple_stage"));
         Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getJobResultSearchByDisplayName("simple_job"));
         Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getStepResultSearchByDisplayName("Testing, testing"));
+    }
+
+    @Test
+    @Order(9)
+    public void test9() {
+        logger.debug("");
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        logger.debug("Perform unittest: test9");
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+        // Initialize the pipeline
+        pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/simple-pipeline.yml");
+        Map<String, String> stageParameters = new HashMap<>();
+        stageParameters.put("aNiceParam", "stage_val91");
+        stageParameters.put("template", "stage_val92");
+        Map<String, String> jobParameters = new HashMap<>();
+        jobParameters.put("param_1", "job_val91");
+        Map<String, String> stepParameters = new HashMap<>();
+        stepParameters.put("param_1", "step_val91");
+        stepParameters.put("param_2", "step_val92");
+
+        try {
+            // Test the insertTemplateSearchSectionByIdentifier with some combinations
+            pipeline.resetTrigger()
+                    .insertTemplateSearchSectionByIdentifier("simpleStage", "templates/stages/template-stages.yml", stageParameters, true)
+                    .insertTemplateSearchSectionByIdentifier("simpleJob", "templates/jobs/template-jobs.yml", jobParameters, true)
+                    .insertTemplateSearchSectionByIdentifier("templates/steps/template-script.yml", "templates/steps/template-mock.yml", stepParameters, false)
+                    .skipStepSearchByDisplayName("Testing, testing")
+                    .startPipeline();
+        }
+        catch (IOException e) {
+            logger.debug("Exception occurred after the pipeline was started: {}", e.getMessage());
+        }
+        RunResult pipelineRunResult = pipeline.getRunResult();
+        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.result);
+        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getStageResultSearchByDisplayName("template-stages.yml stage"));
+        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getStageResultSearchByDisplayName("simple_stage"));
+        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getJobResultSearchByDisplayName("template-stages.yml job"));
+        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getJobResultSearchByDisplayName("template-jobs.yml job"));
+        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getJobResultSearchByDisplayName("simple_job"));
+        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getStepResultSearchByDisplayName("This is script step"));
+        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getStepResultSearchByDisplayName("template-mock.yml script"));
+    }
+
+    @Test
+    @Order(10)
+    public void test10() {
+        logger.debug("");
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        logger.debug("Perform unittest: test10");
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+        // Initialize the pipeline
+        pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/simple-pipeline.yml");
+
+        try {
+            // Test the assertVariableEqualsSearchTemplateByIdentifier
+            pipeline.resetTrigger()
+                    .assertVariableEqualsSearchTemplateByIdentifier ("templates/steps/template-script.yml", "testVar", "test_wrong", false)
+                    .assertParameterEqualsSearchTemplateByIdentifier ("templates/steps/template-script.yml", "param_1", "default")
+                    .startPipeline();
+        }
+        catch (IOException e) {
+            logger.debug("Exception occurred after the pipeline was started: {}", e.getMessage());
+        }
+        RunResult pipelineRunResult = pipeline.getRunResult();
+        Assertions.assertEquals (RunResult.Result.failed, pipelineRunResult.result);
     }
 }

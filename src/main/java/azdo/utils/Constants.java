@@ -28,6 +28,8 @@ public class Constants {
     public static final String CONDITION = "condition";
     public static final String TYPE_VARIABLE = "variable";
     public static final String TYPE_PARAMETER = "parameter";
+    public static final String TYPE_STEP = SECTION_STEP;
+    public static final String TYPE_TEMPLATE = SECTION_TEMPLATE;
 
     // *************************************** Colors ***************************************
     public static final String RED = "\u001B[31m";

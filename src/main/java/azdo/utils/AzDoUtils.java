@@ -327,7 +327,8 @@ public class AzDoUtils {
                                            String azdoBuildApi,
                                            String azdoBuildApiVersion,
                                            String pipelineId,
-                                           String branchName) {
+                                           String branchName,
+                                           boolean continueOnError) {
         logger.debug("==> Method: AzDoUtils.callPipelineRunApi");
         logger.debug("pipelineId: {}", pipelineId);
         logger.debug("branchName: {}", branchName);
@@ -352,8 +353,20 @@ public class AzDoUtils {
                     BRACKET_CLOSE;
 
             HttpResponse<String> response = callApi(azdoUser, azdoPat, http, AzDoUtils.HttpMethod.POST, json);
-            if (response != null)
+            if (response != null) {
                 logger.debug(RESPONSE_IS, response);
+                if (response.statusCode() > 299) {
+                    // Make the error explicit, because otherwise it is unclear why the pipeline did not run
+                    logger.error("Error while trying to run the pipeline. This can be caused by various issues:");
+                    logger.error("- One of the output yaml files contains a syntax error");
+                    logger.error("- A reference is used to an non-existing template, variable group, or service connection");
+                    logger.error("- The pipeline requires an explicit permit");
+                    logger.error("  - A new Environment is used");
+                    logger.error("  - A new variable group is used");
+                    logger.error("  - A specific, custom precondition must be met");
+                    if (continueOnError) return; else System. exit(1);
+                }
+            }
         }
     }
 

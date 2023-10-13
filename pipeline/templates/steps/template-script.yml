@@ -1,0 +1,7 @@
+# Copyright (c) Henry van Merode.
+# Licensed under the MIT License.
+
+steps:
+  - script: |
+      echo 'This is script step'
+    displayName: This is script step

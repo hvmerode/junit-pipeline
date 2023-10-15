@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 public class PropertyUtils {
-    private static Log logger = Log.getLogger();
+    private static final Log logger = Log.getLogger();
 
     // Source
     private Properties properties;
@@ -50,6 +50,12 @@ public class PropertyUtils {
     // Azure DevOps API: Project
     private String projectApi = "/projects";
     private String projectApiVersion = "api-version=7.0";
+
+    // Azure DevOps API: Distributed tasks
+    private String variableGroupsApi = "/distributedtask/variablegroups";
+    private String variableGroupsApiVersion = "api-version=7.0";
+    private String environmentsApi = "/distributedtask/environments";
+    private String environmentsApiVersion = "api-version=7.0";
 
     // Miscellaneous
     private String commitPattern;
@@ -115,6 +121,12 @@ public class PropertyUtils {
             // Azure DevOps Project API
             projectApi = getStringProperty(properties, "project.api", projectApi);
             projectApiVersion = getStringProperty(properties, "project.api.version", projectApiVersion);
+
+            // Azure DevOps Distributed task APIs
+            variableGroupsApi = getStringProperty(properties, "variable.groups.api", variableGroupsApi);
+            variableGroupsApiVersion = getStringProperty(properties, "variable.groups.api.version", variableGroupsApiVersion);
+            environmentsApi = getStringProperty(properties, "environments.api", environmentsApi);
+            environmentsApiVersion = getStringProperty(properties, "environments.api.version", environmentsApiVersion);
 
             // Miscellaneous
             continueOnError = getBooleanProperty(properties, "error.continue", continueOnError);
@@ -233,6 +245,16 @@ public class PropertyUtils {
     public String getProjectApi() { return projectApi;}
     public String getProjectApiVersion() {
         return projectApiVersion;
+    }
+
+    // Distributed task
+    public String getVariableGroupsApi() { return variableGroupsApi;}
+    public String getVariableGroupsApiVersion() {
+        return variableGroupsApiVersion;
+    }
+    public String getEnvironmentsApi() { return environmentsApi;}
+    public String getEnvironmentsApiVersion() {
+        return environmentsApiVersion;
     }
 
     // Miscellaneous

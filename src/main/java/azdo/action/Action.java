@@ -5,7 +5,7 @@ import azdo.yaml.ActionResult;
 import java.util.Map;
 
 public interface Action {
-    public enum ACTION {INSERT_SECTION, UPDATE_SECTION, DELETE_SECTION, INSERT_SECTION_LINE};
+    public enum ACTION {INSERT_SECTION, UPDATE_SECTION, DELETE_SECTION, INSERT_SECTION_LINE, GET_PROPERTY};
     // Executes the action
     void execute (ActionResult actionResult);
 

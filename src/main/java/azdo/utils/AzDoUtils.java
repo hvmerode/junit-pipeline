@@ -22,7 +22,7 @@ import java.util.Map;
 import static azdo.utils.Constants.*;
 
 public class AzDoUtils {
-    private static Log logger = Log.getLogger();
+    private static final Log logger = Log.getLogger();
     private static final String BRACKET_OPEN_NEXTLINE = "{\n";
     private static final String BRACKET_CLOSE = "}";
     private static final String DOUBLE_QUOTE = "\"";
@@ -42,9 +42,11 @@ public class AzDoUtils {
     private enum HttpMethod {GET, PUT, POST, PATCH}
     private static boolean test = false;
 
-    /* Perform an Azure DevOps API call. This is a generic method to call an Azure DeVOps API. The endpoint,
-       HTTP method and body (json) must be provided.
-     */
+
+    /******************************************************************************************
+     Perform an Azure DevOps API call. This is a generic method to call an Azure DeVOps API.
+     The endpoint, HTTP method and body (json) must be provided.
+     *******************************************************************************************/
     public static HttpResponse<String> callApi (String azdoUser,
                                                 String azdoPat,
                                                 String http,
@@ -107,8 +109,9 @@ public class AzDoUtils {
         return null;
     }
 
-    /* Create a new repo in Azure DevOps if it does not exist yet
-     */
+    /******************************************************************************************
+     Create a new repo in Azure DevOps if it does not exist yet.
+     *******************************************************************************************/
     public static String createRepositoryIfNotExists (String azdoUser,
                                                       String azdoPat,
                                                       String targetPath,
@@ -192,6 +195,9 @@ public class AzDoUtils {
         return repositoryId;
     }
 
+    /******************************************************************************************
+     Initialize the master branch.
+     *******************************************************************************************/
     private static void initializeMaster (String azdoUser,
                                           String azdoPat,
                                           String targetPath,
@@ -221,13 +227,16 @@ public class AzDoUtils {
         GitUtils.commitAndPush(git,
                 azdoUser,
                 azdoPat,
-                commitPatternList);
+                commitPatternList,
+                null,
+                true);
         if (git != null)
             git.close();
     }
 
-    /* Create a new pipeline in Azure DevOps if it does not exist yet
-     */
+    /******************************************************************************************
+     Create a new pipeline in Azure DevOps if it does not exist yet.
+     *******************************************************************************************/
     public static String createPipelineIfNotExists (String azdoUser,
                                                     String azdoPat,
                                                     String pipelinePath,
@@ -284,8 +293,9 @@ public class AzDoUtils {
         return pipelineId;
     }
 
-    /* Return the project-id of a project in a specific Azure DevOps organization
-     */
+    /******************************************************************************************
+     Return the project-id of a project in a specific Azure DevOps organization.
+     *******************************************************************************************/
     public static String callGetProjectIdApi (String azdoUser,
                                               String azdoPat,
                                               String project,
@@ -319,8 +329,9 @@ public class AzDoUtils {
         return projectId;
     }
 
-    /* Execute a pipeline
-     */
+    /******************************************************************************************
+     Run a pipeline.
+     *******************************************************************************************/
     public static void callPipelineRunApi (String azdoUser,
                                            String azdoPat,
                                            String azdoEndpoint,
@@ -359,33 +370,17 @@ public class AzDoUtils {
                     // Make the error explicit, because otherwise it is unclear why the pipeline did not run
                     logger.error("Error while trying to run the pipeline. This can be caused by various issues:");
                     logger.error("- One of the output yaml files contains a syntax error");
-                    logger.error("- A reference is used to an non-existing template, variable group, or service connection");
-                    logger.error("- The pipeline requires an explicit permit");
-                    logger.error("  - A new Environment is used");
-                    logger.error("  - A new variable group is used");
-                    logger.error("  - A specific, custom precondition must be met");
+                    logger.error("- A reference to a non-existing template, or service connection is used");
+                    logger.error("- A pipeline decorator enforces a specific precondition");
                     if (continueOnError) return; else System. exit(1);
                 }
             }
         }
     }
 
-    /* Wait until the build is finished and return the result of the pipeline run.
-       Unfortunately, the amount of information that can be retrieved from Azure DevOps is limited to
-       the result:
-       - canceled
-       - failed
-       - succeeded
-       - partiallySucceeded
-
-       and the status:
-       - cancelling
-       - completed
-       - inProgress
-       - notStarted
-       - postponed
-       - timeout
-     */
+    /******************************************************************************************
+     Wait until the build is finished and return the result of the pipeline run.
+     *******************************************************************************************/
     public static RunResult callRunResult (String azdoUser,
                                            String azdoPat,
                                            int pollFrequency,
@@ -422,11 +417,12 @@ public class AzDoUtils {
 
         String json = "{}";
 
-        //////////////////////////////////////////////////////////
-        // 1. Poll the API until the status is completed or timed out
-        // Polling is determined using a certain frequency
-        //////////////////////////////////////////////////////////
-        while (runResult.result == RunResult.Result.none) {
+        /******************************************************************************************
+         1. Poll the API until the status is completed or timed out.
+            Polling is determined using a certain frequency.
+         *******************************************************************************************/
+        boolean runEnds = false;
+        while (!runEnds) {
 
             // Call the API
             logger.debug("Call the API");
@@ -479,9 +475,12 @@ public class AzDoUtils {
             timeElapsed = Duration.between(start, finish).toSeconds();
             logger.debug("Time elapsed: {}", Long.toString(timeElapsed));
 
-            if (runResult.result == RunResult.Result.none && timeElapsed > (long) timeout) {
+            if (runResult.result != RunResult.Result.none) {
+                runEnds = true;
+            } else if (timeElapsed > (long) timeout) {
                 runResult.result = RunResult.Result.undetermined;
                 runResult.status = RunResult.Status.timeout;
+                runEnds = true;
             }
             String pipelineResult = runResult.result.toString();
             logger.info(DEMARCATION);
@@ -505,9 +504,9 @@ public class AzDoUtils {
             firstPoll = false;
         }
 
-        //////////////////////////////////////////////////////////
-        // 2. Retrieve the details of the build using the timeline
-        //////////////////////////////////////////////////////////
+        /******************************************************************************************
+         2. Retrieve the details of the build using the timeline.
+         *******************************************************************************************/
         http = azdoEndpoint +
                 azdoBuildApi +
                 "/" +
@@ -571,14 +570,15 @@ public class AzDoUtils {
                 }
             }
             else
-                logger.error("Retrieving the build timeline failed; always ignore");
+                logger.error("Retrieving the build timeline failed; just continue");
         }
 
         return runResult;
     }
 
-    /* Create a new pipeline
-     */
+    /******************************************************************************************
+     Create a new pipeline.
+     *******************************************************************************************/
     public static String callCreatePipelineApi (String azdoUser,
                                                 String azdoPat,
                                                 String pipelinePath,
@@ -627,9 +627,10 @@ public class AzDoUtils {
         return pipelineId;
     }
 
-    /* Check whether a pipeline  with a certain name already exists.
-       If available, the pipeline Id is returned.
-     */
+    /******************************************************************************************
+     Check whether a pipeline  with a certain name already exists.
+     If available, the pipeline Id is returned.
+     *******************************************************************************************/
     public static String callGetPipelineApi (String azdoUser,
                                              String azdoPat,
                                              String pipelineName,
@@ -663,8 +664,9 @@ public class AzDoUtils {
         return pipelineId;
     }
 
-    /* Create a new repository and return the Azure DevOps repository-Id.
-     */
+    /******************************************************************************************
+     Create a new repository and return the Azure DevOps repository-Id.
+     *******************************************************************************************/
     public static String callCreateRepoApi (String azdoUser,
                                             String azdoPat,
                                             String azdoEndpoint,
@@ -704,8 +706,9 @@ public class AzDoUtils {
         return repositoryId;
     }
 
-    /* Update a repository with a new default branch.
-     */
+    /******************************************************************************************
+     Update a repository with a new default branch.
+     *******************************************************************************************/
     public static String callUpdateRepoApi (String azdoUser,
                                             String azdoPat,
                                             String azdoEndpoint,
@@ -743,9 +746,10 @@ public class AzDoUtils {
         return repositoryId;
     }
 
-    /* Check whether a Git repository with a certain name already exists.
-       If available, the repository-Id is returned.
-     */
+    /******************************************************************************************
+     Check whether a Git repository with a certain name already exists.
+     If available, the repository-Id is returned.
+     *******************************************************************************************/
     public static String callGetRepositoryApi (String azdoUser,
                                                String azdoPat,
                                                String repositoryName,
@@ -781,8 +785,9 @@ public class AzDoUtils {
         return repositoryId;
     }
 
-    /* Utility method that returns the value of a certain key in an array.
-     */
+    /******************************************************************************************
+     Utility method that returns the value of a certain key in an array.
+     *******************************************************************************************/
     public static String iterateYamlArrayListAndFindElement (ArrayList<Object> arr, String key, String compareKey, String val) {
         logger.debug("==> Method: AzDoUtils.iterateYamlArrayListAndFindElement");
         logger.debug("key: {}", key);
@@ -807,5 +812,77 @@ public class AzDoUtils {
         }
 
         return compareValue;
+    }
+
+    /******************************************************************************************
+     Check whether a list of property values exists in the Azure DevOps project.
+     This list (propertyList) is for example a list with variable groups or environments.
+     An API call is performed to retrieve the actual list for these properties.
+     If the 'propertyList' contains values that are not present in the target Azure DevOps
+     project, an error is raised (if continueOnError is true).
+     Note, that the response of the API is assumed to be the same. even if the endpoint differs.
+     *******************************************************************************************/
+    public static void callValidatePropertyList (String azdoUser,
+                                                 String azdoPat,
+                                                 String project,
+                                                 ArrayList<String> propertyList,
+                                                 String azdoEndpoint,
+                                                 String azdoPipelinesApi,
+                                                 String azdoPipelinesApiVersion,
+                                                 String propertyNameInLog,
+                                                 boolean continueOnError) {
+        logger.debug("==> Method: AzDoUtils.callValidatePropertyList");
+
+        String http = azdoEndpoint +
+                azdoPipelinesApi +
+                "?" +
+                azdoPipelinesApiVersion;
+
+        HttpResponse<String> response = callApi(azdoUser, azdoPat, http, AzDoUtils.HttpMethod.GET, null);
+
+        // Get the list of properties from the response
+        ArrayList<String> validPropertyList = new ArrayList<>();
+        Yaml yaml = new Yaml();
+        String name = null;
+        if (response != null) {
+            Map<String, Object> yamlMap = yaml.load(response.body().toString());
+            logger.debug(RESPONSE_IS, yamlMap.toString());
+            if (yamlMap.get(JSON_ELEMENT_VALUE) instanceof ArrayList) {
+                ArrayList<Object> list = (ArrayList<Object>) yamlMap.get(JSON_ELEMENT_VALUE);
+                int index;
+                int size = list.size();
+                for (index = 0; index < size; index++) {
+                    if (list.get(index) instanceof Map) {
+                        Map<String, Object> map = (Map<String, Object>) list.get(index);
+                        for (Map.Entry<String, Object> entry : map.entrySet()) {
+
+                            // Add the property values to the list with valid properties
+                            logger.debug("entry.getKey(): {}", entry.getKey());
+                            logger.debug("entry.getValue(): {}", entry.getValue());
+                            if ("name".equals(entry.getKey()))
+                                validPropertyList.add(entry.getValue().toString());
+                        }
+                    }
+                }
+            }
+        }
+
+        // Validate whether the values in 'variableGroups' exist in 'validPropertyList'.
+        int index;
+        int size = propertyList.size();
+        String propertyValue;
+        for (index = 0; index < size; index++) {
+            propertyValue = propertyList.get(index);
+            if (!validPropertyList.contains(propertyValue)) {
+                if (continueOnError) {
+                    logger.debug("{} \'{}\' is not defined in Azure DevOps project \'{}\'", propertyNameInLog, propertyValue, project);
+                    return;
+                }
+                else {
+                    logger.error("{} \'{}\' is not defined in Azure DevOps project \'{}\'", propertyNameInLog, propertyValue, project);
+                    System.exit(1);
+                }
+            }
+        }
     }
 }

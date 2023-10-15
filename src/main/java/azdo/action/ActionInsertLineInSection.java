@@ -24,7 +24,7 @@ import java.util.Map;
  }
  ******************************************************************************************/
 public class ActionInsertLineInSection implements Action {
-    private static Log logger = Log.getLogger();
+    private static final Log logger = Log.getLogger();
     private String sectionType; // Is "script", for example
     private String property; // The property of the section, for example "displayName"
     private String propertyValue; // The value of the property
@@ -59,7 +59,7 @@ public class ActionInsertLineInSection implements Action {
 
             // Run through the elements of the list and insert the section
             ArrayList<Object> list = (ArrayList<Object>) actionResult.l3;
-            int index = 0;
+            int index;
             int size = list.size();
             for (index = 0; index < size; index++) {
                 if (list.get(index) instanceof Map) {

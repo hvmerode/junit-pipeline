@@ -4,7 +4,10 @@
 package azdo.yaml;
 
 import azdo.action.Action;
+import azdo.action.ActionReturnPropertyValue;
+import azdo.utils.AzDoUtils;
 import azdo.utils.Log;
+import azdo.utils.PropertyUtils;
 import azdo.utils.Utils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -21,7 +24,7 @@ import static azdo.utils.Constants.*;
     In the case of a template file, the specialized YamlTemplate class is used.
  */
 public class YamlDocument {
-    private static Log logger = Log.getLogger();
+    private static final Log logger = Log.getLogger();
     private Map<String, Object> yamlMap; // Map of the pipeline/template yaml file.
     private ArrayList<YamlTemplate> yamlTemplateList = new ArrayList<>(); // Contains an array with templates referred in the yaml file associated with this YamlDocument.
     protected String rootInputFile; // The main yaml document, including the root path within the repository
@@ -153,7 +156,7 @@ public class YamlDocument {
                 targetRepositoryName,
                 repositoryList,
                 continueOnError);
-        int index = 0;
+        int index;
         int size = yamlTemplateList.size();
         YamlTemplate yamlTemplate;
         for (index = 0; index < size; index++) {
@@ -176,7 +179,7 @@ public class YamlDocument {
      The manipulated yaml map is saved onto the local file system. The location is a target location,
      other than the original location of the pipeline file.
      ******************************************************************************************/
-    public void dumpYaml (boolean continueOnError) throws IOException {
+    public void dumpYaml () throws IOException {
         logger.debug("==> Method: YamlDocument.dumpYaml");
 
         // Dump the updated yaml to target directory (with the same name as the original file in the source directory)
@@ -210,17 +213,69 @@ public class YamlDocument {
         yaml.dump(yamlMap, writer);
         Utils.wait(1000);
 
-        // Validate the output file to determine whether it contains valid pipeline code
-        Utils.validatePipelineFile(targetOutputFile, continueOnError);
-
         // Dump the templates
-        int index = 0;
+        int index;
         int size = yamlTemplateList.size();
         YamlTemplate yamlTemplate;
         for (index = 0; index < size; index++) {
             yamlTemplate = yamlTemplateList.get(index);
-            yamlTemplate.dumpYaml(continueOnError);
+            yamlTemplate.dumpYaml();
         }
+    }
+
+    /******************************************************************************************
+     The manipulated yaml map and its underlying template files are validated.
+     ******************************************************************************************/
+    public void validateTargetOutputFilesAndTemplates (PropertyUtils properties) {
+        /******************************************************************************************
+                       1. Validate whether a variable group (or more) exist
+         ******************************************************************************************/
+        // Retrieve the list with variable groups and validate whether the are defined in the Azure DevOps project
+        ActionReturnPropertyValue actionReturnVariableGroups = new ActionReturnPropertyValue(SECTION_VARIABLES, PROPERTY_VARIABLE_GROUP);
+        performAction (actionReturnVariableGroups, SECTION_VARIABLES, "");
+        AzDoUtils.callValidatePropertyList (properties.getAzDoUser(),
+                properties.getAzdoPat(),
+                properties.getTargetProject(),
+                actionReturnVariableGroups.getPropertyValues(),
+                properties.getAzdoEndpoint(),
+                properties.getVariableGroupsApi(),
+                properties.getVariableGroupsApiVersion(),
+                "Variable group",
+                properties.isContinueOnError());
+
+        /******************************************************************************************
+             2. Validate the output files to determine whether it contains valid pipeline code
+         ******************************************************************************************/
+        // Only validate if the targetOutputFile exists. There are cases in which no targetOutputFile
+        // is created. This is in a false-positive situation where the plugin cannot determine
+        // whether there is a valid file involved.
+        if (targetOutputFile != null && !targetOutputFile.isEmpty())
+            Utils.validatePipelineFile(targetOutputFile, properties.isContinueOnError());
+
+        // Validate the template files
+        int index;
+        int size = yamlTemplateList.size();
+        YamlTemplate yamlTemplate;
+        for (index = 0; index < size; index++) {
+            yamlTemplate = yamlTemplateList.get(index);
+            yamlTemplate.validateTargetOutputFilesAndTemplates(properties);
+        }
+
+        /******************************************************************************************
+                            3. Validate whether an Environment (or more) exists.
+         ******************************************************************************************/
+        // Retrieve the list with environments and validate whether the are defined in the Azure DevOps project
+        ActionReturnPropertyValue actionReturnEnvironments = new ActionReturnPropertyValue(SECTION_JOBS, PROPERTY_ENVIRONMENT);
+        performAction (actionReturnEnvironments, SECTION_JOBS, "");
+        AzDoUtils.callValidatePropertyList (properties.getAzDoUser(),
+                properties.getAzdoPat(),
+                properties.getTargetProject(),
+                actionReturnEnvironments.getPropertyValues(),
+                properties.getAzdoEndpoint(),
+                properties.getEnvironmentsApi(),
+                properties.getEnvironmentsApiVersion(),
+                "Environment",
+                properties.isContinueOnError());
     }
 
     /******************************************************************************************
@@ -643,7 +698,7 @@ public class YamlDocument {
         logger.debug("==> Method: YamlDocument.performActionOnTemplates");
 
         // Execute the command in the yamlTemplate files
-        int index = 0;
+        int index;
         int size = yamlTemplateList.size();
         YamlTemplate yamlTemplate;
         for (index = 0; index < size; index++) {
@@ -676,7 +731,7 @@ public class YamlDocument {
         yamlMap = (Map) yaml.load(s);
 
         // Execute the command in the yamlTemplate files
-        int index = 0;
+        int index;
         int size = yamlTemplateList.size();
         YamlTemplate yamlTemplate;
         for (index = 0; index < size; index++) {

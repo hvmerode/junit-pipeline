@@ -7,6 +7,7 @@ import azdo.action.*;
 import azdo.hook.Hook;
 import azdo.utils.*;
 import azdo.yaml.ActionResult;
+import azdo.yaml.RepositoryResource;
 import azdo.yaml.YamlDocumentEntryPoint;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.transport.CredentialsProvider;
@@ -22,7 +23,7 @@ import static azdo.utils.Constants.*;
    All AzDoPipeline methods used by the JUnit tests are forwarded to the encapsulated objects.
 */
 public class AzDoPipeline {
-    private static Log logger = Log.getLogger();
+    private static final Log logger = Log.getLogger();
     private PropertyUtils properties;
     private Git git = null;
     private CredentialsProvider credentialsProvider;
@@ -252,7 +253,7 @@ public class AzDoPipeline {
         // The manipulated YAML files are stored in memory (in a YamlDocument or YamlTemplate object). The target
         // location is a local repository, with a remote repository residing in the Azure DevOps test project.
         // Manipulation is performed in JUnit tests by calling the pipeline actions (overrideVariable, overrideLiteral. etc...)
-        yamlDocumentEntryPoint.dumpYaml(properties.isContinueOnError());
+        yamlDocumentEntryPoint.dumpYaml();
 
         // Perform all (pre)hooks
         if (hooks != null) {
@@ -263,15 +264,22 @@ public class AzDoPipeline {
             }
         }
 
+        // Validate all manipulated YAML files
+        yamlDocumentEntryPoint.validateTargetOutputFilesAndTemplates(properties);
+
         /*******************************************************************************************
            Push everything to the main and external repositories in the Azure DevOps test project
          *******************************************************************************************/
 
         // Push the local (main) repo to remote; this is the repository containing the main pipeline YAML file.
+        RepositoryResource metadataRepository = new RepositoryResource(); // Only used for logging
+        metadataRepository.repository = properties.getTargetRepositoryName();
         GitUtils.commitAndPush(git,
                 properties.getAzDoUser(),
                 properties.getAzdoPat(),
-                properties.getCommitPatternList());
+                properties.getCommitPatternList(),
+                metadataRepository,
+                properties.isContinueOnError());
 
         if (git != null)
             git.close();
@@ -281,7 +289,8 @@ public class AzDoPipeline {
         // This results in pushing all manipulated template files to the remote repositories in the Azure DevOps test project.
         yamlDocumentEntryPoint.commitAndPushTemplates (properties.getAzDoUser(),
                 properties.getAzdoPat(),
-                properties.getCommitPatternList());
+                properties.getCommitPatternList(),
+                properties.isContinueOnError());
 
         /*******************************************************************************************
                          Run the pipeline and retrieve the pipeline run result
@@ -381,8 +390,8 @@ public class AzDoPipeline {
         logger.debug("displayValue: {}", displayValue);
 
         // Call the performAction method; find a SECTION_STAGE
-        // If a stage is found (can be any stage), determine whether its property name (in this case DISPLAY_NAME), has a certain value
-        yamlDocumentEntryPoint.performAction (new ActionDeleteSectionByProperty(SECTION_STAGE, DISPLAY_NAME, displayValue),
+        // If a stage is found (can be any stage), determine whether its property name (in this case PROPERTY_DISPLAY_NAME), has a certain value
+        yamlDocumentEntryPoint.performAction (new ActionDeleteSectionByProperty(SECTION_STAGE, PROPERTY_DISPLAY_NAME, displayValue),
                 SECTION_STAGE,
                 "");
 
@@ -438,8 +447,8 @@ public class AzDoPipeline {
         logger.debug("displayValue: {}", displayValue);
 
         // Call the performAction method; find a SECTION_JOB
-        // If it is found, determine whether its property name (in this case DISPLAY_NAME), has a certain value
-        yamlDocumentEntryPoint.performAction (new ActionDeleteSectionByProperty(SECTION_JOB, DISPLAY_NAME, displayValue),
+        // If it is found, determine whether its property name (in this case PROPERTY_DISPLAY_NAME), has a certain value
+        yamlDocumentEntryPoint.performAction (new ActionDeleteSectionByProperty(SECTION_JOB, PROPERTY_DISPLAY_NAME, displayValue),
                 SECTION_JOB,
                 "");
 
@@ -490,7 +499,7 @@ public class AzDoPipeline {
         sectionTypes.add(STEP_SCRIPT);
         sectionTypes.add(STEP_SCRIPT_BASH);
         sectionTypes.add(STEP_SCRIPT_PWSH);
-        performAction (sectionTypes, "ActionDeleteSectionByProperty", DISPLAY_NAME, displayValue, null, false);
+        performAction (sectionTypes, "ActionDeleteSectionByProperty", PROPERTY_DISPLAY_NAME, displayValue, null, false);
 
         return this;
     }
@@ -607,7 +616,7 @@ public class AzDoPipeline {
         Map<String, Object> scriptToInsert = new LinkedHashMap<>();
         scriptToInsert.put(STEP_SCRIPT, inlineScript);
         String s = "<Inserted> Script";
-        scriptToInsert.put(DISPLAY_NAME, s);
+        scriptToInsert.put(PROPERTY_DISPLAY_NAME, s);
 
         // Search the section types below for the displayName and perform the action
         ArrayList<String> sectionTypes = new ArrayList<>();
@@ -615,7 +624,7 @@ public class AzDoPipeline {
         sectionTypes.add(STEP_SCRIPT);
         sectionTypes.add(STEP_SCRIPT_BASH);
         sectionTypes.add(STEP_SCRIPT_PWSH);
-        performAction (sectionTypes, "ActionInsertSectionByProperty", DISPLAY_NAME, displayValue, scriptToInsert, insertBefore);
+        performAction (sectionTypes, "ActionInsertSectionByProperty", PROPERTY_DISPLAY_NAME, displayValue, scriptToInsert, insertBefore);
 
         return this;
     }
@@ -661,7 +670,7 @@ public class AzDoPipeline {
         }
 
         // Call the performAction method; find the section - identified by sectionType - and the displayName
-        yamlDocumentEntryPoint.performAction (new ActionInsertSectionByProperty(sectionType, DISPLAY_NAME, displayValue, sectionToInsert, insertBefore),
+        yamlDocumentEntryPoint.performAction (new ActionInsertSectionByProperty(sectionType, PROPERTY_DISPLAY_NAME, displayValue, sectionToInsert, insertBefore),
                 sectionType,
                 null);
 
@@ -866,7 +875,7 @@ public class AzDoPipeline {
         sectionTypes.add(STEP_SCRIPT);
         sectionTypes.add(STEP_SCRIPT_BASH);
         sectionTypes.add(STEP_SCRIPT_PWSH);
-        performAction (sectionTypes, "ActionInsertSectionByProperty", DISPLAY_NAME, displayValue, stepToInsert, insertBefore);
+        performAction (sectionTypes, "ActionInsertSectionByProperty", PROPERTY_DISPLAY_NAME, displayValue, stepToInsert, insertBefore);
 
         return this;
     }
@@ -884,7 +893,7 @@ public class AzDoPipeline {
         stepToInsert.put(STEP_SCRIPT_PWSH, s);
 
         s = String.format("<Inserted> Set variable %s = %s", variableName, value);
-        stepToInsert.put(DISPLAY_NAME, s);
+        stepToInsert.put(PROPERTY_DISPLAY_NAME, s);
 
         return stepToInsert;
     }
@@ -1129,7 +1138,7 @@ public class AzDoPipeline {
 
         Map<String, Object> mockScript = new LinkedHashMap<>();
         mockScript.put(STEP_SCRIPT, inlineScript);
-        mockScript.put(DISPLAY_NAME, "<Replaced> Mock script");
+        mockScript.put(PROPERTY_DISPLAY_NAME, "<Replaced> Mock script");
 
         // Call the performAction method; find the step section with the stepIdentifier
         ActionUpdateSection action = new ActionUpdateSection(SECTION_TASK, stepIdentifier, mockScript);
@@ -1155,12 +1164,12 @@ public class AzDoPipeline {
 
         // Call the performAction method; find the task section with the displayName
         ActionResult ar;
-        ActionUpdateSectionByProperty actionTask = new ActionUpdateSectionByProperty(SECTION_TASK, DISPLAY_NAME, displayValue, stepToInsert);
+        ActionUpdateSectionByProperty actionTask = new ActionUpdateSectionByProperty(SECTION_TASK, PROPERTY_DISPLAY_NAME, displayValue, stepToInsert);
         ar = yamlDocumentEntryPoint.performAction (actionTask, SECTION_TASK, "");
 
         // Also check whether a script must be updated, instead of a task
         if (ar == null || !ar.actionExecuted) {
-            ActionUpdateSectionByProperty actionScript = new ActionUpdateSectionByProperty(STEP_SCRIPT, DISPLAY_NAME, displayValue, stepToInsert);
+            ActionUpdateSectionByProperty actionScript = new ActionUpdateSectionByProperty(STEP_SCRIPT, PROPERTY_DISPLAY_NAME, displayValue, stepToInsert);
             yamlDocumentEntryPoint.performAction(actionScript, STEP_SCRIPT, "");
         }
 
@@ -1224,7 +1233,7 @@ public class AzDoPipeline {
 
             // displayName
             s = "<Inserted> Mock " + command;
-            stepToInsert.put(DISPLAY_NAME, s);
+            stepToInsert.put(PROPERTY_DISPLAY_NAME, s);
             newLine = ". " + functionFileName + "\n";
         }
         else {
@@ -1234,32 +1243,32 @@ public class AzDoPipeline {
         if (newLine != null) {
             // Insert the bash step before a searched step of type 'script' (if found)
             ActionResult ar;
-            ActionInsertSectionByProperty scriptAction = new ActionInsertSectionByProperty(STEP_SCRIPT, DISPLAY_NAME, displayValue, stepToInsert, true);
+            ActionInsertSectionByProperty scriptAction = new ActionInsertSectionByProperty(STEP_SCRIPT, PROPERTY_DISPLAY_NAME, displayValue, stepToInsert, true);
             ar = yamlDocumentEntryPoint.performAction (scriptAction, STEP_SCRIPT, "");
 
             // Add a new line to the subsequent script step
-            ActionInsertLineInSection scriptActionInsertLineInSection = new ActionInsertLineInSection(STEP_SCRIPT, DISPLAY_NAME, displayValue, newLine);
+            ActionInsertLineInSection scriptActionInsertLineInSection = new ActionInsertLineInSection(STEP_SCRIPT, PROPERTY_DISPLAY_NAME, displayValue, newLine);
             yamlDocumentEntryPoint.performAction(scriptActionInsertLineInSection, STEP_SCRIPT, "");
 
             if (ar == null || !ar.actionExecuted) {
                 // If the script was not found, try to insert the bash step before a searched step of type 'bash'
-                ActionInsertSectionByProperty bashAction = new ActionInsertSectionByProperty(STEP_SCRIPT_BASH, DISPLAY_NAME, displayValue, stepToInsert, true);
+                ActionInsertSectionByProperty bashAction = new ActionInsertSectionByProperty(STEP_SCRIPT_BASH, PROPERTY_DISPLAY_NAME, displayValue, stepToInsert, true);
                 ar = yamlDocumentEntryPoint.performAction(bashAction, STEP_SCRIPT_BASH, "");
 
                 // Add a new line to the subsequent bash step
-                ActionInsertLineInSection bashActionInsertLineInSection = new ActionInsertLineInSection(STEP_SCRIPT_BASH, DISPLAY_NAME, displayValue, newLine);
+                ActionInsertLineInSection bashActionInsertLineInSection = new ActionInsertLineInSection(STEP_SCRIPT_BASH, PROPERTY_DISPLAY_NAME, displayValue, newLine);
                 yamlDocumentEntryPoint.performAction(bashActionInsertLineInSection, STEP_SCRIPT_BASH, "");
             }
 
             if (ar == null || !ar.actionExecuted) {
                 // If the searched step is not a "bash" or "script" type, it may be a "Bash@3" task. Btw, use the SECTION_TASK instead of the TASK_BASH_3
-                ActionInsertSectionByProperty actionBashTask = new ActionInsertSectionByProperty(SECTION_TASK, DISPLAY_NAME, displayValue, stepToInsert, true);
+                ActionInsertSectionByProperty actionBashTask = new ActionInsertSectionByProperty(SECTION_TASK, PROPERTY_DISPLAY_NAME, displayValue, stepToInsert, true);
                 yamlDocumentEntryPoint.performAction(actionBashTask, SECTION_TASK, "");
 
                 // Insert a new line to the "Bash@3" script; the line contains a declaration of the function file created in the inserted step
                 // The inline script in a "Bash@3" task is > inputs > script
                 ActionInsertLineInInnerSection actionInsertLineInInnerSection = new ActionInsertLineInInnerSection(SECTION_TASK,
-                        DISPLAY_NAME,
+                        PROPERTY_DISPLAY_NAME,
                         displayValue,
                         INPUTS,
                         SCRIPT,
@@ -1339,7 +1348,7 @@ public class AzDoPipeline {
 
                 // displayName
                 s = "<Inserted> Mock Invoke-RestMethod";
-                stepToInsert.put(DISPLAY_NAME, s);
+                stepToInsert.put(PROPERTY_DISPLAY_NAME, s);
                 newLine = ". ./Invoke-RestMethod-mock.ps1\n";
                 break;
             }
@@ -1352,22 +1361,22 @@ public class AzDoPipeline {
         if (newLine != null) {
             // Insert a PowerShell (pwsh) script before the PowerShell (pwsh) script that is searched for
             ActionResult ar;
-            ActionInsertSectionByProperty actionPSScript = new ActionInsertSectionByProperty(STEP_SCRIPT_PWSH, DISPLAY_NAME, displayValue, stepToInsert, true);
+            ActionInsertSectionByProperty actionPSScript = new ActionInsertSectionByProperty(STEP_SCRIPT_PWSH, PROPERTY_DISPLAY_NAME, displayValue, stepToInsert, true);
             yamlDocumentEntryPoint.performAction (actionPSScript, STEP_SCRIPT_PWSH, "");
 
             // Insert a new line to the "pwsh" script; the line contains a declaration of the function file created in the inserted step
-            ActionInsertLineInSection actionInsertLineInSection = new ActionInsertLineInSection(STEP_SCRIPT_PWSH, DISPLAY_NAME, displayValue, newLine);
+            ActionInsertLineInSection actionInsertLineInSection = new ActionInsertLineInSection(STEP_SCRIPT_PWSH, PROPERTY_DISPLAY_NAME, displayValue, newLine);
             ar = yamlDocumentEntryPoint.performAction(actionInsertLineInSection, STEP_SCRIPT_PWSH, "");
 
             if (ar == null || !ar.actionExecuted) {
                 // If it is not a "pwsh" script, it may be a "PowerShel@2" task. Btw, use the SECTION_TASK instead of the TASK_POWERSHELL_2
-                ActionInsertSectionByProperty actionPSTask = new ActionInsertSectionByProperty(SECTION_TASK, DISPLAY_NAME, displayValue, stepToInsert, true);
+                ActionInsertSectionByProperty actionPSTask = new ActionInsertSectionByProperty(SECTION_TASK, PROPERTY_DISPLAY_NAME, displayValue, stepToInsert, true);
                 yamlDocumentEntryPoint.performAction (actionPSTask, SECTION_TASK, "");
 
                 // Insert a new line to the "PowerShell@2" script; the line contains a declaration of the function file created in the inserted step
                 // The inline script in a "PowerShell@2" task is > inputs > script
                 ActionInsertLineInInnerSection actionInsertLineInInnerSection = new ActionInsertLineInInnerSection(SECTION_TASK,
-                        DISPLAY_NAME,
+                        PROPERTY_DISPLAY_NAME,
                         displayValue,
                         INPUTS,
                         SCRIPT,
@@ -1752,7 +1761,7 @@ public class AzDoPipeline {
         sectionTypes.add(STEP_SCRIPT);
         sectionTypes.add(STEP_SCRIPT_BASH);
         sectionTypes.add(STEP_SCRIPT_PWSH);
-        performAction (sectionTypes, "ActionInsertSectionByProperty", DISPLAY_NAME, displayValue, stepToInsert, insertBefore);
+        performAction (sectionTypes, "ActionInsertSectionByProperty", PROPERTY_DISPLAY_NAME, displayValue, stepToInsert, insertBefore);
 
         return this;
     }
@@ -1818,15 +1827,15 @@ public class AzDoPipeline {
 
         // displayName
         s = "<Inserted> AssertFileExists: " + fileName;
-        assertStep.put(DISPLAY_NAME, s);
+        assertStep.put(PROPERTY_DISPLAY_NAME, s);
 
-        // Call the performAction method; find the section with the DISPLAY_NAME
+        // Call the performAction method; find the section with the PROPERTY_PROPERTY_PROPERTY_DISPLAY_NAME
         ArrayList<String> sectionTypes = new ArrayList<>();
         sectionTypes.add(SECTION_TASK);
         sectionTypes.add(STEP_SCRIPT);
         sectionTypes.add(STEP_SCRIPT_BASH);
         sectionTypes.add(STEP_SCRIPT_PWSH);
-        performAction (sectionTypes, "ActionInsertSectionByProperty", DISPLAY_NAME, displayValue, assertStep, insertBefore);
+        performAction (sectionTypes, "ActionInsertSectionByProperty", PROPERTY_DISPLAY_NAME, displayValue, assertStep, insertBefore);
 
         return this;
     }
@@ -1901,7 +1910,7 @@ public class AzDoPipeline {
 
         // displayName
         s = "<Inserted> " + actionDisplayName + " " + mutableTypeDisplay + " " + mutable;
-        assertStep.put(DISPLAY_NAME, s);
+        assertStep.put(PROPERTY_DISPLAY_NAME, s);
 
         return assertStep;
     }

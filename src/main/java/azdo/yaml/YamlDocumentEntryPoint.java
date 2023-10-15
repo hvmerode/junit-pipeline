@@ -16,7 +16,7 @@ import java.util.Map;
    and the YamlDocument class that represents the main YAML pipeline file.
 */
 public class YamlDocumentEntryPoint {
-    private static Log logger = Log.getLogger();
+    private static final Log logger = Log.getLogger();
 
     // Refers to the main pipeline file, which is the entrypoint of the pipeline.
     private YamlDocument mainYamlDocument;
@@ -113,7 +113,11 @@ public class YamlDocumentEntryPoint {
                 copyAllSourceFiles(repository, properties.getTargetExludeList());
 
                 // Checkout/push the local repository containing external templates to the Azure DevOps test project
-                commitAndPushAllCode(repository, properties.getAzDoUser(), properties.getAzdoPat(), properties.getCommitPatternList());
+                commitAndPushAllCode(repository,
+                        properties.getAzDoUser(),
+                        properties.getAzdoPat(),
+                        properties.getCommitPatternList(),
+                        properties.isContinueOnError());
             }
         });
 
@@ -196,16 +200,20 @@ public class YamlDocumentEntryPoint {
     }
 
     // Commit and push the repository with the manipulated template files to the Azure DevOps test project.
-    public void commitAndPushTemplates (String azdoUser, String azdoPat, ArrayList<String> commitPatternList) {
+    public void commitAndPushTemplates (String azdoUser,
+                                        String azdoPat,
+                                        ArrayList<String> commitPatternList,
+                                        boolean continueOnError) {
         logger.debug("==> Method: YamlDocumentEntryPoint.commitAndPushTemplates");
 
-        commitAndPushAllCode (repositoryList, azdoUser, azdoPat, commitPatternList);
+        commitAndPushAllCode (repositoryList, azdoUser, azdoPat, commitPatternList, continueOnError);
     }
 
     private void commitAndPushAllCode (ArrayList<RepositoryResource> repositoryResourceList,
                                        String azdoUser,
                                        String azdoPat,
-                                       ArrayList<String> commitPatternList) {
+                                       ArrayList<String> commitPatternList,
+                                       boolean continueOnError) {
         logger.debug("==> Method: YamlDocumentEntryPoint.commitAndPushAllCode (second method signature)");
 
         // Return if there is nothing to push
@@ -213,14 +221,15 @@ public class YamlDocumentEntryPoint {
             return;
 
         repositoryResourceList.forEach(repository -> {
-            commitAndPushAllCode (repository, azdoUser, azdoPat, commitPatternList);
+            commitAndPushAllCode (repository, azdoUser, azdoPat, commitPatternList, continueOnError);
         });
     }
 
     private void commitAndPushAllCode (RepositoryResource repository,
                                        String azdoUser,
                                        String azdoPat,
-                                       ArrayList<String> commitPatternList) {
+                                       ArrayList<String> commitPatternList,
+                                       boolean continueOnError) {
         logger.debug("==> Method: YamlDocumentEntryPoint.commitAndPushAllCode (first method signature)");
 
         Git git = GitUtils.createGit (repository.localBase + "/" + repository.name);
@@ -229,7 +238,9 @@ public class YamlDocumentEntryPoint {
             GitUtils.commitAndPush(git,
                     azdoUser,
                     azdoPat,
-                    commitPatternList);
+                    commitPatternList,
+                    repository,
+                    continueOnError);
         }
     }
 
@@ -440,15 +451,26 @@ public class YamlDocumentEntryPoint {
         });
     }
 
-    /*
-       The manipulated yaml maps are saved onto the local file system. The location is a target location.
-     */
-    public void dumpYaml (boolean continueOnError) throws IOException {
+    /******************************************************************************************
+     The manipulated yaml maps are saved onto the local file system. The location is a target
+     location.
+     ******************************************************************************************/
+    public void dumpYaml () throws IOException {
         logger.debug("==> Method: YamlDocumentEntryPoint.dumpYaml");
 
         // Dump the updated YAML files to the target directory (with the same name as the original file in the source directory)
-        logger.info("Write output files and validate them");
-        mainYamlDocument.dumpYaml(continueOnError);
+        logger.info("Write output files");
+        mainYamlDocument.dumpYaml();
+    }
+
+    /******************************************************************************************
+     The manipulated yaml maps are validated.
+     ******************************************************************************************/
+    public void validateTargetOutputFilesAndTemplates (PropertyUtils properties) {
+        logger.debug("==> Method: YamlDocumentEntryPoint.validateTargetOutputFilesAndTemplates");
+
+        logger.info("Validate output files");
+        mainYamlDocument.validateTargetOutputFilesAndTemplates(properties);
     }
 
     /******************************************************************************************

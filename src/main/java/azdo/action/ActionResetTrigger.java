@@ -9,7 +9,7 @@ import java.util.Map;
 import static azdo.utils.Constants.SECTION_TRIGGER;
 
 public class ActionResetTrigger implements Action {
-    private static Log logger = Log.getLogger();
+    private static final Log logger = Log.getLogger();
 
     public ActionResetTrigger() {}
 

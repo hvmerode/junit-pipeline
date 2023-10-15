@@ -23,7 +23,9 @@ public class Constants {
 
     // *************************************** Other ***************************************
     public static final String IDENTIFIER_NAME = "name";
-    public static final String DISPLAY_NAME = "displayName";
+    public static final String PROPERTY_DISPLAY_NAME = "displayName";
+    public static final String PROPERTY_VARIABLE_GROUP = "group";
+    public static final String PROPERTY_ENVIRONMENT = "environment";
     public static final String INPUTS = "inputs";
     public static final String CONDITION = "condition";
     public static final String TYPE_VARIABLE = "variable";
@@ -47,7 +49,6 @@ public class Constants {
 
     // *************************************** Files ***************************************
     public static final String JSON_SCHEMA = "azure-pipelines-schema.json";
-
 
     // *************************************** Visualization ***************************************
     public static final String DEMARCATION = "==============================================================================";

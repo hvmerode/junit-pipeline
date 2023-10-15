@@ -621,6 +621,9 @@ pipeline.getRunResult().getStageResultSearchByDisplayName("simpleStage");
   <br></br>
 
 ## New features ##
+* In case of a build error, try to determine the details of the error. Check:
+  * Whether all service endpoints in the yaml files exist, using https://dev.azure.com/mycorp-com/UnitTest/_apis/serviceendpoint/endpoints?endpointNames=endpointName1,endpointName2,endpointName3 
+  * Whether an approval is pending: See https://learn.microsoft.com/en-us/rest/api/azure/devops/approvalsandchecks/approvals/query?view=azure-devops-rest-7.2&tabs=HTTP
 * Add a custom condition to a stage, job, or step
 * Test on Linux; some filesystem methods in Utils may not work properly.
 * Support "refs/tags/tag" and "refs/refname" for external repositories with templates.
@@ -638,6 +641,9 @@ pipeline.getRunResult().getStageResultSearchByDisplayName("simpleStage");
   This is a 'nice-to-have'.
 
 ## Solved ##
+* In case of a build error, try to determine the details of the error. Check:
+  * ~~Validate whether the variable groups used are valid: See https://dev.azure.com/mycorp-com/UnitTest/_apis/distributedtask/variablegroups~~
+  * ~~Validate whether the environments used are valid, using: https://dev.azure.com/mycorp-com/UnitTest/_apis/distributedtask/environments~~
 * ~~Implement method setVariableSearchStepByIdentifier~~
 * ~~- ${{ if }} construction in stages or jobs gives a validation error~~
 * ~~Possibility to replace a step with a yamlTemplate file (the yamlTemplate file could serve as a mock file).~~

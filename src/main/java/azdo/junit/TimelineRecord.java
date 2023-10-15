@@ -13,7 +13,7 @@ import static azdo.utils.Constants.*;
     "Stage", "Job", "Phase" (which is a Job), and "Task" (which represents all Steps).
  */
 public class TimelineRecord {
-    private static Log logger = Log.getLogger();
+    private static final Log logger = Log.getLogger();
     public ArrayList<TimelineRecord> reorganizedTimelineRecords = new ArrayList<>();
     public String id;
     public String parentId;

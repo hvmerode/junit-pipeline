@@ -13,7 +13,7 @@ import static azdo.utils.Constants.*;
     The result of the pipeline run and its details are stored in RunResult.
  */
 public class RunResult {
-    private static Log logger = Log.getLogger();
+    private static final Log logger = Log.getLogger();
     public String buildId = null;
 
     public Result result = Result.none;

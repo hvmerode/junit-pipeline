@@ -16,7 +16,7 @@ import static azdo.utils.Constants.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class PipelineUnit {
-    private static Log logger = Log.getLogger();
+    private static final Log logger = Log.getLogger();
     private static AzDoPipeline pipeline;
 
     @BeforeAll
@@ -116,7 +116,7 @@ public class PipelineUnit {
             String inlineScript = "echo \"This is a mock script\"\n" +
                     "echo \"This is line 2\"";
             pipeline.mockStepSearchByIdentifier("AWSShellScript@1", inlineScript)
-                    .startPipeline("myFeature");
+                    .startPipeline("myFirstFeature");
         }
         catch (IOException e) {
             logger.debug("Exception occurred: {}", e.getMessage());
@@ -153,7 +153,7 @@ public class PipelineUnit {
                     .assertVariableEqualsSearchStepByDisplayName("ExecuteScriptStage job_xa script", "jobVar", "replacedJobVar")
                     .assertVariableNotEqualsSearchStepByDisplayName("ExecuteScriptStage job_xa script", "jobVar", "replacedJobVar")
                     .assertVariableNotEmptySearchStepByDisplayName("ExecuteScriptStage job_xa script", "jobVar")
-                    .startPipeline("myFeature", null, true);
+                    .startPipeline("myFirstFeature", null, true);
         }
         catch (IOException e) {
             logger.debug("Exception occurred: {}", e.getMessage());
@@ -314,7 +314,7 @@ public class PipelineUnit {
                     .insertTemplateSearchSectionByIdentifier("simpleJob", "templates/jobs/template-jobs.yml", jobParameters, true)
                     .insertTemplateSearchSectionByIdentifier("templates/steps/template-script.yml", "templates/steps/template-mock.yml", stepParameters, false)
                     .skipStepSearchByDisplayName("Testing, testing")
-                    .startPipeline();
+                    .startPipeline("mySecondFeature");
         }
         catch (IOException e) {
             logger.debug("Exception occurred after the pipeline was started: {}", e.getMessage());
@@ -346,7 +346,7 @@ public class PipelineUnit {
             pipeline.resetTrigger()
                     .assertVariableEqualsSearchTemplateByIdentifier ("templates/steps/template-script.yml", "testVar", "test_wrong", false)
                     .assertParameterEqualsSearchTemplateByIdentifier ("templates/steps/template-script.yml", "param_1", "default")
-                    .startPipeline();
+                    .startPipeline("myFirstFeature");
         }
         catch (IOException e) {
             logger.debug("Exception occurred after the pipeline was started: {}", e.getMessage());

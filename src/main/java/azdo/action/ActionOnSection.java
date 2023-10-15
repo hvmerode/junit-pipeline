@@ -14,17 +14,17 @@ import java.util.Map;
  If found, the stage section is, for example, deleted from the yaml if the action is DELETE_SECTION.
  ******************************************************************************************/
 public class ActionOnSection implements Action {
-    private static Log logger = Log.getLogger();
-    private ACTION action; // The action on a section
-    private String sectionType; // Is "stage", "job", "script"
-    private String sectionIdentifier; // Identifier of the section
+    protected static Log logger = Log.getLogger();
+    protected ACTION action; // The action on a section
+    protected String sectionType; // Is "stage", "job", "script"
+    protected String sectionIdentifier; // Identifier of the section
     // newSection is only needed in combination with ACTION_UPDATE and ACTION_INSERT
-    private Map<String, Object> newSection; // The new section in YAML
+    protected Map<String, Object> newSection; // The new section in YAML
 
     // insertBefore is only used in combination with action == INSERT
     // If 'true', the 'sectionToInsert' YAML string is inserted before the given section. If 'false',
     // the 'sectionToInsert' YAML is inserted after the given section.
-    private boolean insertBefore = true;
+    protected boolean insertBefore = true;
 
     public ActionOnSection(ACTION action,
                            String sectionType,
@@ -64,7 +64,7 @@ public class ActionOnSection implements Action {
 
             // Run through the elements of the list and remove the section
             ArrayList<Object> list = (ArrayList<Object>) actionResult.l3;
-            int index = 0;
+            int index;
             int size = list.size();
             for (index = 0; index < size; index++) {
                 if (list.get(index) instanceof Map) {
@@ -74,13 +74,13 @@ public class ActionOnSection implements Action {
                     for (Map.Entry<String, Object> entry : map.entrySet()) {
 
                         // Check whether the entry has the given key and value
-                        // Delete the entry from the list if this is the case
                         logger.debug("entry.getKey(): {}", entry.getKey());
                         logger.debug("entry.getValue(): {}", entry.getValue());
                         if (sectionType.equals(entry.getKey()) && sectionIdentifier.equals(entry.getValue())) {
                             logger.debug("Found section type \'{}\' sectionIdentifier \'{}\'", sectionType, sectionIdentifier);
                             switch (action) {
                                 case INSERT_SECTION: {
+                                    logger.debug("Execute action: INSERT_SECTION");
                                     if (insertBefore) {
                                         logger.info("Insert a new section before section \'{}\' with identifier \'{}\'", sectionType, sectionIdentifier);
                                         list.add(index, newSection);
@@ -94,6 +94,7 @@ public class ActionOnSection implements Action {
                                     return;
                                 }
                                 case UPDATE_SECTION: {
+                                    logger.debug("Execute action: UPDATE_SECTION");
                                     logger.info("Replace section type \'{}\' with sectionIdentifier \'{}\'", sectionType, sectionIdentifier);
                                     list.remove(index);
                                     list.add(index, newSection);
@@ -101,6 +102,7 @@ public class ActionOnSection implements Action {
                                     return;
                                 }
                                 case DELETE_SECTION: {
+                                    logger.debug("Execute action: DELETE_SECTION");
                                     logger.info("Skip section type \'{}\' with sectionIdentifier \'{}\'", sectionType, sectionIdentifier);
                                     list.remove(index);
                                     actionResult.actionExecuted = true;

@@ -3,17 +3,17 @@
 
 package azdo.hook;
 
-import azdo.junit.AzDoPipeline;
 import azdo.utils.Log;
 import azdo.utils.Utils;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-/* Hook, to delete a file from the target path.
- */
+/******************************************************************************************
+ Hook, to delete a file from the target path.
+ *******************************************************************************************/
 public class DeleteTargetFile extends Hook {
     private String fullQualifiedFileName;
-    private static Log logger = Log.getLogger();
+    private static final Log logger = Log.getLogger();
     public DeleteTargetFile(String fullQualifiedFileName) {
         logger.debug("==> Class: DeleteTargetFile");
 

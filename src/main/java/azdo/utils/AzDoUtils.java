@@ -489,7 +489,13 @@ public class AzDoUtils {
                 logger.info("Pipeline url: {}", webUrl);
                 logger.info("BuildId: {}", runResult.buildId);
             }
-            logger.info("Status: {}", runResult.status.toString());
+            if (runResult.status == RunResult.Status.timeout) {
+                logger.warn("Status: {}", runResult.status.toString());
+                logger.warn("Timeout on retrieval of the run results; check whether an approval is needed");
+                logger.warn("A timeout also occurs if the pipeline is queued for a long time");
+            }
+            else
+                logger.info("Status: {}", runResult.status.toString());
 
             String color = LIGHT_GREEN;
             if (RunResult.Result.failed.toString().equals(pipelineResult))

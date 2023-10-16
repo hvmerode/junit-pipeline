@@ -821,24 +821,18 @@ public class AzDoUtils {
     }
 
     /******************************************************************************************
-     Check whether a list of property values exists in the Azure DevOps project.
+     Retrieve a list of property values from the target Azure DevOps project.
      This list (propertyList) is for example a list with variable groups or environments.
      An API call is performed to retrieve the actual list for these properties.
-     If the 'propertyList' contains values that are not present in the target Azure DevOps
-     project, an error is raised (if continueOnError is true).
-     Note, that the response of the API is assumed to be the same. even if the endpoint differs.
      *******************************************************************************************/
-    public static void callValidatePropertyList (String azdoUser,
-                                                 String azdoPat,
-                                                 String project,
-                                                 ArrayList<String> propertyList,
-                                                 String azdoEndpoint,
-                                                 String azdoPipelinesApi,
-                                                 String azdoPipelinesApiVersion,
-                                                 String propertyNameInLog,
-                                                 boolean continueOnError) {
-        logger.debug("==> Method: AzDoUtils.callValidatePropertyList");
+    public static ArrayList<String> callGetPropertyList (String azdoUser,
+                                                         String azdoPat,
+                                                         String azdoEndpoint,
+                                                         String azdoPipelinesApi,
+                                                         String azdoPipelinesApiVersion) {
+        logger.debug("==> Method: AzDoUtils.callGetPropertyList");
 
+        ArrayList<String> propertyList = new ArrayList<>();
         String http = azdoEndpoint +
                 azdoPipelinesApi +
                 "?" +
@@ -847,7 +841,6 @@ public class AzDoUtils {
         HttpResponse<String> response = callApi(azdoUser, azdoPat, http, AzDoUtils.HttpMethod.GET, null);
 
         // Get the list of properties from the response
-        ArrayList<String> validPropertyList = new ArrayList<>();
         Yaml yaml = new Yaml();
         String name = null;
         if (response != null) {
@@ -862,33 +855,16 @@ public class AzDoUtils {
                         Map<String, Object> map = (Map<String, Object>) list.get(index);
                         for (Map.Entry<String, Object> entry : map.entrySet()) {
 
-                            // Add the property values to the list with valid properties
+                            // Add the property values to the list
                             logger.debug("entry.getKey(): {}", entry.getKey());
                             logger.debug("entry.getValue(): {}", entry.getValue());
                             if ("name".equals(entry.getKey()))
-                                validPropertyList.add(entry.getValue().toString());
+                                propertyList.add(entry.getValue().toString());
                         }
                     }
                 }
             }
         }
-
-        // Validate whether the values in 'variableGroups' exist in 'validPropertyList'.
-        int index;
-        int size = propertyList.size();
-        String propertyValue;
-        for (index = 0; index < size; index++) {
-            propertyValue = propertyList.get(index);
-            if (!validPropertyList.contains(propertyValue)) {
-                if (continueOnError) {
-                    logger.debug("{} \'{}\' is not defined in Azure DevOps project \'{}\'", propertyNameInLog, propertyValue, project);
-                    return;
-                }
-                else {
-                    logger.error("{} \'{}\' is not defined in Azure DevOps project \'{}\'", propertyNameInLog, propertyValue, project);
-                    System.exit(1);
-                }
-            }
-        }
+        return propertyList;
     }
 }

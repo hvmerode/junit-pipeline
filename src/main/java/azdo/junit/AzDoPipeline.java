@@ -27,6 +27,8 @@ public class AzDoPipeline {
     private PropertyUtils properties;
     private Git git = null;
     private CredentialsProvider credentialsProvider;
+    private  ArrayList<String> validVariableGroups; // All 'variable groups' defined in the target Azure DevOps project
+    private  ArrayList<String> validEnvironments; // All 'environments' defined in the target Azure DevOps project
     String yamlFile;
     Map<String, Object> yamlMap = null;
     String repositoryId = null;
@@ -113,6 +115,18 @@ public class AzDoPipeline {
                 properties.getPipelinesApi(),
                 properties.getPipelinesApiVersion(),
                 repositoryId);
+
+        // Retrieve all valid variable groups and environments from the target Azure DevOps project
+        validVariableGroups = AzDoUtils.callGetPropertyList (properties.getAzDoUser(),
+                properties.getAzdoPat(),
+                properties.getAzdoEndpoint(),
+                properties.getVariableGroupsApi(),
+                properties.getVariableGroupsApiVersion());
+        validEnvironments = AzDoUtils.callGetPropertyList (properties.getAzDoUser(),
+                properties.getAzdoPat(),
+                properties.getAzdoEndpoint(),
+                properties.getEnvironmentsApi(),
+                properties.getEnvironmentsApiVersion());
 
         logger.debug("");
         logger.debug(DEMARCATION);
@@ -265,7 +279,10 @@ public class AzDoPipeline {
         }
 
         // Validate all manipulated YAML files
-        yamlDocumentEntryPoint.validateTargetOutputFilesAndTemplates(properties);
+        yamlDocumentEntryPoint.validateTargetOutputFilesAndTemplates(validVariableGroups,
+                validEnvironments,
+                properties.getTargetProject(),
+                properties.isContinueOnError());
 
         /*******************************************************************************************
            Push everything to the main and external repositories in the Azure DevOps test project

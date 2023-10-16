@@ -466,11 +466,14 @@ public class YamlDocumentEntryPoint {
     /******************************************************************************************
      The manipulated yaml maps are validated.
      ******************************************************************************************/
-    public void validateTargetOutputFilesAndTemplates (PropertyUtils properties) {
+    public void validateTargetOutputFilesAndTemplates (ArrayList<String> validVariableGroups,
+                                                       ArrayList<String> validEnvironments,
+                                                       String project,
+                                                       boolean continueOnError) {
         logger.debug("==> Method: YamlDocumentEntryPoint.validateTargetOutputFilesAndTemplates");
 
         logger.info("Validate output files");
-        mainYamlDocument.validateTargetOutputFilesAndTemplates(properties);
+        mainYamlDocument.validateTargetOutputFilesAndTemplates(validVariableGroups, validEnvironments, project, continueOnError);
     }
 
     /******************************************************************************************

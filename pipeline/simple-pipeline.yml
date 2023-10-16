@@ -13,13 +13,21 @@ variables:
   - name: testVar
     value: test
 
+parameters:
+  - name: param_1
+    type: string
+    default: 'default'
+
 stages:
   - stage: simpleStage
+    displayName: simple_stage
     jobs:
       - job: simpleJob
+        displayName: simple_job
         pool:
           vmImage: 'ubuntu-latest'
         steps:
           - script: |
               echo 'This is a simple test'
             displayName: 'Testing, testing'
+          - template: templates/steps/template-script.yml

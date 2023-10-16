@@ -102,7 +102,7 @@ Example:
 <dependency>
   <groupId>io.github.hvmerode</groupId>
   <artifactId>junit-pipeline</artifactId>
-  <version>1.2.3</version>
+  <version>1.2.10</version>
 </dependency>
 ```
 
@@ -456,8 +456,11 @@ pipeline.setVariableSearchStepByDisplayName ("Azure App Service Deploy", "WebApp
 a script is inserted just before the AzureRMWebAppDeployment@4 (note, that 'insertBefore' is omitted; default is 'true').
 When running the pipeline, the value of "WebAppName" is set with the value "newName"
 <pre>
-script: echo '##vso[task.setvariable variable=WebAppName]newName';
+pwsh: 'Write-Host "echo ##vso[task.setvariable variable=WebAppName]newName"'
 </pre>
+
+In addition to the setVariableSearchStepByDisplayName, the methods setVariableSearchStepByIdentifier and
+setVariableSearchTemplateByIdentifier are supported.
 </i>
 <br>
 
@@ -554,6 +557,23 @@ which works with "script", "bash", and "Bash@3" tasks. It mocks the Bash command
 
 ***
 ***
+```java
+public AzDoPipeline insertTemplateSearchSectionByDisplayName (String sectionType,
+        String displayValue,
+        String templateIdentifier,
+        Map<String, String> parameters,
+        boolean insertBefore)
+```
+<i>
+Inserts a template section before or after a given section. The section is of type "stage", "job", "script", "task", "bash", "pwsh" or "powershell".
+After execution of this method, a new template section is inserted, which points to a template file 
+identified by argument 'templateIdentifier' and with optional parameters, identified using a Map with key-value pairs. 
+</i>
+<br>
+<br>
+
+***
+***
 ### Start unit tests and retrieve the result ###
 The startPipeline method has a few representations:
 * _startPipeline()_ - Starts the pipeline with the default branch (in most cases, this is the _master_ branch).
@@ -601,15 +621,14 @@ pipeline.getRunResult().getStageResultSearchByDisplayName("simpleStage");
   <br></br>
 
 ## New features ##
+* In case of a build error, try to determine the details of the error. Check:
+  * Whether all service endpoints in the yaml files exist, using https://dev.azure.com/mycorp-com/UnitTest/_apis/serviceendpoint/endpoints?endpointNames=endpointName1,endpointName2,endpointName3 
+  * Whether an approval is pending: See https://learn.microsoft.com/en-us/rest/api/azure/devops/approvalsandchecks/approvals/query?view=azure-devops-rest-7.2&tabs=HTTP
+* Add a custom condition to a stage, job, or step
 * Test on Linux; some filesystem methods in Utils may not work properly.
 * Support "refs/tags/tag" and "refs/refname" for external repositories with templates.
-* Publish pipeline unit test report. Make use of the timeline api (https://learn.microsoft.com/en-us/rest/api/azure/devops/build/timeline/get?view=azure-devops-rest-5.1)
-  Report contains:
-  * Which stages, jobs, and tasks are executed for a certain pipeline run?
-  * How long did each stage, job, and task run?
-  * What is the status of each stage, job, and task?
-  * The report must be created locally by the junit-plugin, showed in the log and/or created as HTML file (optional).
-* Possibility to replace a step with a yamlTemplate file (the yamlTemplate file could serve as a mock file).
+* Skip stage, job, or step deletes it from the yaml file. Add alternative to skip it but still have it visible in 
+  the pipeline (e.g. add condition: eq(true,false)).
 * Look into the usage of CD events (https://cdevents.dev/ and https://github.com/cdevents/spec)
 * Dynamically create service connections, which refer to the locally running HTTP server.
 * Clone variable group from original Azure DevOps project into the Azure DevOps test project.
@@ -622,6 +641,23 @@ pipeline.getRunResult().getStageResultSearchByDisplayName("simpleStage");
   This is a 'nice-to-have'.
 
 ## Solved ##
+* In case of a build error, try to determine the details of the error. Check:
+  * ~~Validate whether the variable groups used are valid: See https://dev.azure.com/mycorp-com/UnitTest/_apis/distributedtask/variablegroups~~
+  * ~~Validate whether the environments used are valid, using: https://dev.azure.com/mycorp-com/UnitTest/_apis/distributedtask/environments~~
+* ~~Implement method setVariableSearchStepByIdentifier~~
+* ~~- ${{ if }} construction in stages or jobs gives a validation error~~
+* ~~Possibility to replace a step with a yamlTemplate file (the yamlTemplate file could serve as a mock file).~~
+* ~~Make the task inserted by assertFileExistsSearchStepByDisplayName of type 'pwsh', because it can run on both
+  Windows and Linux.~~
+* ~~Add links to the timeline log to open the pipeline in a browser.~~
+* ~~'Assert variable' adds a task with a condition. Result is skipped (true) or failed (false). For clearness reasons
+  this must be succeeded (true) or failed (false). Make sure that the task works on both Linux and Windows.~~
+* ~~Publish pipeline unit test report. Make use of the timeline api (https://learn.microsoft.com/en-us/rest/api/azure/devops/build/timeline/get?view=azure-devops-rest-5.1)
+    Report contains:~~
+    ~~- Which stages, jobs, and tasks are executed for a certain pipeline run?~~
+    ~~- How long did each stage, job, and task run?~~
+    ~~- What is the status of each stage, job, and task?~~
+    ~~- The report must be created locally by the junit-plugin, showed in the log and/or created as HTML file (optional).~~
 * ~~Method constructAssertStep() needs rework. The text is incorrect in case of AssertNotEmpy, for
   example "AssertNotEmpty: variable 'releaseVersion' with value '' is not equal to ''".~~
 * ~~Reset trigger to none; this prevents that pipelines are executed twice; one time because the repo is updated and

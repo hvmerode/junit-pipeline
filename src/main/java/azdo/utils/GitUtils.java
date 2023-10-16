@@ -1,5 +1,6 @@
 package azdo.utils;
 
+import azdo.yaml.RepositoryResource;
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
@@ -12,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GitUtils {
-    private static Log logger = Log.getLogger();
+    private static final Log logger = Log.getLogger();
     private static Git git = null;
     public static final String BRANCH_MASTER = "master";
 
@@ -138,8 +139,11 @@ public class GitUtils {
     public static void commitAndPush (Git git,
                                       String azdoUser,
                                       String azdoPat,
-                                      ArrayList<String> commitPatternList) {
+                                      ArrayList<String> commitPatternList,
+                                      RepositoryResource metadataRepository,
+                                      boolean continueOnError) {
         logger.debug("==> Method: GitUtils.commitAndPush");
+        // Note, that the 'metadataRepository' is only used as meta-data for logging
 
         if (git == null) {
             logger.debug("Cannot continue; git is null");
@@ -186,7 +190,14 @@ public class GitUtils {
         }
 
         catch (Exception e) {
-            logger.debug("Exception pushing to repo: {}", e.getMessage());
+            if (continueOnError) {
+                logger.debug("Exception pushing to repo: {}", e.getMessage());
+            }
+            else {
+                logger.error("Exception pushing to repo: {}", e.getMessage());
+                logger.error("You may need to delete the local clone of {}", metadataRepository.repository);
+                System. exit(1);
+            }
         }
     }
 

@@ -11,11 +11,9 @@ import static azdo.utils.Constants.*;
 /*
     A TimelineRecord contains information about a phase in the pipeline run. This phase can be of type
     "Stage", "Job", "Phase" (which is a Job), and "Task" (which represents all Steps).
-    After retrieval of the TimelineRecords, this list is unsorted. The reorganize() method takes care
-    that the records are sorted and a hierarchy is introduced. This improves readability of the log.
  */
 public class TimelineRecord {
-    private static Log logger = Log.getLogger();
+    private static final Log logger = Log.getLogger();
     public ArrayList<TimelineRecord> reorganizedTimelineRecords = new ArrayList<>();
     public String id;
     public String parentId;
@@ -24,11 +22,12 @@ public class TimelineRecord {
     public String startTime;
     public String finishTime;
     long timeInSeconds = 0;
+    String timeInSecondsAsString = "<1";
     public String state;
     public String result;
 
     /*
-        Sort the TimelineRecords and add a hierarchy
+        Add a hierarchy to the TimelineRecords
      */
     public void reorganize (ArrayList<TimelineRecord> timelineRecords) {
         logger.debug("==> Method: TimelineRecord.reorganize");
@@ -53,11 +52,14 @@ public class TimelineRecord {
             Instant finish = Instant.parse(finishTime);
             Duration res = Duration.between(start, finish);
             timeInSeconds = res.getSeconds();
+            if (timeInSeconds > 0)
+                timeInSecondsAsString = String.valueOf(timeInSeconds);
         }
+        timeInSecondsAsString = timeInSecondsAsString + " sec.";
     }
 
     /*
-        Write all TimelineRecords to the log
+        Write all TimelineRecords to the log in a formatted way.
      */
     public void dumpTimelineToLog () {
         logger.debug("==> Method: TimelineRecord.dumpTimelineToLog");
@@ -75,27 +77,32 @@ public class TimelineRecord {
 
             if (logDetails) {
                 String color = LIGHT_GREEN;
-                String tab = "";
+                String arrow = ARROW_DOWN;
                 if (RunResult.Result.failed.toString().equals(result))
                     color = LIGHT_RED;
-                if (RunResult.Result.skipped.toString().equals(result))
+                if (RunResult.Result.skipped.toString().equals(result)) {
                     color = LIGHT_WHITE;
+                    arrow = " ";
+                }
                 if (RunResult.Result.canceled.toString().equals(result))
                     color = YELLOW;
                 if (RunResult.Result.partiallySucceeded.toString().equals(result))
                     color = YELLOW;
 
+                if ("Stage".equals(type)) {
+                    displayedType = "Stage " + arrow + "      ";
+                }
                 if ("Job".equals(type)) {
-                    tab = "   ";
+                    displayedType = "Job " + arrow + "  ";
                 }
                 if ("Phase".equals(type)) {
-                    tab = "   ";
-                    displayedType = "Job"; // The type Phase is abstract and not for display purposes
+                    displayedType = "Job " + arrow + "  "; // The type Phase is abstract and not for display purposes
                 }
                 if ("Task".equals(type)) {
-                    tab = "      ";
+                    displayedType = "Task";
                 }
-                logger.infoColor(color, tab + "{}: \"{}\"       Execution time: {} seconds       Status: {}", displayedType, name, timeInSeconds, result);
+                String out = String.format("%14s %80s %16s %15s", displayedType, name, timeInSecondsAsString, result);
+                logger.infoColor(color, out);
             }
 
             int size = reorganizedTimelineRecords.size();

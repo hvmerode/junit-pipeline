@@ -4,7 +4,7 @@
   "$comment": "v1.219.1",
   "title": "Pipeline schema",
   "description": "A pipeline definition",
-  "anyOf": [
+  "oneOf": [
     {
       "$ref": "#/definitions/pipeline"
     },
@@ -1850,16 +1850,17 @@
       "additionalProperties": false
     },
     "variables": {
-      "onaOf": [
-        {
-          "type": "object",
-          "additionalProperties": true
-        },
+      "anyOf": [
         {
           "type": "array",
           "items": {
             "$ref": "#/definitions/variable"
-          }
+          },
+          "additionalProperties": true
+        },
+        {
+          "type": "object",
+          "additionalProperties": true
         }
       ]
     },
@@ -1872,13 +1873,12 @@
               "$ref": "#/definitions/nonEmptyString"
             },
             "value": {
-              "$ref": "#/definitions/string"
             },
             "readonly": {
               "$ref": "#/definitions/boolean"
             }
           },
-          "additionalProperties": false,
+          "additionalProperties": true,
           "firstProperty": [
             "name"
           ]
@@ -1890,7 +1890,7 @@
               "$ref": "#/definitions/nonEmptyString"
             }
           },
-          "additionalProperties": false,
+          "additionalProperties": true,
           "firstProperty": [
             "group"
           ]
@@ -1905,7 +1905,7 @@
               "$ref": "#/definitions/mapping"
             }
           },
-          "additionalProperties": false,
+          "additionalProperties": true,
           "firstProperty": [
             "template"
           ]
@@ -1971,7 +1971,7 @@
               "$ref": "#/definitions/templateContext"
             }
           },
-          "additionalProperties": false,
+          "additionalProperties": true,
           "firstProperty": [
             "stage"
           ]
@@ -2302,7 +2302,7 @@
               "$ref": "#/definitions/templateContext"
             }
           },
-          "additionalProperties": false,
+          "additionalProperties": true,
           "firstProperty": [
             "job"
           ]
@@ -4093,7 +4093,7 @@
           "description": "Variables to map into the process's environment"
         }
       },
-      "additionalProperties": false,
+      "additionalProperties": true,
       "firstProperty": [
         "task"
       ]

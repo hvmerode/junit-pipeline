@@ -6,14 +6,15 @@ package azdo.hook;
 import azdo.utils.Log;
 import azdo.utils.Utils;
 
-/* Hook, to find and replace all literals in a given file.
- */
+/******************************************************************************************
+ Hook, to find and replace all literals in a given file.
+ *******************************************************************************************/
 public class FindReplaceInFile extends Hook {
     private String fullQualifiedFileName;
     private String findString;
     private String replaceString;
     private boolean replaceAll;
-    private static Log logger = Log.getLogger();
+    private static final Log logger = Log.getLogger();
     public FindReplaceInFile(String fullQualifiedFileName,
                              String findString,
                              String replaceString,

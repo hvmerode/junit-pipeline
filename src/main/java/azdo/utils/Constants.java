@@ -23,11 +23,15 @@ public class Constants {
 
     // *************************************** Other ***************************************
     public static final String IDENTIFIER_NAME = "name";
-    public static final String DISPLAY_NAME = "displayName";
+    public static final String PROPERTY_DISPLAY_NAME = "displayName";
+    public static final String PROPERTY_VARIABLE_GROUP = "group";
+    public static final String PROPERTY_ENVIRONMENT = "environment";
     public static final String INPUTS = "inputs";
     public static final String CONDITION = "condition";
-    public static final String CONDITION_EQUALS = "eq";
-    public static final String CONDITION_NOT_EQUALS = "ne";
+    public static final String TYPE_VARIABLE = "variable";
+    public static final String TYPE_PARAMETER = "parameter";
+    public static final String TYPE_STEP = SECTION_STEP;
+    public static final String TYPE_TEMPLATE = SECTION_TEMPLATE;
 
     // *************************************** Colors ***************************************
     public static final String RED = "\u001B[31m";
@@ -43,11 +47,11 @@ public class Constants {
     public static final String LIGHT_WHITE = "\u001B[97m";
     public static final String RESET_COLOR = "\u001B[0m";
 
-
     // *************************************** Files ***************************************
     public static final String JSON_SCHEMA = "azure-pipelines-schema.json";
 
-
     // *************************************** Visualization ***************************************
     public static final String DEMARCATION = "==============================================================================";
+    public static final String HEADER_FOOTER = "--------------------------------------------------------------------------------------------------------------------------------";
+    public static final String ARROW_DOWN = "▼";
 }

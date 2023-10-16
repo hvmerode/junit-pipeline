@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 public class ActionOverrideElement implements Action {
-    private static Log logger = Log.getLogger();
+    private static final Log logger = Log.getLogger();
 
     // Defines the identifier of the elements' key (e.g., this is 'name' for both variables and parameters)
     private String keyIdentifier = "name";

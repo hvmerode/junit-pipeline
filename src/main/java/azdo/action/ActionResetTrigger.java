@@ -9,12 +9,12 @@ import java.util.Map;
 import static azdo.utils.Constants.SECTION_TRIGGER;
 
 public class ActionResetTrigger implements Action {
-    private static Log logger = Log.getLogger();
+    private static final Log logger = Log.getLogger();
 
     public ActionResetTrigger() {}
 
     /******************************************************************************************
-     Perform an action on the 'trigger' section (replaqe with new trigger section).
+     Perform an action on the 'trigger' section (replace with new trigger section).
      @param actionResult Contains parts of the YAML structure. It is used to search for the
      section in the l3 structure.
      ******************************************************************************************/
@@ -30,7 +30,8 @@ public class ActionResetTrigger implements Action {
         if (actionResult.l1 instanceof Map) {
             logger.info("Reset trigger to \'none\'");
             Map<String, Object> map = (Map<String, Object>) actionResult.l1;
-            map.put(SECTION_TRIGGER, "none");
+            if (map.containsKey(SECTION_TRIGGER))
+                map.put(SECTION_TRIGGER, "none");
         }
     }
 

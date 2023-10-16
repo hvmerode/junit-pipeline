@@ -23,7 +23,7 @@ import static azdo.utils.Constants.*;
 
 public class Utils {
     private static final int MAX_VAL_ERR = 1;
-    private static Log logger = Log.getLogger();
+    private static final Log logger = Log.getLogger();
     private static final String EXCLUDEFILESLIST = "\\excludedfileslist.txt";
 
     public static boolean isLinux(){

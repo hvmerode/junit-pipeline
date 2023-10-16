@@ -4,6 +4,7 @@
 package azdo.yaml;
 
 import azdo.action.Action;
+import azdo.action.ActionReturnPropertyValue;
 import azdo.utils.Log;
 import azdo.utils.Utils;
 import org.yaml.snakeyaml.DumperOptions;
@@ -21,7 +22,7 @@ import static azdo.utils.Constants.*;
     In the case of a template file, the specialized YamlTemplate class is used.
  */
 public class YamlDocument {
-    private static Log logger = Log.getLogger();
+    private static final Log logger = Log.getLogger();
     private Map<String, Object> yamlMap; // Map of the pipeline/template yaml file.
     private ArrayList<YamlTemplate> yamlTemplateList = new ArrayList<>(); // Contains an array with templates referred in the yaml file associated with this YamlDocument.
     protected String rootInputFile; // The main yaml document, including the root path within the repository
@@ -153,7 +154,7 @@ public class YamlDocument {
                 targetRepositoryName,
                 repositoryList,
                 continueOnError);
-        int index = 0;
+        int index;
         int size = yamlTemplateList.size();
         YamlTemplate yamlTemplate;
         for (index = 0; index < size; index++) {
@@ -176,7 +177,7 @@ public class YamlDocument {
      The manipulated yaml map is saved onto the local file system. The location is a target location,
      other than the original location of the pipeline file.
      ******************************************************************************************/
-    public void dumpYaml() throws IOException {
+    public void dumpYaml () throws IOException {
         logger.debug("==> Method: YamlDocument.dumpYaml");
 
         // Dump the updated yaml to target directory (with the same name as the original file in the source directory)
@@ -211,12 +212,93 @@ public class YamlDocument {
         Utils.wait(1000);
 
         // Dump the templates
-        int index = 0;
+        int index;
         int size = yamlTemplateList.size();
         YamlTemplate yamlTemplate;
         for (index = 0; index < size; index++) {
             yamlTemplate = yamlTemplateList.get(index);
             yamlTemplate.dumpYaml();
+        }
+    }
+
+    /******************************************************************************************
+     The manipulated yaml map and its underlying template files are validated.
+     ******************************************************************************************/
+    public void validateTargetOutputFilesAndTemplates (ArrayList<String> validVariableGroups,
+                                                       ArrayList<String> validEnvironments,
+                                                       String project,
+                                                       boolean continueOnError) {
+        /******************************************************************************************
+                       1. Validate whether a variable group (or more) exist
+         ******************************************************************************************/
+        // Retrieve the list with variable groups and validate whether the are defined in the Azure DevOps project
+        ActionReturnPropertyValue actionReturnVariableGroups = new ActionReturnPropertyValue(SECTION_VARIABLES, PROPERTY_VARIABLE_GROUP);
+        performAction (actionReturnVariableGroups, SECTION_VARIABLES, "");
+        validatePropertyList (actionReturnVariableGroups.getPropertyValues(),
+                validVariableGroups,
+                project,
+                "Variable group",
+                continueOnError);
+
+        /******************************************************************************************
+             2. Validate the output files to determine whether it contains valid pipeline code
+         ******************************************************************************************/
+        // Only validate if the targetOutputFile exists. There are cases in which no targetOutputFile
+        // is created. This is in a false-positive situation where the plugin cannot determine
+        // whether there is a valid file involved.
+        if (targetOutputFile != null && !targetOutputFile.isEmpty())
+            Utils.validatePipelineFile(targetOutputFile, continueOnError);
+
+        // Validate the template files
+        int index;
+        int size = yamlTemplateList.size();
+        YamlTemplate yamlTemplate;
+        for (index = 0; index < size; index++) {
+            yamlTemplate = yamlTemplateList.get(index);
+            yamlTemplate.validateTargetOutputFilesAndTemplates(validVariableGroups,
+                    validEnvironments,
+                    project,
+                    continueOnError);
+        }
+
+        /******************************************************************************************
+                            3. Validate whether an Environment (or more) exists.
+         ******************************************************************************************/
+        // Retrieve the list with environments and validate whether the are defined in the Azure DevOps project
+        ActionReturnPropertyValue actionReturnEnvironments = new ActionReturnPropertyValue(SECTION_JOBS, PROPERTY_ENVIRONMENT);
+        performAction (actionReturnEnvironments, SECTION_JOBS, "");
+        validatePropertyList (actionReturnEnvironments.getPropertyValues(),
+                validEnvironments,
+                project,
+                "Environment",
+                continueOnError);
+    }
+
+    /******************************************************************************************
+     If the 'propertyList' contains values that are not present in the validPropertyList, an
+     error is raised (if continueOnError is true).
+     ******************************************************************************************/
+    protected void validatePropertyList (ArrayList<String> propertyList,
+                                         ArrayList<String> validPropertyList,
+                                         String project,
+                                         String propertyNameInLog,
+                                         boolean continueOnError) {
+        // Validate whether the values in 'propertyList' exist in 'validPropertyList'.
+        int index;
+        int size = propertyList.size();
+        String propertyValue;
+        for (index = 0; index < size; index++) {
+            propertyValue = propertyList.get(index);
+            if (!validPropertyList.contains(propertyValue)) {
+                if (continueOnError) {
+                    logger.debug("{} \'{}\' is not defined in Azure DevOps project \'{}\'", propertyNameInLog, propertyValue, project);
+                    return;
+                }
+                else {
+                    logger.error("{} \'{}\' is not defined in Azure DevOps project \'{}\'", propertyNameInLog, propertyValue, project);
+                    System.exit(1);
+                }
+            }
         }
     }
 
@@ -510,12 +592,21 @@ public class YamlDocument {
         if (l1 instanceof Map) {
             logger.debug("l1 is instance of map...");
             map = (Map<String, Object>) l1;
-            String key;
+            boolean keyError;
+            String key = "";
             String stringValue;
             for (Map.Entry<String, Object> entry : map.entrySet()) {
-                key = entry.getKey();
-                if (entry.getValue() == null) {
-                    logger.debug("entry.getValue() is not for key: {}", key);
+                keyError = false;
+                try {
+                    key = entry.getKey();
+                }
+                catch (Exception e) {
+                    // In certain cases the key is not of the expected type. This can happen Because of a snakeyaml issue
+                    // (the construction on..failure is translated to true..failure, making the key a boolean)
+                    keyError = true;
+                }
+                if (keyError || entry.getValue() == null) {
+                    logger.debug("keyError is set or entry.getValue() is not for key: {}", key);
                 }
                 else {
                     stringValue = entry.getValue().toString();
@@ -631,7 +722,7 @@ public class YamlDocument {
         logger.debug("==> Method: YamlDocument.performActionOnTemplates");
 
         // Execute the command in the yamlTemplate files
-        int index = 0;
+        int index;
         int size = yamlTemplateList.size();
         YamlTemplate yamlTemplate;
         for (index = 0; index < size; index++) {
@@ -664,7 +755,7 @@ public class YamlDocument {
         yamlMap = (Map) yaml.load(s);
 
         // Execute the command in the yamlTemplate files
-        int index = 0;
+        int index;
         int size = yamlTemplateList.size();
         YamlTemplate yamlTemplate;
         for (index = 0; index < size; index++) {

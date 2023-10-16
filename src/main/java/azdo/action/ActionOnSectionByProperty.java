@@ -15,19 +15,19 @@ import java.util.Map;
  ******************************************************************************************/
 public class ActionOnSectionByProperty implements Action {
 
-    private static Log logger = Log.getLogger();
-    private ACTION action; // The action on a section
-    private String sectionType; // Is "job", for example
-    private String property; // The property of the section, for example "displayName"
-    private String propertyValue; // The value of the property
+    protected static Log logger = Log.getLogger();
+    protected ACTION action; // The action on a section
+    protected String sectionType; // Is "job", for example
+    protected String property; // The property of the section, for example "displayName"
+    protected String propertyValue; // The value of the property
 
     // newSection is only needed in combination with ACTION_UPDATE and ACTION_INSERT
-    private Map<String, Object> newSection; // The new section in YAML
+    protected Map<String, Object> newSection; // The new section in YAML
 
     // insertBefore is only used in combination with action == INSERT
     // If 'true', the 'sectionToInsert' YAML string is inserted before the given section. If 'false',
     // the 'sectionToInsert' YAML is inserted after the given section.
-    private boolean insertBefore = true;
+    protected boolean insertBefore = true;
     public ActionOnSectionByProperty(ACTION action,
                                      String sectionType,
                                      String property,
@@ -48,7 +48,7 @@ public class ActionOnSectionByProperty implements Action {
      section in the l3 structure.
      ******************************************************************************************/
     public void execute (ActionResult actionResult) {
-        logger.debug("==> Method ActionDeleteSectionByProperty.execute");
+        logger.debug("==> Method ActionOnSectionByProperty.execute");
         logger.debug("actionResult.l1: {}", actionResult.l1);
         logger.debug("actionResult.l2: {}", actionResult.l2);
         logger.debug("actionResult.L3: {}", actionResult.l3);
@@ -69,7 +69,7 @@ public class ActionOnSectionByProperty implements Action {
 
             // Run through the elements of the list and update the section
             ArrayList<Object> list = (ArrayList<Object>) actionResult.l3;
-            int index = 0;
+            int index;
             int size = list.size();
             for (index = 0; index < size; index++) {
                 if (list.get(index) instanceof Map) {
@@ -85,11 +85,13 @@ public class ActionOnSectionByProperty implements Action {
                             foundType = true;
                         }
 
+                        // If the section has a certain property, with a certain value, determine whether there is an action associated with it
                         if (property.equals(entry.getKey()) && propertyValue.equals(entry.getValue()) && foundType) {
                             // Found the right property with the correct value
                             logger.debug("Found section type \'{}\' with property \'{}\': \'{}\'", sectionType, property, propertyValue);
                             switch (action) {
                                 case INSERT_SECTION: {
+                                    logger.debug("Execute action: INSERT_SECTION");
                                     if (insertBefore) {
                                         logger.info("Insert a new section before section \'{}\' with property \'{}\': \'{}\'", sectionType, property, propertyValue);
                                         list.add(index, newSection);
@@ -103,6 +105,7 @@ public class ActionOnSectionByProperty implements Action {
                                     return;
                                 }
                                 case UPDATE_SECTION: {
+                                    logger.debug("Execute action: UPDATE_SECTION");
                                     logger.info("Update section of type \'{}\' with property \'{}\': \'{}\'", sectionType, property, propertyValue);
                                     list.remove(index);
                                     list.add(index, newSection);
@@ -110,6 +113,7 @@ public class ActionOnSectionByProperty implements Action {
                                     return;
                                 }
                                 case DELETE_SECTION: {
+                                    logger.debug("Execute action: DELETE_SECTION");
                                     logger.info("Skip section of type \'{}\' with property \'{}\': \'{}\'", sectionType, property, propertyValue);
                                     list.remove(index);
                                     actionResult.actionExecuted = true;

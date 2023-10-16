@@ -16,7 +16,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class PomUtils {
-    private static Log logger = Log.getLogger();
+    private static final Log logger = Log.getLogger();
 
     public static boolean checkDependency(String pomFile,
                                           String groupID,

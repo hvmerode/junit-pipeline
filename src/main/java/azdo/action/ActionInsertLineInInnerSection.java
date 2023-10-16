@@ -34,7 +34,7 @@ import java.util.Map;
  class searches for a certain section within another section.
  ******************************************************************************************/
 public class ActionInsertLineInInnerSection implements Action {
-    private static Log logger = Log.getLogger();
+    private static final Log logger = Log.getLogger();
     private String sectionType; // Refers to the main section to be found. "Powershell@2", for example.
     private String property; // The property of the section, for example "displayName"; searching is based on this property.
     private String propertyValue; // The value of the property
@@ -80,7 +80,7 @@ public class ActionInsertLineInInnerSection implements Action {
 
             // Run through the elements of the list and insert the section
             ArrayList<Object> list = (ArrayList<Object>) actionResult.l3;
-            int index = 0;
+            int index;
             int size = list.size();
             for (index = 0; index < size; index++) {
                 if (list.get(index) instanceof Map) {

@@ -5,9 +5,7 @@ package azdo.yaml;
 
 import azdo.action.Action;
 import azdo.action.ActionReturnPropertyValue;
-import azdo.utils.AzDoUtils;
 import azdo.utils.Log;
-import azdo.utils.PropertyUtils;
 import azdo.utils.Utils;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
@@ -226,22 +224,21 @@ public class YamlDocument {
     /******************************************************************************************
      The manipulated yaml map and its underlying template files are validated.
      ******************************************************************************************/
-    public void validateTargetOutputFilesAndTemplates (PropertyUtils properties) {
+    public void validateTargetOutputFilesAndTemplates (ArrayList<String> validVariableGroups,
+                                                       ArrayList<String> validEnvironments,
+                                                       String project,
+                                                       boolean continueOnError) {
         /******************************************************************************************
                        1. Validate whether a variable group (or more) exist
          ******************************************************************************************/
         // Retrieve the list with variable groups and validate whether the are defined in the Azure DevOps project
         ActionReturnPropertyValue actionReturnVariableGroups = new ActionReturnPropertyValue(SECTION_VARIABLES, PROPERTY_VARIABLE_GROUP);
         performAction (actionReturnVariableGroups, SECTION_VARIABLES, "");
-        AzDoUtils.callValidatePropertyList (properties.getAzDoUser(),
-                properties.getAzdoPat(),
-                properties.getTargetProject(),
-                actionReturnVariableGroups.getPropertyValues(),
-                properties.getAzdoEndpoint(),
-                properties.getVariableGroupsApi(),
-                properties.getVariableGroupsApiVersion(),
+        validatePropertyList (actionReturnVariableGroups.getPropertyValues(),
+                validVariableGroups,
+                project,
                 "Variable group",
-                properties.isContinueOnError());
+                continueOnError);
 
         /******************************************************************************************
              2. Validate the output files to determine whether it contains valid pipeline code
@@ -250,7 +247,7 @@ public class YamlDocument {
         // is created. This is in a false-positive situation where the plugin cannot determine
         // whether there is a valid file involved.
         if (targetOutputFile != null && !targetOutputFile.isEmpty())
-            Utils.validatePipelineFile(targetOutputFile, properties.isContinueOnError());
+            Utils.validatePipelineFile(targetOutputFile, continueOnError);
 
         // Validate the template files
         int index;
@@ -258,7 +255,10 @@ public class YamlDocument {
         YamlTemplate yamlTemplate;
         for (index = 0; index < size; index++) {
             yamlTemplate = yamlTemplateList.get(index);
-            yamlTemplate.validateTargetOutputFilesAndTemplates(properties);
+            yamlTemplate.validateTargetOutputFilesAndTemplates(validVariableGroups,
+                    validEnvironments,
+                    project,
+                    continueOnError);
         }
 
         /******************************************************************************************
@@ -267,15 +267,39 @@ public class YamlDocument {
         // Retrieve the list with environments and validate whether the are defined in the Azure DevOps project
         ActionReturnPropertyValue actionReturnEnvironments = new ActionReturnPropertyValue(SECTION_JOBS, PROPERTY_ENVIRONMENT);
         performAction (actionReturnEnvironments, SECTION_JOBS, "");
-        AzDoUtils.callValidatePropertyList (properties.getAzDoUser(),
-                properties.getAzdoPat(),
-                properties.getTargetProject(),
-                actionReturnEnvironments.getPropertyValues(),
-                properties.getAzdoEndpoint(),
-                properties.getEnvironmentsApi(),
-                properties.getEnvironmentsApiVersion(),
+        validatePropertyList (actionReturnEnvironments.getPropertyValues(),
+                validEnvironments,
+                project,
                 "Environment",
-                properties.isContinueOnError());
+                continueOnError);
+    }
+
+    /******************************************************************************************
+     If the 'propertyList' contains values that are not present in the validPropertyList, an
+     error is raised (if continueOnError is true).
+     ******************************************************************************************/
+    protected void validatePropertyList (ArrayList<String> propertyList,
+                                         ArrayList<String> validPropertyList,
+                                         String project,
+                                         String propertyNameInLog,
+                                         boolean continueOnError) {
+        // Validate whether the values in 'propertyList' exist in 'validPropertyList'.
+        int index;
+        int size = propertyList.size();
+        String propertyValue;
+        for (index = 0; index < size; index++) {
+            propertyValue = propertyList.get(index);
+            if (!validPropertyList.contains(propertyValue)) {
+                if (continueOnError) {
+                    logger.debug("{} \'{}\' is not defined in Azure DevOps project \'{}\'", propertyNameInLog, propertyValue, project);
+                    return;
+                }
+                else {
+                    logger.error("{} \'{}\' is not defined in Azure DevOps project \'{}\'", propertyNameInLog, propertyValue, project);
+                    System.exit(1);
+                }
+            }
+        }
     }
 
     /******************************************************************************************

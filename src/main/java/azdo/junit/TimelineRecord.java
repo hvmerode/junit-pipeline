@@ -8,10 +8,11 @@ import java.util.ArrayList;
 
 import static azdo.utils.Constants.*;
 
-/*
-    A TimelineRecord contains information about a phase in the pipeline run. This phase can be of type
-    "Stage", "Job", "Phase" (which is a Job), and "Task" (which represents all Steps).
- */
+/******************************************************************************************
+ A TimelineRecord contains information about a phase in the pipeline run. This phase can
+ be of type "Stage", "Job", "Phase" (which is a Job), and "Task" (which represents
+ all Steps).
+ *******************************************************************************************/
 public class TimelineRecord {
     private static final Log logger = Log.getLogger();
     public ArrayList<TimelineRecord> reorganizedTimelineRecords = new ArrayList<>();

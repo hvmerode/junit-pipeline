@@ -21,6 +21,9 @@ import java.util.Map;
 
 import static azdo.utils.Constants.*;
 
+/******************************************************************************************
+ Contains methods to interact with the Azure DevOps APIs.
+ *******************************************************************************************/
 public class AzDoUtils {
     private static final Log logger = Log.getLogger();
     private static final String BRACKET_OPEN_NEXTLINE = "{\n";
@@ -371,6 +374,7 @@ public class AzDoUtils {
                     logger.error("Error while trying to run the pipeline. This can be caused by various issues:");
                     logger.error("- One of the output yaml files contains a syntax error");
                     logger.error("- A reference to a non-existing template, or service connection is used");
+                    logger.error("- A resource cannot be accessed/retrieved");
                     logger.error("- A pipeline decorator enforces a specific precondition");
                     if (continueOnError) return; else System. exit(1);
                 }

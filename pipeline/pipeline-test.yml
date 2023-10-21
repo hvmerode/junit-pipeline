@@ -6,19 +6,6 @@ name: $(Date:yyyyMMdd)$(Rev:.r)
 
 trigger: none
 
-# Define 2 repositories, one is an Azre DevOps repo and the other a GitHub repo
-# Note, that the 'endpoint' parameter is mandatory for a GitHub repository
-resources:
-  repositories:
-    - repository: external
-      name: Templates/Templates
-      type: git
-      ref: refs/heads/develop
-    - repository: external2
-      name: hvmerode/azdo-templates
-      type: github
-      endpoint: GitHubEndpoint
-
 parameters:
   - name: param_1
     type: string
@@ -80,8 +67,6 @@ stages:
         pool:
           vmImage: 'ubuntu-latest'
         steps:
-          - template: test-template.yml@external
-          - template: test-template.yml@external2
           - script: |
               echo 'Job_2.Task_3: Sleep some seconds'
               sleep ${{ parameters.sleep }};

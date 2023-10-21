@@ -6,10 +6,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 
-/*
-    A YamlTemplate is a specific YamlDocument and represents a template YAML file.
-    A template can be invoked by the main pipeline or invoked by other templates in the same or in other repositories.
- */
+/******************************************************************************************
+ A YamlTemplate is a specific YamlDocument and represents a template YAML file.
+ A template can be invoked by the main pipeline or invoked by other templates in the same
+ or in other repositories.
+ *******************************************************************************************/
 public class YamlTemplate extends YamlDocument{
     public enum InternalOrExternalTemplate {
         INTERNAL,
@@ -29,6 +30,7 @@ public class YamlTemplate extends YamlDocument{
                         String targetRepositoryName,
                         String parentAlias,
                         ArrayList<RepositoryResource> repositoryList,
+                        boolean includeExternalTemplates,
                         boolean continueOnError){
         logger.debug("==> Object: YamlTemplate");
         logger.debug("templateName: {}", templateName);
@@ -39,6 +41,7 @@ public class YamlTemplate extends YamlDocument{
         logger.debug("sourceRepositoryName: {}", sourceRepositoryName);
         logger.debug("targetRepositoryName: {}", targetRepositoryName);
         logger.debug("parentAlias: {}", parentAlias);
+        logger.debug("includeExternalTemplates: {}", includeExternalTemplates);
         logger.debug("continueOnError: {}", continueOnError);
 
         this.templateName = templateName;
@@ -51,12 +54,16 @@ public class YamlTemplate extends YamlDocument{
         if (templateName != null && templateName.contains("@")) {
             // It is an EXTERNAL template (defined in another repository)
             logger.debug("{} is an EXTERNAL template referred with an @-character", templateName);
-            handleExternalTemplate(templateName,
-                    sourceBasePathExternal,
-                    targetBasePathExternal,
-                    parentAlias,
-                    repositoryList,
-                    true);
+
+            // Only handle external templates if they are allowed to be manipulated; otherwise i
+            if (includeExternalTemplates) {
+                handleExternalTemplate(templateName,
+                        sourceBasePathExternal,
+                        targetBasePathExternal,
+                        parentAlias,
+                        repositoryList,
+                        true);
+            }
         }
         else {
             // It can still be an EXTERNAL template, but it is referred as a local template in the external repository (not using the @)
@@ -169,6 +176,9 @@ public class YamlTemplate extends YamlDocument{
     private RepositoryResource findRepositoryResourceByAlias (ArrayList<RepositoryResource> repositoryList, String alias) {
         logger.debug("==> Method: YamlTemplate.findRepositoryResourceByAlias");
         logger.debug("alias: {}", alias);
+
+        if (repositoryList == null)
+            return null;
         logger.debug("repositoryList: {}", repositoryList.toString());
 
         RepositoryResource repositoryResource;

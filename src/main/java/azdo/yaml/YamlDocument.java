@@ -17,10 +17,10 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import static azdo.utils.Constants.*;
 
-/*
-    A YamlDocument represents one YAML file; this is a pipeline file or a template file.
-    In the case of a template file, the specialized YamlTemplate class is used.
- */
+/******************************************************************************************
+ A YamlDocument represents one YAML file; this is a pipeline file or a template file.
+ In the case of a template file, the specialized YamlTemplate class is used.
+ *******************************************************************************************/
 public class YamlDocument {
     private static final Log logger = Log.getLogger();
     private Map<String, Object> yamlMap; // Map of the pipeline/template yaml file.
@@ -125,6 +125,7 @@ public class YamlDocument {
                               String sourceRepositoryName,
                               String targetRepositoryName,
                               ArrayList<RepositoryResource> repositoryList,
+                              boolean includeExternalTemplates,
                               boolean continueOnError){
         logger.debug("==> Method: YamlDocument.readTemplates");
         logger.debug("sourcePath: {}", sourcePath);
@@ -132,6 +133,7 @@ public class YamlDocument {
         logger.debug("sourceBasePathExternal: {}", sourceBasePathExternal);
         logger.debug("targetBasePathExternal: {}", targetBasePathExternal);
         logger.debug("rootInputFile: {}", rootInputFile);
+        logger.debug("includeExternalTemplates: {}", includeExternalTemplates);
         logger.debug("continueOnError: {}", continueOnError);
 
         // The root represents the root path of the pipeline
@@ -153,6 +155,7 @@ public class YamlDocument {
                 sourceRepositoryName,
                 targetRepositoryName,
                 repositoryList,
+                includeExternalTemplates,
                 continueOnError);
         int index;
         int size = yamlTemplateList.size();
@@ -169,6 +172,7 @@ public class YamlDocument {
                     sourceRepositoryName,
                     targetRepositoryName,
                     repositoryList,
+                    includeExternalTemplates,
                     continueOnError);
         }
     }
@@ -314,6 +318,7 @@ public class YamlDocument {
                               String sourceRepositoryName,
                               String targetRepositoryName,
                               ArrayList<RepositoryResource> repositoryList,
+                              boolean includeExternalTemplates,
                               boolean continueOnError) {
         logger.debug("==> Method: YamlDocument.getTemplates");
         logger.debug("root: {}", root);
@@ -345,6 +350,7 @@ public class YamlDocument {
                         targetRepositoryName,
                         repositoryAlias,
                         repositoryList,
+                        includeExternalTemplates,
                         continueOnError));
                 logger.debug("Found template {}; add it to the yamlTemplateList", entry.getValue());
             }
@@ -360,6 +366,7 @@ public class YamlDocument {
                         sourceRepositoryName,
                         targetRepositoryName,
                         repositoryList,
+                        includeExternalTemplates,
                         continueOnError);
             }
             if (entry.getValue() instanceof ArrayList) {
@@ -372,6 +379,7 @@ public class YamlDocument {
                         sourceRepositoryName,
                         targetRepositoryName,
                         repositoryList,
+                        includeExternalTemplates,
                         continueOnError);
             }
         }
@@ -385,6 +393,7 @@ public class YamlDocument {
                               String sourceRepositoryName,
                               String targetRepositoryName,
                               ArrayList<RepositoryResource> repositoryList,
+                              boolean includeExternalTemplates,
                               boolean continueOnError) {
         logger.debug("==> Method: YamlDocument.getTemplates");
         logger.debug("root: {}", root);
@@ -418,6 +427,7 @@ public class YamlDocument {
                         sourceRepositoryName,
                         targetRepositoryName,
                         repositoryList,
+                        includeExternalTemplates,
                         continueOnError);
             }
             if (entry instanceof ArrayList) {
@@ -430,6 +440,7 @@ public class YamlDocument {
                         sourceRepositoryName,
                         targetRepositoryName,
                         repositoryList,
+                        includeExternalTemplates,
                         continueOnError);
             }
         });

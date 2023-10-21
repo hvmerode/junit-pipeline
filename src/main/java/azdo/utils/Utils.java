@@ -21,6 +21,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import static azdo.utils.Constants.*;
 
+/******************************************************************************************
+ Various generic utility methods.
+ *******************************************************************************************/
 public class Utils {
     private static final int MAX_VAL_ERR = 1;
     private static final Log logger = Log.getLogger();

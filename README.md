@@ -614,16 +614,20 @@ pipeline.getRunResult().getStageResultSearchByDisplayName("simpleStage");
 
 ## Known bugs ##
 * An Azure DevOps "on..failure" / "on..success" construction is translated to "true..failure" / "true..success". It may be an issue in snakeyaml.
-  * Temporary fix is by adding a FindReplaceInFile hook that replaces the "true:" string with an "on:" string.
+  * Temporary fix is replacing the literal "true:" with "'on:'" (with single quotes)
 * A task with an input parameter 'template:' is handled as if it is a yamlTemplate (although it isn't); processing
   is still fine though (gives a warning), but it should not be treated as a yamlTemplate. Alternative is to change the
   warning and give the recommendation that, although it is correct, it may lead to confusion.
   <br></br>
 
 ## New features ##
+* Also pre-validate a pipeline whether variable groups and environments exist 
 * In case of a build error, try to determine the details of the error. Check:
   * Whether all service endpoints in the yaml files exist, using https://dev.azure.com/mycorp-com/UnitTest/_apis/serviceendpoint/endpoints?endpointNames=endpointName1,endpointName2,endpointName3 
+  or https://dev.azure.com/mycorp-com/UnitTest//_apis/serviceendpoint/endpoints?api-version=7.1-preview.4
   * Whether an approval is pending: See https://learn.microsoft.com/en-us/rest/api/azure/devops/approvalsandchecks/approvals/query?view=azure-devops-rest-7.2&tabs=HTTP
+  * Whether a resource exist
+* Assert list of variables or list of parameters
 * Add a custom condition to a stage, job, or step
 * Test on Linux; some filesystem methods in Utils may not work properly.
 * Support "refs/tags/tag" and "refs/refname" for external repositories with templates.
@@ -641,7 +645,9 @@ pipeline.getRunResult().getStageResultSearchByDisplayName("simpleStage");
   This is a 'nice-to-have'.
 
 ## Solved ##
-* In case of a build error, try to determine the details of the error. Check:
+* ~~Provide PropertyUtils reference to the AzDoPipeline constructor; this is used to deviate from the properties file~~
+* ~~Make manipulation of external template repos optional~~
+* ~~In case of a build error, try to determine the details of the error. Check:~~
   * ~~Validate whether the variable groups used are valid: See https://dev.azure.com/mycorp-com/UnitTest/_apis/distributedtask/variablegroups~~
   * ~~Validate whether the environments used are valid, using: https://dev.azure.com/mycorp-com/UnitTest/_apis/distributedtask/environments~~
 * ~~Implement method setVariableSearchStepByIdentifier~~

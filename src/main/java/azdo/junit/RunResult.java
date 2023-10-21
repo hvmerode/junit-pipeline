@@ -9,9 +9,9 @@ import java.util.ArrayList;
 
 import static azdo.utils.Constants.*;
 
-/*
-    The result of the pipeline run and its details are stored in RunResult.
- */
+/******************************************************************************************
+ The result of the pipeline run and its details are stored in RunResult.
+ *******************************************************************************************/
 public class RunResult {
     private static final Log logger = Log.getLogger();
     public String buildId = null;

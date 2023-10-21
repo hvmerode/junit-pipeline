@@ -619,6 +619,7 @@ pipeline.getRunResult().getStageResultSearchByDisplayName("simpleStage");
   is still fine though (gives a warning), but it should not be treated as a yamlTemplate. Alternative is to change the
   warning and give the recommendation that, although it is correct, it may lead to confusion.
   <br></br>
+* Parameters with the name 'template' are treated as templates; they must not be treated as template.
 
 ## New features ##
 * Also pre-validate a pipeline whether variable groups and environments exist 

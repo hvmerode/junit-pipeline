@@ -66,6 +66,7 @@ public class AzDoPipeline {
             this.properties = properties;
         } else if (propertyFile != null) {
             this.properties = new PropertyUtils(propertyFile);
+            properties = this.properties;
         } else {
             logger.error("Arguments 'properties' and 'propertyFile' are both null");
             System.exit(1);

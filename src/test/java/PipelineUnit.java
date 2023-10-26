@@ -8,12 +8,9 @@ import azdo.utils.Log;
 import azdo.utils.PropertyUtils;
 import org.junit.jupiter.api.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import java.util.*;
 import static azdo.utils.Constants.*;
+
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class PipelineUnit {
@@ -387,7 +384,7 @@ public class PipelineUnit {
         logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
 
         // Initialize the pipeline
-        // Exclude external resources (this leaves the resources section intact and the external templates are executed)
+        // Exclude external resources (this leaves the 'resources' section intact and the external templates are not manipulated)
         PropertyUtils properties = new PropertyUtils("junit_pipeline_my.properties");
         properties.setIncludeExternalTemplates(false);
         pipeline = new AzDoPipeline(properties, "./pipeline/external-resources-pipeline.yml");

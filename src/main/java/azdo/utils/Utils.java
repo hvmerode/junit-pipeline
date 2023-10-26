@@ -296,7 +296,7 @@ public class Utils {
         }
 
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        JsonSchemaFactory factory = JsonSchemaFactory.builder(JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7)).objectMapper(mapper).build(); /* Using draft-07. You can choose anyother draft.*/
+        JsonSchemaFactory factory = JsonSchemaFactory.builder(JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7)).objectMapper(mapper).build(); /* Using draft-07. You can choose any other draft.*/
         JsonSchema schema = factory.getSchema(isJsonSchema);
 
         InputStream isYaml = null;

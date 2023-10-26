@@ -1283,7 +1283,7 @@ public class AzDoPipeline {
             s = getMockedBashCommandScript (command, "./" + command + "-mock.sh", commandOutputArray);
             stepToInsert.put(STEP_SCRIPT_BASH, s);
 
-            // displayName
+            // DisplayName
             s = "<Inserted> Mock " + command;
             stepToInsert.put(PROPERTY_DISPLAY_NAME, s);
             newLine = ". " + functionFileName + "\n";
@@ -1399,7 +1399,7 @@ public class AzDoPipeline {
 
                 stepToInsert.put(STEP_SCRIPT_PWSH, s);
 
-                // displayName
+                // DisplayName
                 s = "<Inserted> Mock Invoke-RestMethod";
                 stepToInsert.put(PROPERTY_DISPLAY_NAME, s);
                 newLine = ". ./Invoke-RestMethod-mock.ps1\n";
@@ -1879,11 +1879,11 @@ public class AzDoPipeline {
                 "}";
         assertStep.put(STEP_SCRIPT_PWSH, s);
 
-        // displayName
+        // DisplayName
         s = "<Inserted> AssertFileExists: " + fileName;
         assertStep.put(PROPERTY_DISPLAY_NAME, s);
 
-        // Call the performAction method; find the section with the PROPERTY_PROPERTY_PROPERTY_DISPLAY_NAME
+        // Call the performAction method; find the section with the PROPERTY_DISPLAY_NAME
         ArrayList<String> sectionTypes = new ArrayList<>();
         sectionTypes.add(SECTION_TASK);
         sectionTypes.add(STEP_SCRIPT);
@@ -1962,7 +1962,7 @@ public class AzDoPipeline {
         Map<String, Object> assertStep = new LinkedHashMap<>();
         assertStep.put(STEP_SCRIPT_PWSH, s);
 
-        // displayName
+        // DisplayName
         s = "<Inserted> " + actionDisplayName + " " + mutableTypeDisplay + " " + mutable;
         assertStep.put(PROPERTY_DISPLAY_NAME, s);
 

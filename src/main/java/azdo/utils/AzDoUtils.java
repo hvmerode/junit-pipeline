@@ -375,6 +375,7 @@ public class AzDoUtils {
                     logger.error("- One of the output yaml files contains a syntax error");
                     logger.error("- A reference to a non-existing template, or service connection is used");
                     logger.error("- A resource cannot be accessed/retrieved");
+                    logger.error("- A mandatory parameter - used by a template - is empty");
                     logger.error("- A pipeline decorator enforces a specific precondition");
                     if (continueOnError) return; else System. exit(1);
                 }

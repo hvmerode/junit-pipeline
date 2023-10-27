@@ -1,0 +1,33 @@
+# Build numbering format
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+trigger: none
+
+# Define 2 repositories, one is an Azure DevOps repo and the other a GitHub repo.
+# Note, that the 'endpoint' parameter is mandatory for a GitHub repository.
+# Both repos must exist, otherwise test no. 11 and 12 fail.
+resources:
+  repositories:
+    - repository: external
+      name: Templates/Templates
+      type: git
+      ref: refs/heads/develop
+    - repository: external2
+      name: hvmerode/azdo-templates
+      type: github
+      endpoint: GitHubEndpoint
+
+stages:
+  - stage: externalResourcesStage
+    displayName: stage
+    jobs:
+      - job: externalResourcesJob
+        displayName: job
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - script: |
+              echo 'External resources test'
+            displayName: 'External resources'
+          - template: test-template.yml@external
+          - template: test-template.yml@external2

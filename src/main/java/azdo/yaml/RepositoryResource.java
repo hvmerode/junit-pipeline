@@ -1,5 +1,8 @@
 package azdo.yaml;
 
+/******************************************************************************************
+ Details of a repository.
+ *******************************************************************************************/
 public class RepositoryResource {
     public String repository;
     public String endpoint;

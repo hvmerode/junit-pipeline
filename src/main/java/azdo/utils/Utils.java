@@ -21,6 +21,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import static azdo.utils.Constants.*;
 
+/******************************************************************************************
+ Various generic utility methods.
+ *******************************************************************************************/
 public class Utils {
     private static final int MAX_VAL_ERR = 1;
     private static final Log logger = Log.getLogger();
@@ -293,7 +296,7 @@ public class Utils {
         }
 
         ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        JsonSchemaFactory factory = JsonSchemaFactory.builder(JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7)).objectMapper(mapper).build(); /* Using draft-07. You can choose anyother draft.*/
+        JsonSchemaFactory factory = JsonSchemaFactory.builder(JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7)).objectMapper(mapper).build(); /* Using draft-07. You can choose any other draft.*/
         JsonSchema schema = factory.getSchema(isJsonSchema);
 
         InputStream isYaml = null;

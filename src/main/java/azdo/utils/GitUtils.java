@@ -12,6 +12,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/******************************************************************************************
+ Contains methods to interact with Git, mainly using the JGit library.
+ *******************************************************************************************/
 public class GitUtils {
     private static final Log logger = Log.getLogger();
     private static Git git = null;

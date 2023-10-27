@@ -15,6 +15,10 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 
+/******************************************************************************************
+ Utils to manipulate the pom.xml. This class is not used in the junit-code but added
+ for testing purposes only.
+ *******************************************************************************************/
 public class PomUtils {
     private static final Log logger = Log.getLogger();
 

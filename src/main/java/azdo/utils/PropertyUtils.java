@@ -9,6 +9,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Properties;
 
+/******************************************************************************************
+ This class represents the .properties file in the resources directory of this repository.
+ *******************************************************************************************/
 public class PropertyUtils {
     private static final Log logger = Log.getLogger();
 
@@ -61,6 +64,7 @@ public class PropertyUtils {
     private String commitPattern;
     ArrayList<String> commitPatternList;
     private String targetRepositoryName;
+    private boolean includeExternalTemplates = true;
     private boolean continueOnError = false;
 
     @SuppressWarnings("java:S1192")
@@ -130,6 +134,7 @@ public class PropertyUtils {
 
             // Miscellaneous
             continueOnError = getBooleanProperty(properties, "error.continue", continueOnError);
+            includeExternalTemplates = getBooleanProperty(properties, "templates.external.include", includeExternalTemplates);
 
             // Derived properties
             azdoBaseUrl="https://dev.azure.com/" + targetOrganization;
@@ -203,62 +208,202 @@ public class PropertyUtils {
         return propertyValue;
     }
 
+    public void setSourcePath(String sourcePath) {
+        this.sourcePath = sourcePath;
+    }
     public String getSourcePath() { return sourcePath; }
+
+    public void setSourceProject(String sourceProject) {
+        this.sourceProject = sourceProject;
+    }
     public String getSourceProject() {
         return sourceProject;
+    }
+
+    public void setTargetProject(String targetProject) {
+        this.targetProject = targetProject;
     }
     public String getTargetProject() {
         return targetProject;
     }
+
+    public void setTargetRepositoryName(String targetRepositoryName) {
+        this.targetRepositoryName = targetRepositoryName;
+    }
     public String getTargetRepositoryName() { return targetRepositoryName; }
+
+    public void setSourceRepositoryName(String sourceRepositoryName) {
+        this.sourceRepositoryName = sourceRepositoryName;
+    }
     public String getSourceRepositoryName() { return sourceRepositoryName; }
+
+    public void setTargetOrganization(String targetOrganization) {
+        this.targetOrganization = targetOrganization;
+    }
     public String getTargetOrganization() {
         return targetOrganization;
     }
+
+    public void setSourceBasePathExternal(String sourceBasePathExternal) {
+        this.sourceBasePathExternal = sourceBasePathExternal;
+    }
     public String getSourceBasePathExternal() { return sourceBasePathExternal; }
+
+    public void setTargetPath(String targetPath) {
+        this.targetPath = targetPath;
+    }
     public String getTargetPath() { return targetPath; }
+
+    public void setTargetBasePathExternal(String targetBasePathExternal) {
+        this.targetBasePathExternal = targetBasePathExternal;
+    }
     public String getTargetBasePathExternal() { return targetBasePathExternal; }
+
+    public void setUriTargetRepository (String uriTargetRepository) {
+        this.uriTargetRepository = uriTargetRepository;
+    }
     public String getUriTargetRepository() { return uriTargetRepository; }
+
+    public void setAzdoEndpoint(String azdoEndpoint) {
+        this.azdoEndpoint = azdoEndpoint;
+    }
     public String getAzdoEndpoint() { return azdoEndpoint; }
+
+    public void setTargetExludeList(String targetExludeList) {
+        this.targetExludeList = targetExludeList;
+    }
     public String getTargetExludeList() { return targetExludeList; }
 
     // Pipeline API
+
+    public void setAzdoBaseUrl(String azdoBaseUrl) {
+        this.azdoBaseUrl = azdoBaseUrl;
+    }
     public String getAzdoBaseUrl() { return azdoBaseUrl; }
+
+    public void setPipelinesApi(String pipelinesApi) {
+        this.pipelinesApi = pipelinesApi;
+    }
     public String getPipelinesApi() { return pipelinesApi; }
+
+    public void setPipelinesApiRuns(String pipelinesApiRuns) {
+        this.pipelinesApiRuns = pipelinesApiRuns;
+    }
     public String getPipelinesApiRuns() { return pipelinesApiRuns; }
+
+    public void setPipelinesApiVersion(String pipelinesApiVersion) {
+        this.pipelinesApiVersion = pipelinesApiVersion;
+    }
     public String getPipelinesApiVersion() { return pipelinesApiVersion; }
 
     // Git API
+
+    public void setGitApi(String gitApi) {
+        this.gitApi = gitApi;
+    }
     public String getGitApi() { return gitApi; }
+
+    public void setGitApiRepositories(String gitApiRepositories) {
+        this.gitApiRepositories = gitApiRepositories;
+    }
     public String getGitApiRepositories() { return gitApiRepositories; }
+
+    public void setGitApiVersion(String gitApiVersion) {
+        this.gitApiVersion = gitApiVersion;
+    }
     public String getGitApiVersion() { return gitApiVersion; }
+
+    public void setAzdoUser(String azdoUser) {
+        this.azdoUser = azdoUser;
+    }
     public String getAzDoUser() { return azdoUser; }
+
+    public void setAzdoPat(String azdoPat) {
+        this.azdoPat = azdoPat;
+    }
     public String getAzdoPat() { return azdoPat; }
 
     // Build
+    public void setBuildApi(String buildApi) {
+        this.buildApi = buildApi;
+    }
     public String getBuildApi() { return buildApi; }
+
+    public void setBuildApiPollFrequency(int buildApiPollFrequency) {
+        this.buildApiPollFrequency = buildApiPollFrequency;
+    }
     public int getBuildApiPollFrequency() { return buildApiPollFrequency; }
+
+    public void setBuildApiPollTimeout(int buildApiPollTimeout) {
+        this.buildApiPollTimeout = buildApiPollTimeout;
+    }
     public int getBuildApiPollTimeout() { return buildApiPollTimeout; }
+
+    public void setBuildApiVersion(String buildApiVersion) {
+        this.buildApiVersion = buildApiVersion;
+    }
     public String getBuildApiVersion() { return buildApiVersion; }
 
     // Project
+    public void setProjectApi(String projectApi) {
+        this.projectApi = projectApi;
+    }
     public String getProjectApi() { return projectApi;}
+
+    public void setProjectApiVersion(String projectApiVersion) {
+        this.projectApiVersion = projectApiVersion;
+    }
     public String getProjectApiVersion() {
         return projectApiVersion;
     }
 
+
     // Distributed task
+    public void setVariableGroupsApi(String variableGroupsApi) {
+        this.variableGroupsApi = variableGroupsApi;
+    }
     public String getVariableGroupsApi() { return variableGroupsApi;}
+
+    public void setVariableGroupsApiVersion(String variableGroupsApiVersion) {
+        this.variableGroupsApiVersion = variableGroupsApiVersion;
+    }
     public String getVariableGroupsApiVersion() {
         return variableGroupsApiVersion;
     }
-    public String getEnvironmentsApi() { return environmentsApi;}
-    public String getEnvironmentsApiVersion() {
+
+    public void setEnvironmentsApi(String environmentsApi) {
+        this.environmentsApi = environmentsApi;
+    }
+    public String getEnvironmentsApi () { return environmentsApi;}
+
+    public void setEnvironmentsApiVersion (String environmentsApiVersion) {
+        this.environmentsApiVersion = environmentsApiVersion;
+    }
+    public String getEnvironmentsApiVersion () {
         return environmentsApiVersion;
     }
 
     // Miscellaneous
+    public void setCommitPattern (String commitPattern) {
+        this.commitPattern = commitPattern;
+    }
     public String getCommitPattern() { return commitPattern; }
+
+
+    public void setCommitPatternList (ArrayList<String> commitPatternList) {
+        this.commitPatternList = commitPatternList;
+    }
     public ArrayList<String> getCommitPatternList() { return commitPatternList; }
-    public boolean isContinueOnError() { return continueOnError; }
+
+    public void setIncludeExternalTemplates (boolean includeExternalTemplates) {
+        this.includeExternalTemplates = includeExternalTemplates;
+    }
+    public boolean isIncludeExternalTemplates () {
+        return includeExternalTemplates;
+    }
+
+    public void setContinueOnError (boolean continueOnError) {
+        this.continueOnError = continueOnError;
+    }
+    public boolean isContinueOnError () { return continueOnError; }
 }

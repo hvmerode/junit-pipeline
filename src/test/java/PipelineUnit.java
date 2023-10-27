@@ -5,14 +5,12 @@ import azdo.hook.Hook;
 import azdo.junit.AzDoPipeline;
 import azdo.junit.RunResult;
 import azdo.utils.Log;
+import azdo.utils.PropertyUtils;
 import org.junit.jupiter.api.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import java.util.*;
 import static azdo.utils.Constants.*;
+
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class PipelineUnit {
@@ -143,7 +141,6 @@ public class PipelineUnit {
                     .overrideTemplateParameter("aNiceParam", "replaced_parameter")
                     .overrideVariable("jobVar", "replacedJobVar")
                     .overrideLiteral("Job_2.Task_3: Sleep some seconds", "Sleep")
-                    .skipSectionSearchByTypeAndIdentifier("template", "test-template.yml@external2")
                     .overrideVariable("aws_region", "eu-west-1")
                     .skipJobSearchByIdentifier("Job_XD")
                     .setVariableSearchStepByIdentifier ("AWSShellScript@1", "aws_connection", "42")
@@ -353,5 +350,53 @@ public class PipelineUnit {
         }
         RunResult pipelineRunResult = pipeline.getRunResult();
         Assertions.assertEquals (RunResult.Result.failed, pipelineRunResult.result);
+    }
+
+    @Test
+    @Order(11)
+    public void test11() {
+        logger.debug("");
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        logger.debug("Perform unittest: test11");
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+        // Initialize the pipeline
+        // Include external resources (this makes them local resources in the pipeline and the templates in the local repos are executed)
+        pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/external-resources-pipeline.yml");
+
+        try {
+            // Test the external resources
+            pipeline.startPipeline();
+        }
+        catch (IOException e) {
+            logger.debug("Exception occurred after the pipeline was started: {}", e.getMessage());
+        }
+        RunResult pipelineRunResult = pipeline.getRunResult();
+        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.result);
+    }
+
+    @Test
+    @Order(12)
+    public void test12() {
+        logger.debug("");
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        logger.debug("Perform unittest: test12");
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+        // Initialize the pipeline
+        // Exclude external resources (this leaves the 'resources' section intact and the external templates are not manipulated)
+        PropertyUtils properties = new PropertyUtils("junit_pipeline_my.properties");
+        properties.setIncludeExternalTemplates(false);
+        pipeline = new AzDoPipeline(properties, "./pipeline/external-resources-pipeline.yml");
+
+        try {
+            // Test the external resources
+            pipeline.startPipeline();
+        }
+        catch (IOException e) {
+            logger.debug("Exception occurred after the pipeline was started: {}", e.getMessage());
+        }
+        RunResult pipelineRunResult = pipeline.getRunResult();
+        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.result);
     }
 }

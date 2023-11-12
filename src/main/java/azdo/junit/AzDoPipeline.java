@@ -28,8 +28,8 @@ public class AzDoPipeline {
     private String propertyFile = null; // Optional reference to the property file, which is null by default
     private Git git = null;
     private CredentialsProvider credentialsProvider;
-    private  ArrayList<String> validVariableGroups; // All 'variable groups' defined in the target Azure DevOps project
-    private  ArrayList<String> validEnvironments; // All 'environments' defined in the target Azure DevOps project
+    private  ArrayList<String> validVariableGroups = null; // All 'variable groups' defined in the target Azure DevOps project
+    private  ArrayList<String> validEnvironments = null; // All 'environments' defined in the target Azure DevOps project
     String yamlFile;
     Map<String, Object> yamlMap = null;
     String repositoryId = null;
@@ -146,16 +146,20 @@ public class AzDoPipeline {
 
         // Retrieve all valid variable groups and environments from the target Azure DevOps project.
         // This is done once when the AzDoPipeline object is created to prevent multiple API calls.
-        validVariableGroups = AzDoUtils.callGetPropertyList (properties.getAzDoUser(),
-                properties.getAzdoPat(),
-                properties.getAzdoEndpoint(),
-                properties.getVariableGroupsApi(),
-                properties.getVariableGroupsApiVersion());
-        validEnvironments = AzDoUtils.callGetPropertyList (properties.getAzDoUser(),
-                properties.getAzdoPat(),
-                properties.getAzdoEndpoint(),
-                properties.getEnvironmentsApi(),
-                properties.getEnvironmentsApiVersion());
+        if (properties.isVariableGroupsValidate()) {
+            validVariableGroups = AzDoUtils.callGetPropertyList(properties.getAzDoUser(),
+                    properties.getAzdoPat(),
+                    properties.getAzdoEndpoint(),
+                    properties.getVariableGroupsApi(),
+                    properties.getVariableGroupsApiVersion());
+        }
+        if (properties.isEnvironmentsValidate()) {
+            validEnvironments = AzDoUtils.callGetPropertyList(properties.getAzDoUser(),
+                    properties.getAzdoPat(),
+                    properties.getAzdoEndpoint(),
+                    properties.getEnvironmentsApi(),
+                    properties.getEnvironmentsApiVersion());
+        }
 
         logger.debug("");
         logger.debug(DEMARCATION);
@@ -679,13 +683,6 @@ public class AzDoPipeline {
         return this;
     }
 
-    public AzDoPipeline insertTemplateSearchSectionByDisplayName (String sectionType,
-                                                                  String displayValue,
-                                                                  String templateIdentifier,
-                                                                  Map<String, String> parameters) {
-        return insertTemplateSearchSectionByDisplayName (sectionType, displayValue, templateIdentifier, parameters, true); // Default is to insert before a step
-    }
-
     /******************************************************************************************
      Inserts a template section before or after a given section. The section is of type "stage",
      "job", "script", "task", "bash", "pwsh" or "powershell".
@@ -728,6 +725,13 @@ public class AzDoPipeline {
         return this;
     }
 
+    public AzDoPipeline insertTemplateSearchSectionByDisplayName (String sectionType,
+                                                                  String displayValue,
+                                                                  String templateIdentifier,
+                                                                  Map<String, String> parameters) {
+        return insertTemplateSearchSectionByDisplayName (sectionType, displayValue, templateIdentifier, parameters, true); // Default is to insert before a step
+    }
+
     /******************************************************************************************
      Inserts a template section before or after a given section.
      @param sectionIdentifier The identification of a section to search for. This can be a
@@ -741,7 +745,7 @@ public class AzDoPipeline {
                                                                  Map<String, String> parameters,
                                                                  boolean insertBefore) {
 
-        logger.debug("==> Method: AzDoPipeline.insertTemplateSearchByDisplayName");
+        logger.debug("==> Method: AzDoPipeline.insertTemplateSearchSectionByIdentifier");
         logger.debug("sectionIdentifier: {}", sectionIdentifier);
         logger.debug("templateIdentifier: {}", templateIdentifier);
         logger.debug("insertBefore: {}", insertBefore);
@@ -762,6 +766,58 @@ public class AzDoPipeline {
         sectionTypes.add(SECTION_JOB);
         sectionTypes.add(SECTION_TEMPLATE);
         performAction (sectionTypes, "ActionInsertSection", null, sectionIdentifier, sectionToInsert, insertBefore);
+
+        return this;
+    }
+
+    /******************************************************************************************
+     Find a section in the yaml, identified by a certain type (e.g. "pool", "stage", "task"),
+     and an identifier (can have a value or empty). If the section is found, a property with a
+     certain value is added.
+     <br>
+     <br>
+     Example:
+     <pre>
+     resources:
+       repositories:
+       - repository: external
+         name: Templates/Templates
+         type: git
+         ref: refs/heads/develop
+     </pre>
+
+     pipeline.addPropertyToSectionSearchByTypeAndIdentifier("repository", "external", "endpoint", "p1") // Add endpoint
+
+     <pre>
+     resources:
+       repositories:
+       - repository: external
+         name: Templates/Templates
+         type: git
+         ref: refs/heads/develop
+         endpoint: p1
+     </pre>
+
+     @param sectionType Possible values ["stage", "job", "template", "task", ...].
+     @param sectionIdentifier The identification of a section.
+     @param property The name of the property of a section; this can be "displayName", "pool", ...
+     @param propertyValue The  value of this property.
+     ******************************************************************************************/
+    public AzDoPipeline addPropertyToSectionSearchByTypeAndIdentifier (String sectionType,
+                                                                       String sectionIdentifier,
+                                                                       String property,
+                                                                       String propertyValue) {
+        logger.debug("==> Method: AzDoPipeline.addPropertySearchStepByIdentifier");
+        logger.debug("sectionType: {}", sectionType);
+        logger.debug("sectionIdentifier: {}", sectionIdentifier);
+        logger.debug("property: {}", property);
+        logger.debug("propertyValue: {}", propertyValue);
+
+        ActionAddPropertyToSection action = new ActionAddPropertyToSection (sectionType,
+                sectionIdentifier,
+                property,
+                propertyValue);
+        yamlDocumentEntryPoint.performAction (action, sectionType, sectionIdentifier);
 
         return this;
     }
@@ -795,14 +851,6 @@ public class AzDoPipeline {
         yamlDocumentEntryPoint.performAction (new ActionOverrideElement(variableName, value, false),
                 SECTION_VARIABLES,
                 null);
-
-        return this;
-    }
-
-    public AzDoPipeline setVariableSearchStepByIdentifier (String stepIdentifier,
-                                                           String variableName,
-                                                           String value) {
-        setVariableSearchStepByIdentifier (stepIdentifier, variableName, value, true); // Default is to set the value before a step
 
         return this;
     }
@@ -844,10 +892,10 @@ public class AzDoPipeline {
         return this;
     }
 
-    public AzDoPipeline setVariableSearchTemplateByIdentifier (String templateIdentifier,
-                                                               String variableName,
-                                                               String value) {
-        setVariableSearchTemplateByIdentifier (templateIdentifier, variableName, value, true); // Default is to set the value before a template
+    public AzDoPipeline setVariableSearchStepByIdentifier (String stepIdentifier,
+                                                           String variableName,
+                                                           String value) {
+        setVariableSearchStepByIdentifier (stepIdentifier, variableName, value, true); // Default is to set the value before a step
 
         return this;
     }
@@ -886,10 +934,10 @@ public class AzDoPipeline {
         return this;
     }
 
-    public AzDoPipeline setVariableSearchStepByDisplayName (String displayValue,
-                                                    String variableName,
-                                                    String value) {
-        setVariableSearchStepByDisplayName (displayValue, variableName, value, true); // Default is to set the value before a step
+    public AzDoPipeline setVariableSearchTemplateByIdentifier (String templateIdentifier,
+                                                               String variableName,
+                                                               String value) {
+        setVariableSearchTemplateByIdentifier (templateIdentifier, variableName, value, true); // Default is to set the value before a template
 
         return this;
     }
@@ -927,6 +975,14 @@ public class AzDoPipeline {
         sectionTypes.add(STEP_SCRIPT_BASH);
         sectionTypes.add(STEP_SCRIPT_PWSH);
         performAction (sectionTypes, "ActionInsertSectionByProperty", PROPERTY_DISPLAY_NAME, displayValue, stepToInsert, insertBefore);
+
+        return this;
+    }
+
+    public AzDoPipeline setVariableSearchStepByDisplayName (String displayValue,
+                                                            String variableName,
+                                                            String value) {
+        setVariableSearchStepByDisplayName (displayValue, variableName, value, true); // Default is to set the value before a step
 
         return this;
     }
@@ -1233,26 +1289,6 @@ public class AzDoPipeline {
      The step is found using the displayName.
      @param displayValue The value of the displayName property of a step.
      @param command Bash command; for example "curl", "wget", "ftp".
-     @param commandOutput The return value of the bash command.
-
-     Note: This method supports the following step types:
-     - script
-     - bash
-     - Bash@3
-     ******************************************************************************************/
-    public AzDoPipeline mockBashCommandSearchStepByDisplayName (String displayValue,
-                                                                String command,
-                                                                String commandOutput){
-        String[] commandOutputArray = new String[1];
-        commandOutputArray[0] = commandOutput;
-        return mockBashCommandSearchStepByDisplayName (displayValue, command, commandOutputArray);
-    }
-
-    /******************************************************************************************
-     Mock a bash command in a script. The real command will not be executed.
-     The step is found using the displayName.
-     @param displayValue The value of the displayName property of a step.
-     @param command Bash command; for example "curl", "wget", "ftp".
      @param commandOutputArray The return value of the Bash command. This method signature takes
                                an array of Strings. Reason is, that the step may contain multiple
                                instances of the same command. The order of the String array is
@@ -1332,24 +1368,55 @@ public class AzDoPipeline {
         return this;
     }
 
-
     /******************************************************************************************
-     Mock a PowerShell command in a script. The real command will not be executed.
+     Mock a bash command in a script. The real command will not be executed.
      The step is found using the displayName.
      @param displayValue The value of the displayName property of a step.
-     @param command PowerShell command.
-     @param commandOutput The return value of the PowerShell command.
+     @param command Bash command; for example "curl", "wget", "ftp".
+     @param commandOutput The return value of the bash command.
 
      Note: This method supports the following step types:
-     - pwsh
-     - PowerShell@2
+     - script
+     - bash
+     - Bash@3
      ******************************************************************************************/
-    public AzDoPipeline mockPowerShellCommandSearchStepByDisplayName(String displayValue,
-                                                                     String command,
-                                                                     String commandOutput){
+    public AzDoPipeline mockBashCommandSearchStepByDisplayName (String displayValue,
+                                                                String command,
+                                                                String commandOutput){
         String[] commandOutputArray = new String[1];
         commandOutputArray[0] = commandOutput;
-        return mockPowerShellCommandSearchStepByDisplayName(displayValue, command, commandOutputArray);
+        return mockBashCommandSearchStepByDisplayName (displayValue, command, commandOutputArray);
+    }
+
+    /******************************************************************************************
+     Private method returning the script of the mocked bash command
+     ******************************************************************************************/
+    private String getMockedBashCommandScript (String functionName, String functionFileName, String[] commandOutputArray) {
+        // Because a global variable cannot be updated in a bash function, the value of commandCounter is stored in a file
+        String s = "cat > " + functionFileName + " <<\'EOF\'\n" +
+                "function " + functionName + " {\n" +
+                "  rfile=\"./\"\n" +
+                "  rfile+=$(echo $$)\n" +
+                "  if [ ! -f \"$rfile\" ]; then\n" +
+                "    echo \"-1\" > \"$rfile\"\n" +
+                "  fi\n" +
+                "  commandCounter=$(cat \"$rfile\")\n" +
+                "  commandCounter=$((commandCounter + 1))\n" +
+                "  echo $commandCounter > \"$rfile\"\n" +
+                "  myArray=(";
+        int size = commandOutputArray.length;
+        int sizeMinusOne = size - 1;
+        for (int i = 0; i < size; i++) {
+            s += "'" + commandOutputArray[i] + "'";
+            if (i < sizeMinusOne)
+                s += " ";
+        }
+        s += ")\n";
+        s += "  local result=${myArray[$((commandCounter))]}\n";
+        s += "  echo \"$result\"\n";
+        s += "}\n";
+        s += "EOF";
+        return s;
     }
 
     /******************************************************************************************
@@ -1441,32 +1508,23 @@ public class AzDoPipeline {
         return this;
     }
 
-    private String getMockedBashCommandScript (String functionName, String functionFileName, String[] commandOutputArray) {
-        // Because a global variable cannot be updated in a bash function, the value of commandCounter is stored in a file
-        String s = "cat > " + functionFileName + " <<\'EOF\'\n" +
-                "function " + functionName + " {\n" +
-                "  rfile=\"./\"\n" +
-                "  rfile+=$(echo $$)\n" +
-                "  if [ ! -f \"$rfile\" ]; then\n" +
-                "    echo \"-1\" > \"$rfile\"\n" +
-                "  fi\n" +
-                "  commandCounter=$(cat \"$rfile\")\n" +
-                "  commandCounter=$((commandCounter + 1))\n" +
-                "  echo $commandCounter > \"$rfile\"\n" +
-                "  myArray=(";
-                int size = commandOutputArray.length;
-                int sizeMinusOne = size - 1;
-                for (int i = 0; i < size; i++) {
-                    s += "'" + commandOutputArray[i] + "'";
-                    if (i < sizeMinusOne)
-                        s += " ";
-                }
-                s += ")\n";
-                s += "  local result=${myArray[$((commandCounter))]}\n";
-                s += "  echo \"$result\"\n";
-                s += "}\n";
-                s += "EOF";
-        return s;
+    /******************************************************************************************
+     Mock a PowerShell command in a script. The real command will not be executed.
+     The step is found using the displayName.
+     @param displayValue The value of the displayName property of a step.
+     @param command PowerShell command.
+     @param commandOutput The return value of the PowerShell command.
+
+     Note: This method supports the following step types:
+     - pwsh
+     - PowerShell@2
+     ******************************************************************************************/
+    public AzDoPipeline mockPowerShellCommandSearchStepByDisplayName(String displayValue,
+                                                                     String command,
+                                                                     String commandOutput){
+        String[] commandOutputArray = new String[1];
+        commandOutputArray[0] = commandOutput;
+        return mockPowerShellCommandSearchStepByDisplayName(displayValue, command, commandOutputArray);
     }
 
 //    private String getMockedPSCommandScript (String functionName, String functionFileName, String commandOutput) {
@@ -1516,8 +1574,6 @@ public class AzDoPipeline {
 
         return this;
     }
-
-
 
     /******************************************************************************************
      The assertVariableEqualsSearchTemplateByIdentifier() method validates a variable during
@@ -1915,7 +1971,6 @@ public class AzDoPipeline {
                                                         String mutableType,
                                                         String compareValue,
                                                         boolean equals) {
-
         String mutableTypeDisplay = "";
         String value = "";
         if (TYPE_VARIABLE.equals(mutableType)) {

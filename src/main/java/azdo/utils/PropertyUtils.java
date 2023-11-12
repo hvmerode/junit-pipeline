@@ -57,8 +57,10 @@ public class PropertyUtils {
     // Azure DevOps API: Distributed tasks
     private String variableGroupsApi = "/distributedtask/variablegroups";
     private String variableGroupsApiVersion = "api-version=7.0";
+    private boolean variableGroupsValidate = true;
     private String environmentsApi = "/distributedtask/environments";
     private String environmentsApiVersion = "api-version=7.0";
+    private boolean environmentsValidate = true;
 
     // Miscellaneous
     private String commitPattern;
@@ -129,8 +131,10 @@ public class PropertyUtils {
             // Azure DevOps Distributed task APIs
             variableGroupsApi = getStringProperty(properties, "variable.groups.api", variableGroupsApi);
             variableGroupsApiVersion = getStringProperty(properties, "variable.groups.api.version", variableGroupsApiVersion);
+            variableGroupsValidate = getBooleanProperty(properties, "variable.groups.validate", variableGroupsValidate);
             environmentsApi = getStringProperty(properties, "environments.api", environmentsApi);
             environmentsApiVersion = getStringProperty(properties, "environments.api.version", environmentsApiVersion);
+            environmentsValidate = getBooleanProperty(properties, "environments.validate", environmentsValidate);
 
             // Miscellaneous
             continueOnError = getBooleanProperty(properties, "error.continue", continueOnError);
@@ -371,6 +375,13 @@ public class PropertyUtils {
         return variableGroupsApiVersion;
     }
 
+    public void setVariableGroupsValidate(boolean variableGroupsValidate) {
+        this.variableGroupsValidate = variableGroupsValidate;
+    }
+    public boolean isVariableGroupsValidate() {
+        return variableGroupsValidate;
+    }
+
     public void setEnvironmentsApi(String environmentsApi) {
         this.environmentsApi = environmentsApi;
     }
@@ -382,6 +393,14 @@ public class PropertyUtils {
     public String getEnvironmentsApiVersion () {
         return environmentsApiVersion;
     }
+
+    public void setEnvironmentsValidate(boolean environmentsValidate) {
+        this.environmentsValidate = environmentsValidate;
+    }
+    public boolean isEnvironmentsValidate() {
+        return environmentsValidate;
+    }
+
 
     // Miscellaneous
     public void setCommitPattern (String commitPattern) {

@@ -111,7 +111,7 @@ Example:
 <dependency>
   <groupId>io.github.hvmerode</groupId>
   <artifactId>junit-pipeline</artifactId>
-  <version>1.2.12</version>
+  <version>1.2.13</version>
 </dependency>
 ```
 

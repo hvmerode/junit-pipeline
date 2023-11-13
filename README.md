@@ -89,9 +89,18 @@ The properties file is located in src/main/resources. It contains the properties
 * __build.api.poll.timeout__ - The timeout value of polling the result of the pipeline run. If the final result is not retrieved yet, the polling stops after a number of seconds, defined by  __build.api.poll.timeout__.
 * __project.api__ - Name of the Azure DevOps base Project API; do not change this value.
 * __project.api.version__ - Version of the Azure DevOps Project API; only change if it is really needed (e.g., if a new version of the API is released).
+* __variable.groups.api__ - The Azure DevOps API used to retrieve the list of variable groups in the project.
+* __variable.groups.api.version__ - Version of this API.
+* __variable.groups.validate__ - Defines whether the variable groups in the YAML files must be validated. Default is true.
+* __environments.api__ - The Azure DevOps API used to retrieve the list of environments in the project.
+* __environments.api.version__ - Version of this API.
+* __environments.validate__ - Defines whether the environments in the YAML files must be validated. Default is true.
 * __error.continue__ - If _true_, the junit-.pipeline framework continues after an error is detected
   (e.g., if the pipeline YAML file or a template file is incorrect). Note, that this can result in unpredictable results.
   If _false_, the framework stops with the test as soon as an error is detected.
+* __templates.external.include__ - If true (= default), templates of other repositories are als included. This means that if a
+  method is executed, for example to skip a step, this also applies to these templates. If set to false, the templates in other
+  repositories are just as-is.
 > The property file is stored in the _resources_ folder.
 
 <br></br>

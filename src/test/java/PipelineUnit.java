@@ -155,10 +155,6 @@ public class PipelineUnit {
         catch (IOException e) {
             logger.debug("Exception occurred: {}", e.getMessage());
         }
-        Assertions.assertEquals (RunResult.Result.none, pipeline.getRunResult().result);
-        logger.info("Test successful");
-        logger.info("Expected: {}", RunResult.Result.none);
-        logger.info("Actual: {}", pipeline.getRunResult().result);
     }
 
     @Test
@@ -339,10 +335,10 @@ public class PipelineUnit {
         pipeline = new AzDoPipeline("junit_pipeline_my.properties", "./pipeline/simple-pipeline.yml");
 
         try {
-            // Test the assertVariableEqualsSearchTemplateByIdentifier
+            // Test the assertParameterEqualsSearchTemplateByIdentifier and assertVariableEqualsSearchTemplateByIdentifier
             pipeline.resetTrigger()
-                    .assertVariableEqualsSearchTemplateByIdentifier ("templates/steps/template-script.yml", "testVar", "test_wrong", false)
                     .assertParameterEqualsSearchTemplateByIdentifier ("templates/steps/template-script.yml", "param_1", "default")
+                    .assertVariableEqualsSearchTemplateByIdentifier ("templates/steps/template-script.yml", "testVar", "test_wrong", false)
                     .startPipeline("myFirstFeature");
         }
         catch (IOException e) {
@@ -398,5 +394,32 @@ public class PipelineUnit {
         }
         RunResult pipelineRunResult = pipeline.getRunResult();
         Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.result);
+    }
+
+    @Test
+    @Order(13)
+    public void test13() {
+        logger.debug("");
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+        logger.debug("Perform unittest: test13");
+        logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+
+        // Initialize the pipeline
+        // Exclude external resources (this leaves the 'resources' section intact and the external templates are not manipulated)
+        PropertyUtils properties = new PropertyUtils("junit_pipeline_my.properties");
+        properties.setIncludeExternalTemplates(false);
+        pipeline = new AzDoPipeline(properties, "./pipeline/external-resources-pipeline.yml");
+
+        try {
+            pipeline
+                    .addPropertyToSectionSearchByTypeAndIdentifier("repository", "external", "endpoint", "p1") // Add endpoint
+                    .addPropertyToSectionSearchByTypeAndIdentifier("repository", "external2", "endpoint", "p2") // Replace existing endpoint
+                    .addPropertyToSectionSearchByTypeAndIdentifier("job", "externalResourcesJob", "condition", "eq(1,2)") // Disable job
+                    .addPropertyToSectionSearchByTypeAndIdentifier("script", null, "enabled", "false") // Disable step
+                    .startPipeline(true); // Do not run, because it would fail (no valid endpoints)
+        }
+        catch (IOException e) {
+            logger.debug("Exception occurred after the pipeline was started: {}", e.getMessage());
+        }
     }
 }

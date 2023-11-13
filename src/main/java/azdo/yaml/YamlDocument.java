@@ -13,6 +13,7 @@ import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Pattern;
 import static azdo.utils.Constants.*;
@@ -235,14 +236,16 @@ public class YamlDocument {
         /******************************************************************************************
                        1. Validate whether a variable group (or more) exist
          ******************************************************************************************/
-        // Retrieve the list with variable groups and validate whether the are defined in the Azure DevOps project
-        ActionReturnPropertyValue actionReturnVariableGroups = new ActionReturnPropertyValue(SECTION_VARIABLES, PROPERTY_VARIABLE_GROUP);
-        performAction (actionReturnVariableGroups, SECTION_VARIABLES, "");
-        validatePropertyList (actionReturnVariableGroups.getPropertyValues(),
-                validVariableGroups,
-                project,
-                "Variable group",
-                continueOnError);
+        // Retrieve the list with variable groups and validate whether they are defined in the Azure DevOps project
+        if (validVariableGroups != null && !validVariableGroups.isEmpty()) {
+            ActionReturnPropertyValue actionReturnVariableGroups = new ActionReturnPropertyValue(SECTION_VARIABLES, PROPERTY_VARIABLE_GROUP);
+            performAction(actionReturnVariableGroups, SECTION_VARIABLES, "");
+            validatePropertyList(actionReturnVariableGroups.getPropertyValues(),
+                    validVariableGroups,
+                    project,
+                    "Variable group",
+                    continueOnError);
+        }
 
         /******************************************************************************************
              2. Validate the output files to determine whether it contains valid pipeline code
@@ -269,13 +272,15 @@ public class YamlDocument {
                             3. Validate whether an Environment (or more) exists.
          ******************************************************************************************/
         // Retrieve the list with environments and validate whether the are defined in the Azure DevOps project
-        ActionReturnPropertyValue actionReturnEnvironments = new ActionReturnPropertyValue(SECTION_JOBS, PROPERTY_ENVIRONMENT);
-        performAction (actionReturnEnvironments, SECTION_JOBS, "");
-        validatePropertyList (actionReturnEnvironments.getPropertyValues(),
-                validEnvironments,
-                project,
-                "Environment",
-                continueOnError);
+        if (validEnvironments != null && !validEnvironments.isEmpty()) {
+            ActionReturnPropertyValue actionReturnEnvironments = new ActionReturnPropertyValue(SECTION_JOBS, PROPERTY_ENVIRONMENT);
+            performAction(actionReturnEnvironments, SECTION_JOBS, "");
+            validatePropertyList(actionReturnEnvironments.getPropertyValues(),
+                    validEnvironments,
+                    project,
+                    "Environment",
+                    continueOnError);
+        }
     }
 
     /******************************************************************************************
@@ -463,9 +468,8 @@ public class YamlDocument {
 
         // Run through the YAML file and adjust the map
         boolean found = false;
-        for (Map.Entry<String, Object> entry : map.entrySet()) {
-            logger.debug("Key: {}", entry.getKey());
-            logger.debug("Value: {}", entry.getValue());
+        for(Iterator<Map.Entry<String, Object>> it = map.entrySet().iterator(); it.hasNext(); ) {
+            Map.Entry<String, Object> entry = it.next();
 
             if ("repository".equals(entry.getKey())) {
                 logger.debug("Found a repository");
@@ -482,13 +486,15 @@ public class YamlDocument {
 
             if (found) {
                 if ("type".equals(entry.getKey())) {
-                    entry.setValue("git"); // Make it always am Azure DeVOps Git project
+                    entry.setValue("git"); // Make it always a Azure DeVOps Git project
                 }
                 if ("endpoint".equals(entry.getKey())) {
-                    map.remove(entry.getKey()); // Don't use this for local repositories
+                    //map.remove(entry.getKey()); // Don't use this for local repositories
+                    it.remove();
                 }
                 if ("ref".equals(entry.getKey())) {
-                    map.remove(entry.getKey()); // Always use the default, which is 'refs/heads/main'
+                    //map.remove(entry.getKey()); // Always use the default, which is 'refs/heads/main'
+                    it.remove();
                 }
                 if ("name".equals(entry.getKey())) {
                     String name  = entry.getValue().toString();

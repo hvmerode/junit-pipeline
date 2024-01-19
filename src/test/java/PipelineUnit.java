@@ -58,7 +58,7 @@ public class PipelineUnit {
             logger.debug("Exception occurred after the pipeline was started: {}", e.getMessage());
         }
         Assertions.assertEquals (RunResult.Result.failed, pipeline.getRunResult().result);
-        RunResult.Result stageResult = pipeline.getRunResult().getStageResultSearchByDisplayName("simple_stage");
+        RunResult.Result stageResult = pipeline.getRunResult().getStageResultSearchByName("simple_stage");
         Assertions.assertEquals (RunResult.Result.failed, stageResult);
         logger.info("Test successful");
         logger.info("Expected pipeline result: {}", RunResult.Result.failed);
@@ -276,9 +276,9 @@ public class PipelineUnit {
 
         RunResult pipelineRunResult = pipeline.getRunResult();
         Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.result);
-        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getStageResultSearchByDisplayName("simple_stage"));
-        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getJobResultSearchByDisplayName("simple_job"));
-        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getStepResultSearchByDisplayName("Testing, testing"));
+        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getStageResultSearchByName("simple_stage"));
+        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getJobResultSearchByName("simple_job"));
+        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getStepResultSearchByName("Testing, testing"));
     }
 
     @Test
@@ -314,13 +314,13 @@ public class PipelineUnit {
         }
         RunResult pipelineRunResult = pipeline.getRunResult();
         Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.result);
-        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getStageResultSearchByDisplayName("template-stages.yml stage"));
-        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getStageResultSearchByDisplayName("simple_stage"));
-        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getJobResultSearchByDisplayName("template-stages.yml job"));
-        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getJobResultSearchByDisplayName("template-jobs.yml job"));
-        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getJobResultSearchByDisplayName("simple_job"));
-        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getStepResultSearchByDisplayName("This is script step"));
-        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getStepResultSearchByDisplayName("template-mock.yml script"));
+        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getStageResultSearchByName("template-stages.yml stage"));
+        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getStageResultSearchByName("simple_stage"));
+        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getJobResultSearchByName("template-stages.yml job"));
+        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getJobResultSearchByName("template-jobs.yml job"));
+        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getJobResultSearchByName("simple_job"));
+        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getStepResultSearchByName("This is script step"));
+        Assertions.assertEquals (RunResult.Result.succeeded, pipelineRunResult.getStepResultSearchByName("template-mock.yml script"));
     }
 
     @Test

@@ -125,11 +125,11 @@ public class RunResult {
 
 
     /*
-        Return a TimelineRecord of a certain type and certain name (= displayValue)
+        Return a TimelineRecord of a certain type and certain name (this is the identifier (if defined) or the displayValue)
      */
-    public Result getSectionResultSearchByDisplayName(String sectionType,
-                                                      String displayValue) {
-        logger.debug("==> Method: RunResult.getSectionResultSearchByDisplayName");
+    public Result getSectionResultSearchByName(String sectionType,
+                                               String name) {
+        logger.debug("==> Method: RunResult.getSectionResultSearchByName");
 
         int size = timelineRecords.size();
         TimelineRecord timelineRecord;
@@ -137,8 +137,8 @@ public class RunResult {
             timelineRecord = timelineRecords.get(counter);
             if (timelineRecord != null) {
                 if (timelineRecord.type.equals(sectionType)) {
-                    if (timelineRecord.name.equals(displayValue)) {
-                        logger.debug("Found {}", displayValue);
+                    if (timelineRecord.name.equals(name)) {
+                        logger.debug("Found {}", name);
                         return Result.valueOf(timelineRecord.result);
                     }
                 }
@@ -148,25 +148,25 @@ public class RunResult {
         return Result.none;
     }
 
-    public Result getStageResultSearchByDisplayName(String displayValue) {
-        logger.debug("==> Method: RunResult.getStageResultSearchByDisplayName");
-        return getSectionResultSearchByDisplayName("Stage", displayValue);
+    public Result getStageResultSearchByName(String name) {
+        logger.debug("==> Method: RunResult.getStageResultSearchByName");
+        return getSectionResultSearchByName("Stage", name);
     }
 
-    public Result getJobResultSearchByDisplayName(String displayValue) {
-        logger.debug("==> Method: RunResult.getJobResultSearchByDisplayName");
+    public Result getJobResultSearchByName(String name) {
+        logger.debug("==> Method: RunResult.getJobResultSearchByName");
         Result res = Result.none;
-        res = getSectionResultSearchByDisplayName("Job", displayValue);
+        res = getSectionResultSearchByName("Job", name);
         if (res == Result.none) {
             // Not Job found (for example, if the Job was skipped); try the Phase instead
-            res = getSectionResultSearchByDisplayName("Phase", displayValue);
+            res = getSectionResultSearchByName("Phase", name);
         }
 
         return res;
     }
 
-    public Result getStepResultSearchByDisplayName(String displayValue) {
-        logger.debug("==> Method: RunResult.getStepResultSearchByDisplayName");
-        return getSectionResultSearchByDisplayName("Task", displayValue);
+    public Result getStepResultSearchByName(String name) {
+        logger.debug("==> Method: RunResult.getStepResultSearchByName");
+        return getSectionResultSearchByName("Task", name);
     }
 }

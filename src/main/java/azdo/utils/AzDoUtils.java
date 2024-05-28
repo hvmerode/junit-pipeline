@@ -509,6 +509,8 @@ public class AzDoUtils {
                 color = YELLOW;
             if (RunResult.Result.partiallySucceeded.toString().equals(pipelineResult))
                 color = YELLOW;
+            if (RunResult.Result.succeededWithIssues.toString().equals(pipelineResult))
+                color = YELLOW;
 
             logger.infoColor(color, "Result: {}", runResult.result.toString());
 

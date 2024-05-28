@@ -89,6 +89,8 @@ public class TimelineRecord {
                     color = YELLOW;
                 if (RunResult.Result.partiallySucceeded.toString().equals(result))
                     color = YELLOW;
+                if (RunResult.Result.succeededWithIssues.toString().equals(result))
+                    color = YELLOW;
 
                 if ("Stage".equals(type)) {
                     displayedType = "Stage " + arrow + "      ";

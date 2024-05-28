@@ -146,7 +146,8 @@ public class PropertyUtils {
             uriTargetRepository = azdoBaseUrl + "/" + targetProject + "/_git/" + targetRepositoryName;
             uriTargetRepository = Utils.encodePath(uriTargetRepository);
             logger.debug("Derived uriTargetRepository: {}", uriTargetRepository);
-            azdoEndpoint = azdoBaseUrl + "/" + targetProject + "/_apis";
+            // An Azure project may contain spaces; perform URL encoding because the project name is part of the URL
+            azdoEndpoint = azdoBaseUrl + "/" + Utils.encodePath(targetProject) + "/_apis";
             logger.debug("Derived azdoEndpoint: {}", azdoEndpoint);
 
             logger.debug("#################################################################");

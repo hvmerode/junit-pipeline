@@ -25,6 +25,7 @@ public class RunResult {
         failed,
         succeeded,
         partiallySucceeded,
+        succeededWithIssues,
         skipped,
         undetermined,
         none

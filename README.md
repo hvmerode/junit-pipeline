@@ -599,7 +599,7 @@ pipeline.getRunResult();
 ```
 It is also possible to retrieve the run result of each individual stage, job, or step: 
 ```java
-pipeline.getRunResult().getStageResultSearchByDisplayName("simpleStage");
+pipeline.getRunResult().getStageResultSearchByName("simpleStage");
 ```
 <br></br>
 
